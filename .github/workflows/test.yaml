@@ -1,14 +1,15 @@
-name: build-and-test
+name: test
 
 on:
   push:
+    branches:
+      - main
   schedule:
     - cron: 0 0 * * *
   workflow_dispatch:
 
 jobs:
   build-and-test:
-    if: ${{ github.event_name != 'push' || github.ref_name == github.event.repository.default_branch }}
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
@@ -18,10 +19,10 @@ jobs:
           - humble
         container-suffix:
           - ""
-          - -cuda
+          - -nocuda
         include:
           - rosdistro: humble
-            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
+            container: ghcr.io/autowarefoundation/autoware-openadk:prebuilt-${{ git rev-parse --short github.event.pull_request.base.sha }}
             build-depends-repos: build_depends.repos
     steps:
       - name: Check out repository
@@ -41,14 +42,6 @@ jobs:
       - name: Get self packages
         id: get-self-packages
         uses: autowarefoundation/autoware-github-actions/get-self-packages@v1
-
-      - name: Build
-        if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
-        uses: autowarefoundation/autoware-github-actions/colcon-build@v1
-        with:
-          rosdistro: ${{ matrix.rosdistro }}
-          target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
-          build-depends-repos: ${{ matrix.build-depends-repos }}
 
       - name: Test
         if: ${{ steps.get-self-packages.outputs.self-packages != '' }}

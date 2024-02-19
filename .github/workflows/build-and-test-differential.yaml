@@ -28,7 +28,7 @@ jobs:
           - -cuda
         include:
           - rosdistro: humble
-            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
+            container: ghcr.io/autowarefoundation/autoware-openadk:prebuilt-${{ git rev-parse --short github.event.pull_request.base.sha }}
             build-depends-repos: build_depends.repos
     steps:
       - name: Check out repository

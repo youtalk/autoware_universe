@@ -13327,7 +13327,7 @@ Please see <a href="https://github.com/autowarefoundation/autoware_msgs/tree/mai
 <hr>
 <h2 id="lanelet2_map_loader">lanelet2_map_loader<a class="headerlink" href="#lanelet2_map_loader" title="Permanent link">#</a></h2>
 <h3 id="feature_1">Feature<a class="headerlink" href="#feature_1" title="Permanent link">#</a></h3>
-<p>lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_auto_mapping_msgs/HADMapBin message.
+<p>lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_map_msgs/LaneletMapBin message.
 The node projects lan/lon coordinates into arbitrary coordinates defined in <code>/map/map_projector_info</code> from <code>map_projection_loader</code>.
 Please see <a href="https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_map_msgs/msg/MapProjectorInfo.msg">tier4_autoware_msgs/msg/MapProjectorInfo.msg</a> for supported projector types.</p>
 <h3 id="how-to-run">How to run<a class="headerlink" href="#how-to-run" title="Permanent link">#</a></h3>
@@ -13338,7 +13338,7 @@ Please see <a href="https://github.com/tier4/tier4_autoware_msgs/blob/tier4/univ
 </ul>
 <h3 id="published-topics">Published Topics<a class="headerlink" href="#published-topics" title="Permanent link">#</a></h3>
 <ul>
-<li>~output/lanelet2_map (autoware_auto_mapping_msgs/HADMapBin) : Binary data of loaded Lanelet2 Map</li>
+<li>~output/lanelet2_map (autoware_map_msgs/LaneletMapBin) : Binary data of loaded Lanelet2 Map</li>
 </ul>
 <h3 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">#</a></h3>
 <table>
@@ -13371,12 +13371,12 @@ Please see <a href="https://github.com/tier4/tier4_autoware_msgs/blob/tier4/univ
 <hr>
 <h2 id="lanelet2_map_visualization">lanelet2_map_visualization<a class="headerlink" href="#lanelet2_map_visualization" title="Permanent link">#</a></h2>
 <h3 id="feature_2">Feature<a class="headerlink" href="#feature_2" title="Permanent link">#</a></h3>
-<p>lanelet2_map_visualization visualizes autoware_auto_mapping_msgs/HADMapBin messages into visualization_msgs/MarkerArray.</p>
+<p>lanelet2_map_visualization visualizes autoware_map_msgs/LaneletMapBin messages into visualization_msgs/MarkerArray.</p>
 <h3 id="how-to-run_1">How to Run<a class="headerlink" href="#how-to-run_1" title="Permanent link">#</a></h3>
 <p><code>ros2 run map_loader lanelet2_map_visualization</code></p>
 <h3 id="subscribed-topics_1">Subscribed Topics<a class="headerlink" href="#subscribed-topics_1" title="Permanent link">#</a></h3>
 <ul>
-<li>~input/lanelet2_map (autoware_auto_mapping_msgs/HADMapBin) : binary data of Lanelet2 Map</li>
+<li>~input/lanelet2_map (autoware_map_msgs/LaneletMapBin) : binary data of Lanelet2 Map</li>
 </ul>
 <h3 id="published-topics_1">Published Topics<a class="headerlink" href="#published-topics_1" title="Permanent link">#</a></h3>
 <ul>

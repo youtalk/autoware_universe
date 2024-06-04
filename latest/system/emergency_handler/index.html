@@ -13124,12 +13124,12 @@
 <tbody>
 <tr>
 <td><code>/system/emergency/hazard_status</code></td>
-<td><code>autoware_auto_system_msgs::msg::HazardStatusStamped</code></td>
+<td><code>autoware_system_msgs::msg::HazardStatusStamped</code></td>
 <td>Used to select proper MRM from system failure state contained in HazardStatus</td>
 </tr>
 <tr>
 <td><code>/control/vehicle_cmd</code></td>
-<td><code>autoware_auto_control_msgs::msg::AckermannControlCommand</code></td>
+<td><code>autoware_control_msgs::msg::Control</code></td>
 <td>Used as reference when generate Emergency Control Command</td>
 </tr>
 <tr>
@@ -13139,7 +13139,7 @@
 </tr>
 <tr>
 <td><code>/vehicle/status/control_mode</code></td>
-<td><code>autoware_auto_vehicle_msgs::msg::ControlModeReport</code></td>
+<td><code>autoware_vehicle_msgs::msg::ControlModeReport</code></td>
 <td>Used to check vehicle mode: autonomous or manual</td>
 </tr>
 <tr>
@@ -13166,12 +13166,12 @@
 <tbody>
 <tr>
 <td><code>/system/emergency/shift_cmd</code></td>
-<td><code>autoware_auto_vehicle_msgs::msg::GearCommand</code></td>
+<td><code>autoware_vehicle_msgs::msg::GearCommand</code></td>
 <td>Required to execute proper MRM (send gear cmd)</td>
 </tr>
 <tr>
 <td><code>/system/emergency/hazard_cmd</code></td>
-<td><code>autoware_auto_vehicle_msgs::msg::HazardLightsCommand</code></td>
+<td><code>autoware_vehicle_msgs::msg::HazardLightsCommand</code></td>
 <td>Required to execute proper MRM (send turn signal cmd)</td>
 </tr>
 <tr>

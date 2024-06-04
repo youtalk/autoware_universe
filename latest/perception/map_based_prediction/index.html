@@ -13422,17 +13422,17 @@ This prediction comes from the assumption that the object should move if the tra
 <tbody>
 <tr>
 <td><code>~/perception/object_recognition/tracking/objects</code></td>
-<td><code>autoware_auto_perception_msgs::msg::TrackedObjects</code></td>
+<td><code>autoware_perception_msgs::msg::TrackedObjects</code></td>
 <td>tracking objects without predicted path.</td>
 </tr>
 <tr>
 <td><code>~/vector_map</code></td>
-<td><code>autoware_auto_mapping_msgs::msg::HADMapBin</code></td>
+<td><code>autoware_map_msgs::msg::LaneletMapBin</code></td>
 <td>binary data of Lanelet2 Map.</td>
 </tr>
 <tr>
-<td>'~/perception/traffic_light_recognition/traffic_signals'</td>
-<td>'autoware_perception_msgs::msg::TrafficSignalArray;'</td>
+<td><code>~/perception/traffic_light_recognition/traffic_signals</code></td>
+<td><code>autoware_perception_msgs::msg::TrafficLightGroupArray</code></td>
 <td>rearranged information on the corresponding traffic lights</td>
 </tr>
 </tbody>
@@ -13449,12 +13449,12 @@ This prediction comes from the assumption that the object should move if the tra
 <tbody>
 <tr>
 <td><code>~/input/objects</code></td>
-<td><code>autoware_auto_perception_msgs::msg::TrackedObjects</code></td>
+<td><code>autoware_perception_msgs::msg::TrackedObjects</code></td>
 <td>tracking objects. Default is set to <code>/perception/object_recognition/tracking/objects</code></td>
 </tr>
 <tr>
 <td><code>~/output/objects</code></td>
-<td><code>autoware_auto_perception_msgs::msg::PredictedObjects</code></td>
+<td><code>autoware_perception_msgs::msg::PredictedObjects</code></td>
 <td>tracking objects with predicted path.</td>
 </tr>
 <tr>

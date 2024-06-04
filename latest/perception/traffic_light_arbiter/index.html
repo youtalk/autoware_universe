@@ -13166,17 +13166,17 @@ The table below outlines how the matching process determines the output based on
 <tbody>
 <tr>
 <td>~/sub/vector_map</td>
-<td>autoware_auto_mapping_msgs::msg::HADMapBin</td>
+<td>autoware_map_msgs::msg::LaneletMapBin</td>
 <td>The vector map to get valid traffic signal ids.</td>
 </tr>
 <tr>
 <td>~/sub/perception_traffic_signals</td>
-<td>autoware_perception_msgs::msg::TrafficSignalArray</td>
+<td>autoware_perception_msgs::msg::TrafficLightGroupArray</td>
 <td>The traffic signals from the image recognition pipeline.</td>
 </tr>
 <tr>
 <td>~/sub/external_traffic_signals</td>
-<td>autoware_perception_msgs::msg::TrafficSignalArray</td>
+<td>autoware_perception_msgs::msg::TrafficLightGroupArray</td>
 <td>The traffic signals from an external system.</td>
 </tr>
 </tbody>
@@ -13193,7 +13193,7 @@ The table below outlines how the matching process determines the output based on
 <tbody>
 <tr>
 <td>~/pub/traffic_signals</td>
-<td>autoware_perception_msgs::msg::TrafficSignalArray</td>
+<td>autoware_perception_msgs::msg::TrafficLightGroupArray</td>
 <td>The merged traffic signal state.</td>
 </tr>
 </tbody>

@@ -13169,15 +13169,15 @@
 </ul>
 <p>For the transition availability/completion check:</p>
 <ul>
-<li>/control/command/control_cmd [<code>autoware_auto_control_msgs/msg/AckermannControlCommand</code>]: vehicle control signal</li>
+<li>/control/command/control_cmd [<code>autoware_control_msgs/msg/Control</code>]: vehicle control signal</li>
 <li>/localization/kinematic_state [<code>nav_msgs/msg/Odometry</code>]: ego vehicle state</li>
-<li>/planning/scenario_planning/trajectory [<code>autoware_auto_planning_msgs/msg/Trajectory</code>]: planning trajectory</li>
-<li>/vehicle/status/control_mode [<code>autoware_auto_vehicle_msgs/msg/ControlModeReport</code>]: vehicle control mode (autonomous/manual)</li>
+<li>/planning/scenario_planning/trajectory [<code>autoware_planning_msgs/msg/Trajectory</code>]: planning trajectory</li>
+<li>/vehicle/status/control_mode [<code>autoware_vehicle_msgs/msg/ControlModeReport</code>]: vehicle control mode (autonomous/manual)</li>
 <li>/control/vehicle_cmd_gate/operation_mode [<code>autoware_adapi_v1_msgs/msg/OperationModeState</code>]: the operation mode in the <code>vehicle_cmd_gate</code>. (To be removed)</li>
 </ul>
 <p>For the backward compatibility (to be removed):</p>
 <ul>
-<li>/api/autoware/get/engage [<code>autoware_auto_vehicle_msgs/msg/Engage</code>]</li>
+<li>/api/autoware/get/engage [<code>autoware_vehicle_msgs/msg/Engage</code>]</li>
 <li>/control/current_gate_mode [<code>tier4_control_msgs/msg/GateMode</code>]</li>
 <li>/control/external_cmd_selector/current_selector_mode [<code>tier4_control_msgs/msg/ExternalCommandSelectorMode</code>]</li>
 </ul>
@@ -13188,10 +13188,10 @@
 </ul>
 <ul>
 <li>/control/gate_mode_cmd [<code>tier4_control_msgs/msg/GateMode</code>]: to change the <code>vehicle_cmd_gate</code> state to use its features (to be removed)</li>
-<li>/autoware/engage [<code>autoware_auto_vehicle_msgs/msg/Engage</code>]:</li>
+<li>/autoware/engage [<code>autoware_vehicle_msgs/msg/Engage</code>]:</li>
 </ul>
 <ul>
-<li>/control/control_mode_request [<code>autoware_auto_vehicle_msgs/srv/ControlModeCommand</code>]: to change the vehicle control mode (autonomous/manual)</li>
+<li>/control/control_mode_request [<code>autoware_vehicle_msgs/srv/ControlModeCommand</code>]: to change the vehicle control mode (autonomous/manual)</li>
 <li>/control/external_cmd_selector/select_external_command [<code>tier4_control_msgs/srv/ExternalCommandSelect</code>]:</li>
 </ul>
 <h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h2>

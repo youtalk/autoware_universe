@@ -13117,19 +13117,19 @@
 <h3 id="inputs-outputs-api">Inputs / Outputs / API<a class="headerlink" href="#inputs-outputs-api" title="Permanent link">#</a></h3>
 <h4 id="inputs">Inputs<a class="headerlink" href="#inputs" title="Permanent link">#</a></h4>
 <ul>
-<li><code>autoware_auto_planning_msgs/Trajectory</code> : reference trajectory to follow.</li>
+<li><code>autoware_planning_msgs/Trajectory</code> : reference trajectory to follow.</li>
 <li><code>nav_msgs/Odometry</code>: current odometry</li>
-<li><code>autoware_auto_vehicle_msgs/SteeringReport</code> current steering</li>
+<li><code>autoware_vehicle_msgs/SteeringReport</code> current steering</li>
 </ul>
 <h4 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">#</a></h4>
 <ul>
-<li><code>autoware_auto_control_msgs/AckermannControlCommand</code>: message containing both lateral and longitudinal commands.</li>
+<li><code>autoware_control_msgs/Control</code>: message containing both lateral and longitudinal commands.</li>
 </ul>
 <h4 id="parameter">Parameter<a class="headerlink" href="#parameter" title="Permanent link">#</a></h4>
 <ul>
 <li><code>ctrl_period</code>: control commands publishing period</li>
 <li><code>timeout_thr_sec</code>: duration in second after which input messages are discarded.<ul>
-<li>Each time the node receives lateral and longitudinal commands from each controller, it publishes an <code>AckermannControlCommand</code> if the following two conditions are met.<ol>
+<li>Each time the node receives lateral and longitudinal commands from each controller, it publishes an <code>Control</code> if the following two conditions are met.<ol>
 <li>Both commands have been received.</li>
 <li>The last received commands are not older than defined by <code>timeout_thr_sec</code>.</li>
 </ol>

@@ -13167,6 +13167,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#appendix" class="md-nav__link">
+    Appendix
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -13237,7 +13244,7 @@ This threshold is a sum of "maximum longitudinal error due to velocity scale fac
 </ul>
 <h3 id="diff_position_y-and-diff_position_z"><code>diff_position_y</code> and <code>diff_position_z</code><a class="headerlink" href="#diff_position_y-and-diff_position_z" title="Permanent link">#</a></h3>
 <p>These thresholds examine the difference in the lateral and vertical axes between the two poses, and check whether the vehicle goes beyond the expected error.
-The <code>pose_instaibility_detector</code> calculates the possible range where the vehicle goes, and get the maximum difference between the nominal dead reckoning pose and the maximum limit pose.</p>
+The <code>pose_instability_detector</code> calculates the possible range where the vehicle goes, and get the maximum difference between the nominal dead reckoning pose and the maximum limit pose.</p>
 <p><img alt="lateral_threshold_calculation" src="media/lateral_threshold_calculation.png"></p>
 <p>Addition to this, the <code>pose_instability_detector</code> node considers the processing noise of the dead reckoning and the pose estimation error to determine the threshold.</p>
 <div class="arithmatex">\[
@@ -13245,7 +13252,7 @@ The <code>pose_instaibility_detector</code> calculates the possible range where 
 \]</div>
 <ul>
 <li><span class="arithmatex">\(\tau_y \cdots\)</span> Threshold for the difference in the lateral axis [m]</li>
-<li><span class="arithmatex">\(l \cdots\)</span> Maximum lateral distance describved in the image above [m]</li>
+<li><span class="arithmatex">\(l \cdots\)</span> Maximum lateral distance described in the image above [m]</li>
 <li><span class="arithmatex">\(\sigma_v^2 \cdots\)</span> Variance of the heading velocity [m/s]</li>
 <li><span class="arithmatex">\(\sigma_\theta^2 \cdots\)</span> Variance of the heading angle [rad]</li>
 <li><span class="arithmatex">\(v_{\rm max} \cdots\)</span> Maximum heading velocity [m/s]</li>
@@ -13410,7 +13417,54 @@ This threshold is a sum of "maximum angular error due to velocity scale factor e
 <td>Diagnostics</td>
 </tr>
 </tbody>
-</table></div>
+</table>
+<h2 id="appendix">Appendix<a class="headerlink" href="#appendix" title="Permanent link">#</a></h2>
+<p>On calculating the maximum lateral distance <span class="arithmatex">\(l\)</span>, the <code>pose_instability_detector</code> node will estimate the following poses.</p>
+<table>
+<thead>
+<tr>
+<th>Pose</th>
+<th>heading velocity <span class="arithmatex">\(v\)</span></th>
+<th>angular velocity <span class="arithmatex">\(\omega\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nominal dead reckoning pose</td>
+<td><span class="arithmatex">\(v_{\rm max}\)</span></td>
+<td><span class="arithmatex">\(\omega_{\rm max}\)</span></td>
+</tr>
+<tr>
+<td>Dead reckoning pose of corner A</td>
+<td><span class="arithmatex">\(\left(1+\frac{\beta_v}{100}\right) v_{\rm max}\)</span></td>
+<td><span class="arithmatex">\(\left(1+\frac{\beta_\omega}{100}\right) \omega_{\rm max} + b\)</span></td>
+</tr>
+<tr>
+<td>Dead reckoning pose of corner B</td>
+<td><span class="arithmatex">\(\left(1-\frac{\beta_v}{100}\right) v_{\rm max}\)</span></td>
+<td><span class="arithmatex">\(\left(1+\frac{\beta_\omega}{100}\right) \omega_{\rm max} + b\)</span></td>
+</tr>
+<tr>
+<td>Dead reckoning pose of corner C</td>
+<td><span class="arithmatex">\(\left(1-\frac{\beta_v}{100}\right) v_{\rm max}\)</span></td>
+<td><span class="arithmatex">\(\left(1-\frac{\beta_\omega}{100}\right) \omega_{\rm max} - b\)</span></td>
+</tr>
+<tr>
+<td>Dead reckoning pose of corner D</td>
+<td><span class="arithmatex">\(\left(1+\frac{\beta_v}{100}\right) v_{\rm max}\)</span></td>
+<td><span class="arithmatex">\(\left(1-\frac{\beta_\omega}{100}\right) \omega_{\rm max} - b\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Given a heading velocity <span class="arithmatex">\(v\)</span> and <span class="arithmatex">\(\omega\)</span>, the 2D theoritical variation seen from the previous pose is calculated as follows:</p>
+<div class="arithmatex">\[
+\left[
+    \begin{matrix}
+    x\\
+    y
+    \end{matrix}
+\right]
+\]</div></div>
 
 
 

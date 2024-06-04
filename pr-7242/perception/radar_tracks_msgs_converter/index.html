@@ -13099,7 +13099,7 @@
 
 
 <div><h1 id="radar_tracks_msgs_converter">radar_tracks_msgs_converter<a class="headerlink" href="#radar_tracks_msgs_converter" title="Permanent link">#</a></h1>
-<p>This package converts from <a href="https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg">radar_msgs/msg/RadarTracks</a> into <a href="https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl">autoware_auto_perception_msgs/msg/DetectedObject</a> and <a href="https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/TrackedObject.idl">autoware_auto_perception_msgs/msg/TrackedObject</a>.</p>
+<p>This package converts from <a href="https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg">radar_msgs/msg/RadarTracks</a> into [autoware_perception_msgs/msg/DetectedObject]<a href="https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/DetectedObject.msg)">https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/DetectedObject.msg)</a> and <a href="https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/TrackedObject.msg">autoware_perception_msgs/msg/TrackedObject</a>.</p>
 <ul>
 <li>Calculation cost is O(n).<ul>
 <li>n: The number of radar objects</li>
@@ -13109,7 +13109,7 @@
 <h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">#</a></h2>
 <h3 id="background">Background<a class="headerlink" href="#background" title="Permanent link">#</a></h3>
 <p>Autoware uses <a href="https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg">radar_msgs/msg/RadarTracks.msg</a> as radar objects input data.
-To use radar objects data for Autoware perception module easily, <code>radar_tracks_msgs_converter</code> converts message type from <code>radar_msgs/msg/RadarTracks.msg</code> to <code>autoware_auto_perception_msgs/msg/DetectedObject</code>.
+To use radar objects data for Autoware perception module easily, <code>radar_tracks_msgs_converter</code> converts message type from <code>radar_msgs/msg/RadarTracks.msg</code> to <code>autoware_perception_msgs/msg/DetectedObject</code>.
 In addition, because many detection module have an assumption on base_link frame, <code>radar_tracks_msgs_converter</code> provide the functions of transform frame_id.</p>
 <h3 id="note">Note<a class="headerlink" href="#note" title="Permanent link">#</a></h3>
 <p><code>Radar_tracks_msgs_converter</code> converts the label from <code>radar_msgs/msg/RadarTrack.msg</code> to Autoware label.
@@ -13166,7 +13166,7 @@ Label id is defined as below.</p>
 </tbody>
 </table>
 <p>Additional vendor-specific classifications are permitted starting from 32000 in <a href="https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTrack.msg">radar_msgs/msg/RadarTrack.msg</a>.
-Autoware objects label is defined in <a href="https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/ObjectClassification.idl">ObjectClassification.idl</a></p>
+Autoware objects label is defined in <a href="https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/ObjectClassification.msg">ObjectClassification</a></p>
 <h2 id="interface">Interface<a class="headerlink" href="#interface" title="Permanent link">#</a></h2>
 <h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
 <ul>
@@ -13181,12 +13181,12 @@ Autoware objects label is defined in <a href="https://gitlab.com/autowarefoundat
 </ul>
 <h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
 <ul>
-<li><code>~/output/radar_detected_objects</code> (<code>autoware_auto_perception_msgs/msg/DetectedObject.idl</code>)<ul>
+<li><code>~/output/radar_detected_objects</code> (<code>autoware_perception_msgs/msg/DetectedObject.idl</code>)<ul>
 <li>DetectedObject topic converted to Autoware message.</li>
 <li>This is used for radar sensor fusion detection and radar detection.</li>
 </ul>
 </li>
-<li><code>~/output/radar_tracked_objects</code> (<code>autoware_auto_perception_msgs/msg/TrackedObject.idl</code>)<ul>
+<li><code>~/output/radar_tracked_objects</code> (<code>autoware_perception_msgs/msg/TrackedObject.idl</code>)<ul>
 <li>TrackedObject topic converted to Autoware message.</li>
 <li>This is used for tracking layer sensor fusion.</li>
 </ul>

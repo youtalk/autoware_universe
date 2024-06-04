@@ -13277,12 +13277,12 @@ It distributes route requests and planning results according to current MRM oper
 </thead>
 <tbody>
 <tr>
-<td><code>~/input/vector_map</code></td>
-<td>autoware_auto_mapping_msgs/HADMapBin</td>
+<td><code>input/vector_map</code></td>
+<td>autoware_map_msgs/msg/LaneletMapBin</td>
 <td>vector map of Lanelet2</td>
 </tr>
 <tr>
-<td><code>~/input/modified_goal</code></td>
+<td><code>input/modified_goal</code></td>
 <td>geometry_msgs/PoseWithUuidStamped</td>
 <td>modified goal pose</td>
 </tr>
@@ -13343,7 +13343,7 @@ It distributes route requests and planning results according to current MRM oper
 <h2 id="route-section">Route section<a class="headerlink" href="#route-section" title="Permanent link">#</a></h2>
 <p><img alt="route_sections" src="media/route_sections.svg"></p>
 <p>Route section, whose type is <code>autoware_planning_msgs/LaneletSegment</code>, is a "slice" of a road that bundles lane changeable lanes.
-Note that the most atomic unit of route is <code>autoware_auto_mapping_msgs/LaneletPrimitive</code>, which has the unique id of a lane in a vector map and its type.
+Note that the most atomic unit of route is <code>autoware_planning_msgs/LaneletPrimitive</code>, which has the unique id of a lane in a vector map and its type.
 Therefore, route message does not contain geometric information about the lane since we did not want to have planning module’s message to have dependency on map data structure.</p>
 <p>The ROS message of route section contains following three elements for each route section.</p>
 <ul>

@@ -13096,12 +13096,12 @@ This means that to stop before a wall, a stop point is inserted in the trajector
 <tbody>
 <tr>
 <td><code>~/input/trajectory</code></td>
-<td>autoware_auto_planning_msgs::msg::Trajectory</td>
+<td>autoware_planning_msgs::msg::Trajectory</td>
 <td>input trajectory</td>
 </tr>
 <tr>
 <td><code>~/input/vector_map</code></td>
-<td>autoware_auto_mapping_msgs::msg::HADMapBin</td>
+<td>autoware_map_msgs::msg::LaneletMapBin</td>
 <td>vector map</td>
 </tr>
 <tr>
@@ -13116,7 +13116,7 @@ This means that to stop before a wall, a stop point is inserted in the trajector
 </tr>
 <tr>
 <td><code>~/input/dynamic_objects</code></td>
-<td>autoware_auto_perception_msgs::msg::PredictedObjects</td>
+<td>autoware_perception_msgs::msg::PredictedObjects</td>
 <td>dynamic objects</td>
 </tr>
 <tr>
@@ -13126,7 +13126,7 @@ This means that to stop before a wall, a stop point is inserted in the trajector
 </tr>
 <tr>
 <td><code>~/input/traffic_signals</code></td>
-<td>autoware_perception_msgs::msg::TrafficSignalArray</td>
+<td>autoware_perception_msgs::msg::TrafficLightGroupArray</td>
 <td>traffic light states</td>
 </tr>
 <tr>
@@ -13153,7 +13153,7 @@ This means that to stop before a wall, a stop point is inserted in the trajector
 <tbody>
 <tr>
 <td><code>~/output/trajectory</code></td>
-<td>autoware_auto_planning_msgs::msg::Trajectory</td>
+<td>autoware_planning_msgs::msg::Trajectory</td>
 <td>Ego trajectory with updated velocity profile</td>
 </tr>
 <tr>

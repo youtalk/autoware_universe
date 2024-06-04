@@ -13099,7 +13099,7 @@
 
 
 <div><h1 id="radar_crossing_objects_noise_filter">radar_crossing_objects_noise_filter<a class="headerlink" href="#radar_crossing_objects_noise_filter" title="Permanent link">#</a></h1>
-<p>This package contains a radar noise filter module for <a href="https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl">autoware_auto_perception_msgs/msg/DetectedObject</a>.
+<p>This package contains a radar noise filter module for <a href="https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/DetectedObject.idl">autoware_perception_msgs/msg/DetectedObject</a>.
 This package can filter the noise objects which cross to the ego vehicle.</p>
 <h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">#</a></h2>
 <h3 id="background">Background<a class="headerlink" href="#background" title="Permanent link">#</a></h3>
@@ -13148,18 +13148,18 @@ When the ego vehicle turn right, the surrounding objects have left circular moti
 <h2 id="interface">Interface<a class="headerlink" href="#interface" title="Permanent link">#</a></h2>
 <h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
 <ul>
-<li><code>~/input/objects</code> (<code>autoware_auto_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
+<li><code>~/input/objects</code> (<code>autoware_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
 <li>Input radar objects</li>
 </ul>
 </li>
 </ul>
 <h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
 <ul>
-<li><code>~/output/noise_objects</code> (<code>autoware_auto_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
+<li><code>~/output/noise_objects</code> (<code>autoware_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
 <li>Noise objects</li>
 </ul>
 </li>
-<li><code>~/output/filtered_objects</code> (<code>autoware_auto_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
+<li><code>~/output/filtered_objects</code> (<code>autoware_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
 <li>Filtered objects</li>
 </ul>
 </li>

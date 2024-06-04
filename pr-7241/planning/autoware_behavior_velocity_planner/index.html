@@ -13108,12 +13108,12 @@ So for example, in order to stop at a stop line with the vehicles' front on the 
 <tbody>
 <tr>
 <td><code>~input/path_with_lane_id</code></td>
-<td>autoware_auto_planning_msgs::msg::PathWithLaneId</td>
+<td>tier4_planning_msgs::msg::PathWithLaneId</td>
 <td>path with lane_id</td>
 </tr>
 <tr>
 <td><code>~input/vector_map</code></td>
-<td>autoware_auto_mapping_msgs::msg::HADMapBin</td>
+<td>autoware_map_msgs::msg::LaneletMapBin</td>
 <td>vector map</td>
 </tr>
 <tr>
@@ -13123,7 +13123,7 @@ So for example, in order to stop at a stop line with the vehicles' front on the 
 </tr>
 <tr>
 <td><code>~input/dynamic_objects</code></td>
-<td>autoware_auto_perception_msgs::msg::PredictedObjects</td>
+<td>autoware_perception_msgs::msg::PredictedObjects</td>
 <td>dynamic objects</td>
 </tr>
 <tr>
@@ -13138,7 +13138,7 @@ So for example, in order to stop at a stop line with the vehicles' front on the 
 </tr>
 <tr>
 <td><code>~input/traffic_signals</code></td>
-<td>autoware_perception_msgs::msg::TrafficSignalArray</td>
+<td>autoware_perception_msgs::msg::TrafficLightGroupArray</td>
 <td>traffic light states</td>
 </tr>
 </tbody>
@@ -13155,7 +13155,7 @@ So for example, in order to stop at a stop line with the vehicles' front on the 
 <tbody>
 <tr>
 <td><code>~output/path</code></td>
-<td>autoware_auto_planning_msgs::msg::Path</td>
+<td>autoware_planning_msgs::msg::Path</td>
 <td>path to be followed</td>
 </tr>
 <tr>

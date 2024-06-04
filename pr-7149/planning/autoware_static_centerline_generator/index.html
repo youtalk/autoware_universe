@@ -14,7 +14,7 @@
         <link rel="prev" href="../autoware_remaining_distance_time_calculator/">
       
       
-        <link rel="next" href="../behavior_path_avoidance_by_lane_change_module/">
+        <link rel="next" href="../autoware_velocity_smoother/">
       
       <link rel="icon" href="../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
@@ -732,8 +732,6 @@
         
           
         
-          
-        
       
       
         <label class="md-nav__link" for="__nav_1_3" id="__nav_1_3_label" tabindex="0">
@@ -797,20 +795,6 @@
           
         </ul>
       </nav>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../common/autoware_auto_tf2/design/autoware-auto-tf2-design" class="md-nav__link">
-        autoware_auto_tf2
-      </a>
     </li>
   
 
@@ -1025,7 +1009,7 @@
       
         
       
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_3_17" >
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_3_16" >
       
       
         
@@ -1035,13 +1019,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_1_3_17" id="__nav_1_3_17_label" tabindex="0">
+        <label class="md-nav__link" for="__nav_1_3_16" id="__nav_1_3_16_label" tabindex="0">
           Signal Processing
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_17_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_1_3_17">
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_16_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_1_3_16">
           <span class="md-nav__icon md-icon"></span>
           Signal Processing
         </label>
@@ -1137,7 +1121,7 @@
       
         
       
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_3_21" >
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_3_20" >
       
       
         
@@ -1147,13 +1131,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_1_3_21" id="__nav_1_3_21_label" tabindex="0">
+        <label class="md-nav__link" for="__nav_1_3_20" id="__nav_1_3_20_label" tabindex="0">
           TVM Utility
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_21_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_1_3_21">
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_20_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_1_3_20">
           <span class="md-nav__icon md-icon"></span>
           TVM Utility
         </label>
@@ -8483,14 +8467,14 @@
       
       
         <label class="md-nav__link" for="__nav_8_6_1" id="__nav_8_6_1_label" tabindex="0">
-          Obstacle Avoidance Planner
+          Path Optimizer
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_1_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_8_6_1">
           <span class="md-nav__icon md-icon"></span>
-          Obstacle Avoidance Planner
+          Path Optimizer
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -8500,8 +8484,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../obstacle_avoidance_planner" class="md-nav__link">
-        About Obstacle Avoidance
+      <a href="../autoware_path_optimizer" class="md-nav__link">
+        About Path Optimizer
       </a>
     </li>
   
@@ -8514,7 +8498,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../obstacle_avoidance_planner/docs/mpt" class="md-nav__link">
+      <a href="../autoware_path_optimizer/docs/mpt" class="md-nav__link">
         Model Predictive Trajectory (MPT)
       </a>
     </li>
@@ -8528,7 +8512,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../obstacle_avoidance_planner/docs/debug" class="md-nav__link">
+      <a href="../autoware_path_optimizer/docs/debug" class="md-nav__link">
         How to Debug
       </a>
     </li>
@@ -13111,7 +13095,7 @@
 <h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">#</a></h2>
 <p>This package statically calculates the centerline satisfying path footprints inside the drivable area.</p>
 <p>On narrow-road driving, the default centerline, which is the middle line between lanelets' right and left boundaries, often causes path footprints outside the drivable area.
-To make path footprints inside the drivable area, we use online path shape optimization by <a href="https://github.com/autowarefoundation/autoware.universe/tree/main/planning/obstacle_avoidance_planner/">the obstacle_avoidance_planner package</a>.</p>
+To make path footprints inside the drivable area, we use online path shape optimization by <a href="https://github.com/autowarefoundation/autoware.universe/tree/main/planning/autoware_path_optimizer/">the autoware_path_optimizer package</a>.</p>
 <p>Instead of online path shape optimization, we introduce static centerline optimization.
 With this static centerline optimization, we have following advantages.</p>
 <ul>
@@ -13215,13 +13199,13 @@ We can check how close they are with <code>unsafe footprints</code> marker as fo
         
         
           
-          <a href="../behavior_path_avoidance_by_lane_change_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Avoidance by lane change design" rel="next">
+          <a href="../autoware_velocity_smoother/" class="md-footer__link md-footer__link--next" aria-label="Next: Velocity Smoother" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Avoidance by lane change design
+                Velocity Smoother
               </div>
             </div>
             <div class="md-footer__button md-icon">

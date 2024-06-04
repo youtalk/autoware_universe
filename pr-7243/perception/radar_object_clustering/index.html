@@ -13106,7 +13106,7 @@
 
 
 <div><h1 id="radar_object_clustering">radar_object_clustering<a class="headerlink" href="#radar_object_clustering" title="Permanent link">#</a></h1>
-<p>This package contains a radar object clustering for <a href="https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl">autoware_auto_perception_msgs/msg/DetectedObject</a> input.</p>
+<p>This package contains a radar object clustering for <a href="https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/DetectedObject.idl">autoware_perception_msgs/msg/DetectedObject</a> input.</p>
 <p>This package can make clustered objects from radar DetectedObjects, the objects which is converted from RadarTracks by <a href="https://github.com/autowarefoundation/autoware.universe/tree/main/perception/radar_tracks_msgs_converter">radar_tracks_msgs_converter</a> and is processed by noise filter.
 In other word, this package can combine multiple radar detections from one object into one and adjust class and size.</p>
 <p><img alt="radar_clustering" src="docs/radar_clustering.drawio.svg"></p>
@@ -13165,14 +13165,14 @@ So <code>is_fixed_size</code> parameter is recommended to set <code>true</code>,
 <h2 id="interface">Interface<a class="headerlink" href="#interface" title="Permanent link">#</a></h2>
 <h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
 <ul>
-<li><code>~/input/objects</code> (<code>autoware_auto_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
+<li><code>~/input/objects</code> (<code>autoware_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
 <li>Radar objects</li>
 </ul>
 </li>
 </ul>
 <h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
 <ul>
-<li><code>~/output/objects</code> (<code>autoware_auto_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
+<li><code>~/output/objects</code> (<code>autoware_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
 <li>Output objects</li>
 </ul>
 </li>

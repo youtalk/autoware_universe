@@ -13153,13 +13153,13 @@
 </ul>
 <h4 id="launchnewmodules-method"><code>launchNewModules()</code> Method<a class="headerlink" href="#launchnewmodules-method" title="Permanent link">#</a></h4>
 <ul>
-<li>This is a private method that takes an argument of type <code>autoware_auto_planning_msgs::msg::PathWithLaneId</code>.</li>
+<li>This is a private method that takes an argument of type <code>tier4_planning_msgs::msg::PathWithLaneId</code>.</li>
 <li>It is responsible for launching new modules based on the provided path information (PathWithLaneId). The implementation of this method involves initializing and configuring modules specific to your behavior velocity planner by using the <code>TemplateModule</code> class.</li>
 <li>In the provided source code, it initializes a <code>module_id</code> to 0 and checks if a module with the same ID is already registered. If not, it registers a new <code>TemplateModule</code> with the module ID. Note that each module managed by the <code>TemplateModuleManager</code> should have a unique ID. The template code registers a single module, so the <code>module_id</code> is set as 0 for simplicity.</li>
 </ul>
 <h4 id="getmoduleexpiredfunction-method"><code>getModuleExpiredFunction()</code> Method<a class="headerlink" href="#getmoduleexpiredfunction-method" title="Permanent link">#</a></h4>
 <ul>
-<li>This is a private method that takes an argument of type <code>autoware_auto_planning_msgs::msg::PathWithLaneId</code>.</li>
+<li>This is a private method that takes an argument of type <code>tier4_planning_msgs::msg::PathWithLaneId</code>.</li>
 <li>It returns a <code>std::function&lt;bool(const std::shared_ptr&lt;SceneModuleInterface&gt;&amp;)&gt;</code>. This function is used by the behavior velocity planner to determine whether a particular module has expired or not based on the given path.</li>
 <li>The implementation of this method is expected to return a function that can be used to check the expiration status of modules.</li>
 </ul>

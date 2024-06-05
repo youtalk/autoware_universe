@@ -13186,14 +13186,14 @@ filtering.</p>
 <h3 id="inputs">Inputs<a class="headerlink" href="#inputs" title="Permanent link">#</a></h3>
 <p>Set the following from the <a href="../trajectory_follower_node/">controller_node</a></p>
 <ul>
-<li><code>autoware_auto_planning_msgs/Trajectory</code> : reference trajectory to follow.</li>
+<li><code>autoware_planning_msgs/Trajectory</code> : reference trajectory to follow.</li>
 <li><code>nav_msgs/Odometry</code>: current odometry</li>
-<li><code>autoware_auto_vehicle_msgs/SteeringReport</code>: current steering</li>
+<li><code>autoware_vehicle_msgs/SteeringReport</code>: current steering</li>
 </ul>
 <h3 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">#</a></h3>
 <p>Return LateralOutput which contains the following to the controller node</p>
 <ul>
-<li><code>autoware_auto_control_msgs/AckermannLateralCommand</code></li>
+<li><code>autoware_control_msgs/Lateral</code></li>
 <li>LateralSyncData<ul>
 <li>steer angle convergence</li>
 </ul>

@@ -13314,13 +13314,13 @@ Depending on the actuating principle of the vehicle, the mechanism that physical
 <h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
 <p>Set the following from the <a href="../trajectory_follower_node/">controller_node</a></p>
 <ul>
-<li><code>autoware_auto_planning_msgs/Trajectory</code> : reference trajectory to follow.</li>
+<li><code>autoware_planning_msgs/Trajectory</code> : reference trajectory to follow.</li>
 <li><code>nav_msgs/Odometry</code>: current odometry</li>
 </ul>
 <h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
 <p>Return LongitudinalOutput which contains the following to the controller node</p>
 <ul>
-<li><code>autoware_auto_control_msgs/LongitudinalCommand</code>: command to control the longitudinal motion of the vehicle. It contains the target velocity and target acceleration.</li>
+<li><code>autoware_control_msgs/Longitudinal</code>: command to control the longitudinal motion of the vehicle. It contains the target velocity and target acceleration.</li>
 <li>LongitudinalSyncData<ul>
 <li>velocity convergence(currently not used)</li>
 </ul>

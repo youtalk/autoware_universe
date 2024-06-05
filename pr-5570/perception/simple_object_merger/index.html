@@ -13106,7 +13106,7 @@
 
 
 <div><h1 id="simple_object_merger">simple_object_merger<a class="headerlink" href="#simple_object_merger" title="Permanent link">#</a></h1>
-<p>This package can merge multiple topics of <a href="https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl">autoware_auto_perception_msgs/msg/DetectedObject</a> with low calculation cost.</p>
+<p>This package can merge multiple topics of <a href="https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/DetectedObject.msg">autoware_perception_msgs/msg/DetectedObject</a> with low calculation cost.</p>
 <h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">#</a></h2>
 <h3 id="background">Background<a class="headerlink" href="#background" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/autowarefoundation/autoware.universe/tree/main/perception/object_merger">Object_merger</a> is mainly used for merge process with DetectedObjects. There are 2 characteristics in <code>Object_merger</code>. First, <code>object_merger</code> solve data association algorithm like Hungarian algorithm for matching problem, but it needs computational cost. Second, <code>object_merger</code> can handle only 2 DetectedObjects topics and cannot handle more than 2 topics in one node. To merge 6 DetectedObjects topics, 6 <code>object_merger</code> nodes need to stand for now.</p>
@@ -13128,10 +13128,10 @@ The package do not use data association algorithm to reduce the computational co
 <p>Because this package does not have matching processing, there are overlapping objects depending on the input objects. So output objects can be used only when post-processing is used. For now, <a href="https://github.com/autowarefoundation/autoware.universe/tree/main/perception/radar_object_clustering">clustering processing</a> can be used as post-processing.</p>
 <h2 id="interface">Interface<a class="headerlink" href="#interface" title="Permanent link">#</a></h2>
 <h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
-<p>Input topics is defined by the parameter of <code>input_topics</code> (List[string]). The type of input topics is <code>std::vector&lt;autoware_auto_perception_msgs/msg/DetectedObjects.msg&gt;</code>.</p>
+<p>Input topics is defined by the parameter of <code>input_topics</code> (List[string]). The type of input topics is <code>std::vector&lt;autoware_perception_msgs/msg/DetectedObjects.msg&gt;</code>.</p>
 <h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
 <ul>
-<li><code>~/output/objects</code> (<code>autoware_auto_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
+<li><code>~/output/objects</code> (<code>autoware_perception_msgs/msg/DetectedObjects.msg</code>)<ul>
 <li>Merged objects combined from input topics.</li>
 </ul>
 </li>

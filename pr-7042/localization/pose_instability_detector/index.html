@@ -13229,53 +13229,138 @@ If these two poses are significantly different so that the absolute value exceed
 There are six thresholds (x, y, z, roll, pitch, and yaw) to determine whether the poses are significantly different, and these thresholds are determined by the following subsections.</p>
 <h3 id="diff_position_x"><code>diff_position_x</code><a class="headerlink" href="#diff_position_x" title="Permanent link">#</a></h3>
 <p>This threshold examines the difference in the longitudinal axis between the two poses, and check whether the vehicle goes beyond the expected error.
-This threshold is a sum of "maximum longitudinal error due to velocity scale factor error", "process error in dead reckoning", and "pose estimation error".</p>
+This threshold is a sum of "maximum longitudinal error due to velocity scale factor error" and "pose estimation error tolerance".</p>
 <div class="arithmatex">\[
-\tau_x = v_{\rm max}\frac{\beta_v}{100} \Delta t + 3\sqrt{N\sigma_v^2\left(\Delta t\right)^2} + \epsilon_x
+\tau_x = v_{\rm max}\frac{\beta_v}{100} \Delta t + \epsilon_x\\
 \]</div>
-<ul>
-<li><span class="arithmatex">\(\tau_x \cdots\)</span> Threshold for the difference in the longitudinal axis [m]</li>
-<li><span class="arithmatex">\(v_{\rm max} \cdots\)</span> Maximum velocity [m/s]</li>
-<li><span class="arithmatex">\(\beta_v \cdots\)</span> Scale factor tolerance for the maximum velocity [%]</li>
-<li><span class="arithmatex">\(\Delta t \cdots\)</span> Time interval [s]</li>
-<li><span class="arithmatex">\(N \cdots\)</span> Number of integration steps in the dead reckoning</li>
-<li><span class="arithmatex">\(\sigma_v^2 \cdots\)</span> Variance of the heading velocity [m/s]</li>
-<li><span class="arithmatex">\(\epsilon_x \cdots\)</span> Pose estimator (e. g. ndt_scan_matcher) error tolerance in the longitudinal axis [m]</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\tau_x\)</span></td>
+<td>Threshold for the difference in the longitudinal axis</td>
+<td><span class="arithmatex">\(m\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(v_{\rm max}\)</span></td>
+<td>Maximum velocity</td>
+<td><span class="arithmatex">\(m/s\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\beta_v\)</span></td>
+<td>Scale factor tolerance for the maximum velocity</td>
+<td><span class="arithmatex">\(\%\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\Delta t\)</span></td>
+<td>Time interval</td>
+<td><span class="arithmatex">\(s\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\epsilon_x\)</span></td>
+<td>Pose estimator (e. g. ndt_scan_matcher) error tolerance in the longitudinal axis</td>
+<td><span class="arithmatex">\(m\)</span></td>
+</tr>
+</tbody>
+</table>
 <h3 id="diff_position_y-and-diff_position_z"><code>diff_position_y</code> and <code>diff_position_z</code><a class="headerlink" href="#diff_position_y-and-diff_position_z" title="Permanent link">#</a></h3>
 <p>These thresholds examine the difference in the lateral and vertical axes between the two poses, and check whether the vehicle goes beyond the expected error.
 The <code>pose_instability_detector</code> calculates the possible range where the vehicle goes, and get the maximum difference between the nominal dead reckoning pose and the maximum limit pose.</p>
 <p><img alt="lateral_threshold_calculation" src="media/lateral_threshold_calculation.png"></p>
-<p>Addition to this, the <code>pose_instability_detector</code> node considers the processing noise of the dead reckoning and the pose estimation error to determine the threshold.</p>
+<p>Addition to this, the <code>pose_instability_detector</code> node considers the pose estimation error tolerance to determine the threshold.</p>
 <div class="arithmatex">\[
-\tau_y = l + 3\sqrt{N\left(\sigma_v^2\sigma_\theta^2 + v_{\rm max}^2\sigma_\theta^2 + \omega_{\rm max}^2 \sigma_v^2 \right)\left(\Delta t\right)^2} + \epsilon_y
+\tau_y = l + \epsilon_y
 \]</div>
-<ul>
-<li><span class="arithmatex">\(\tau_y \cdots\)</span> Threshold for the difference in the lateral axis [m]</li>
-<li><span class="arithmatex">\(l \cdots\)</span> Maximum lateral distance described in the image above [m]</li>
-<li><span class="arithmatex">\(\sigma_v^2 \cdots\)</span> Variance of the heading velocity [m/s]</li>
-<li><span class="arithmatex">\(\sigma_\theta^2 \cdots\)</span> Variance of the heading angle [rad]</li>
-<li><span class="arithmatex">\(v_{\rm max} \cdots\)</span> Maximum heading velocity [m/s]</li>
-<li><span class="arithmatex">\(\omega_{\rm max} \cdots\)</span> Maximum angular velocity [rad/s]</li>
-<li><span class="arithmatex">\(\Delta t \cdots\)</span> Time interval [s]</li>
-<li><span class="arithmatex">\(\epsilon_y \cdots\)</span> Pose estimator (e. g. ndt_scan_matcher) error tolerance in the lateral axis [m]</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\tau_y\)</span></td>
+<td>Threshold for the difference in the lateral axis</td>
+<td><span class="arithmatex">\(m\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(l\)</span></td>
+<td>Maximum lateral distance described in the image above (See the appendix how this is calculated)</td>
+<td><span class="arithmatex">\(m\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\epsilon_y\)</span></td>
+<td>Pose estimator (e. g. ndt_scan_matcher) error tolerance in the lateral axis</td>
+<td><span class="arithmatex">\(m\)</span></td>
+</tr>
+</tbody>
+</table>
 <p>Note that <code>pose_instability_detector</code> sets the threshold for the vertical axis as the same as the lateral axis. Only the pose estimator error tolerance is different.</p>
 <h3 id="diff_angle_x-diff_angle_y-and-diff_angle_z"><code>diff_angle_x</code>, <code>diff_angle_y</code>, and <code>diff_angle_z</code><a class="headerlink" href="#diff_angle_x-diff_angle_y-and-diff_angle_z" title="Permanent link">#</a></h3>
 <p>These thresholds examine the difference in the roll, pitch, and yaw angles between the two poses.
-This threshold is a sum of "maximum angular error due to velocity scale factor error and bias error", "process error in dead reckoning", and "pose estimation error"</p>
+This threshold is a sum of "maximum angular error due to velocity scale factor error and bias error" and "pose estimation error tolerance".</p>
 <div class="arithmatex">\[
-\tau_\phi = \tau_\theta = \tau_\psi = \left(\omega_{\rm max}\frac{\beta_\omega}{100} + b \right) \Delta t + 3\sqrt{N\sigma_\omega^2\left(\Delta t\right)^2} + \epsilon_\psi
+\tau_\phi = \tau_\theta = \tau_\psi = \left(\omega_{\rm max}\frac{\beta_\omega}{100} + b \right) \Delta t + \epsilon_\psi
 \]</div>
-<ul>
-<li><span class="arithmatex">\(\tau_\phi, \tau_\theta, \tau_\psi \cdots\)</span> Threshold for the difference in the roll, pitch, and yaw angles</li>
-<li><span class="arithmatex">\(\omega_{\rm max} \cdots\)</span> Maximum angular velocity [rad/s]</li>
-<li><span class="arithmatex">\(\beta_\omega \cdots\)</span> Scale factor tolerance for the maximum angular velocity [%]</li>
-<li><span class="arithmatex">\(b \cdots\)</span> Bias tolerance of the angular velocity [rad/s]</li>
-<li><span class="arithmatex">\(\Delta t \cdots\)</span> Time interval [s]</li>
-<li><span class="arithmatex">\(\sigma_\omega^2 \cdots\)</span> Variance of the angular velocity [rad/s]</li>
-<li><span class="arithmatex">\(\epsilon_\psi \cdots\)</span> Pose estimator (e. g. ndt_scan_matcher) angular error tolerance [rad]</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\tau_\phi\)</span></td>
+<td>Threshold for the difference in the roll angle</td>
+<td><span class="arithmatex">\({\rm rad}\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tau_\theta\)</span></td>
+<td>Threshold for the difference in the pitch angle</td>
+<td><span class="arithmatex">\({\rm rad}\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tau_\psi\)</span></td>
+<td>Threshold for the difference in the yaw angle</td>
+<td><span class="arithmatex">\({\rm rad}\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\omega_{\rm max}\)</span></td>
+<td>Maximum angular velocity</td>
+<td><span class="arithmatex">\({\rm rad}/s\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\beta_\omega\)</span></td>
+<td>Scale factor tolerance for the maximum angular velocity</td>
+<td><span class="arithmatex">\(\%\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(b\)</span></td>
+<td>Bias tolerance of the angular velocity</td>
+<td><span class="arithmatex">\({\rm rad}/s\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\Delta t\)</span></td>
+<td>Time interval</td>
+<td><span class="arithmatex">\(s\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\epsilon_\psi\)</span></td>
+<td>Pose estimator (e. g. ndt_scan_matcher) error tolerance in the yaw angle</td>
+<td><span class="arithmatex">\({\rm rad}\)</span></td>
+</tr>
+</tbody>
+</table>
 <h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -13303,13 +13388,6 @@ This threshold is a sum of "maximum angular error due to velocity scale factor e
 <td>≥0.0</td>
 </tr>
 <tr>
-<td>heading_velocity_variance</td>
-<td>float</td>
-<td>The variance of heading velocity (m/s).</td>
-<td>0.04</td>
-<td>≥0.0</td>
-</tr>
-<tr>
 <td>heading_velocity_scale_factor_tolerance</td>
 <td>float</td>
 <td>The tolerance of heading velocity scale factor (%).</td>
@@ -13321,13 +13399,6 @@ This threshold is a sum of "maximum angular error due to velocity scale factor e
 <td>float</td>
 <td>The maximum of angular velocity (rad/s).</td>
 <td>0.523</td>
-<td>≥0.0</td>
-</tr>
-<tr>
-<td>angular_velocity_variance</td>
-<td>float</td>
-<td>The variance of angular velocity (rad^2/s^2).</td>
-<td>0.01</td>
 <td>≥0.0</td>
 </tr>
 <tr>
@@ -13458,13 +13529,31 @@ This threshold is a sum of "maximum angular error due to velocity scale factor e
 </table>
 <p>Given a heading velocity <span class="arithmatex">\(v\)</span> and <span class="arithmatex">\(\omega\)</span>, the 2D theoritical variation seen from the previous pose is calculated as follows:</p>
 <div class="arithmatex">\[
+\begin{align*}
 \left[
     \begin{matrix}
-    x\\
-    y
+    \Delta x\\
+    \Delta y
     \end{matrix}
 \right]
-\]</div></div>
+&amp;=
+\left[
+    \begin{matrix}
+    \int_{0}^{\Delta t} v \cos(\omega t) dt\\
+    \int_{0}^{\Delta t} v \sin(\omega t) dt
+    \end{matrix}
+\right]
+\\
+&amp;=
+\left[
+    \begin{matrix}
+    \frac{v}{\omega} \sin(\omega \Delta t)\\
+    \frac{v}{\omega} \left(1 - \cos(\omega \Delta t)\right)
+    \end{matrix}
+\right]
+\end{align*}
+\]</div>
+<p>We calculate this variation for each corner and get the maximum value of the lateral distance <span class="arithmatex">\(l\)</span> by comparing the distance between the nominal dead reckoning pose and the corner poses.</p></div>
 
 
 

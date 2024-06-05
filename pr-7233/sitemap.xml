@@ -896,6 +896,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7233/planning/autoware_behavior_velocity_virtual_traffic_light_module/</loc>
+         <lastmod>2024-06-05</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-7233/planning/autoware_path_optimizer/</loc>
          <lastmod>2024-06-05</lastmod>
          <changefreq>daily</changefreq>
@@ -1072,11 +1077,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-7233/planning/behavior_velocity_traffic_light_module/</loc>
-         <lastmod>2024-06-05</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7233/planning/behavior_velocity_virtual_traffic_light_module/</loc>
          <lastmod>2024-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>

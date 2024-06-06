@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design/">
       
       
-        <link rel="prev" href="../behavior_path_planner_safety_check/">
+        <link rel="prev" href="../../../autoware_behavior_path_dynamic_obstacle_avoidance_module/">
       
       
-        <link rel="next" href="../../../behavior_path_sampling_planner_module/">
+        <link rel="next" href="../behavior_path_planner_path_generation_design/">
       
       <link rel="icon" href="../../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Turn Signal design - Autoware Universe Documentation</title>
+        <title>Drivable Area design - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#turn-signal-design" class="md-skip">
+        <a href="#drivable-area-design" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Turn Signal design
+              Drivable Area design
             
           </span>
         </div>
@@ -7710,7 +7710,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_planner_drivable_area_design" class="md-nav__link">
+      <a href="." class="md-nav__link">
         Dynamic Drivable Area
       </a>
     </li>
@@ -7724,7 +7724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../behavior_path_planner_turn_signal_design" class="md-nav__link">
         Turn Signal
       </a>
     </li>
@@ -13040,32 +13040,46 @@
     Purpose / Role
   </a>
   
-    <nav class="md-nav" aria-label="Purpose / Role">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumption" class="md-nav__link">
+    Assumption
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    Limitations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters-for-drivable-area-generation" class="md-nav__link">
+    Parameters for drivable area generation
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters for drivable area generation">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#assumptions" class="md-nav__link">
-    Assumptions
+  <a href="#static-expansion" class="md-nav__link">
+    Static expansion
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#limitations" class="md-nav__link">
-    Limitations
+  <a href="#dynamic-expansion" class="md-nav__link">
+    Dynamic expansion
   </a>
   
 </li>
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters-for-turn-signal-decider" class="md-nav__link">
-    Parameters for turn signal decider
-  </a>
   
 </li>
       
@@ -13078,15 +13092,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#-desired-section" class="md-nav__link">
-    - Desired Section
+  <a href="#drivable-lanes-generation" class="md-nav__link">
+    Drivable Lanes Generation
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#-required-section" class="md-nav__link">
-    - Required Section
+  <a href="#drivable-area-generation" class="md-nav__link">
+    Drivable Area Generation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#drivable-area-expansion" class="md-nav__link">
+    Drivable Area Expansion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-maximum-drivable-area-debug" class="md-nav__link">
+    Visualizing maximum drivable area (Debug)
   </a>
   
 </li>
@@ -13114,20 +13142,25 @@
   
 
 
-<div><h1 id="turn-signal-design">Turn Signal design<a class="headerlink" href="#turn-signal-design" title="Permanent link">#</a></h1>
-<p>Turn Signal decider determines necessary blinkers.</p>
+<div><h1 id="drivable-area-design">Drivable Area design<a class="headerlink" href="#drivable-area-design" title="Permanent link">#</a></h1>
+<p>Drivable Area represents the area where ego vehicle can pass.</p>
 <h2 id="purpose-role">Purpose / Role<a class="headerlink" href="#purpose-role" title="Permanent link">#</a></h2>
-<p>This module is responsible for activating a necessary blinker during driving. It uses rule-based algorithm to determine blinkers, and the details of this algorithm are described in the following sections. Note that this algorithm is strictly based on the Japanese Road Traffic Law.</p>
-<h3 id="assumptions">Assumptions<a class="headerlink" href="#assumptions" title="Permanent link">#</a></h3>
-<p>Autoware has following order of priorities for turn signals.</p>
-<ol>
-<li>Activate turn signal to safely navigate ego vehicle and protect other road participants</li>
-<li>Follow traffic laws</li>
-<li>Follow human driving practices</li>
-</ol>
-<h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">#</a></h3>
-<p>Currently, this algorithm can sometimes give unnatural (not wrong) blinkers in complicated situations. This is because it tries to follow the road traffic law and cannot solve <code>blinker conflicts</code> clearly in that environment.</p>
-<h2 id="parameters-for-turn-signal-decider">Parameters for turn signal decider<a class="headerlink" href="#parameters-for-turn-signal-decider" title="Permanent link">#</a></h2>
+<p>In order to defined the area that ego vehicle can travel safely, we generate drivable area in behavior path planner module. Our drivable area is represented by two line strings, which are <code>left_bound</code> line and <code>right_bound</code> line respectively. Both <code>left_bound</code> and <code>right_bound</code> are created from left and right boundaries of lanelets. Note that <code>left_bound</code> and <code>right bound</code> are generated by <code>generateDrivableArea</code> function.</p>
+<h2 id="assumption">Assumption<a class="headerlink" href="#assumption" title="Permanent link">#</a></h2>
+<p>Our drivable area has several assumptions.</p>
+<ul>
+<li>Drivable Area should have all of the necessary area but should not represent unnecessary area for current behaviors. For example, when ego vehicle is in <code>follow lane</code> mode, drivable area should not contain adjacent lanes.</li>
+</ul>
+<ul>
+<li>When generating a drivable area, lanes need to be arranged in the order in which cars pass by (More details can be found in following sections).</li>
+</ul>
+<ul>
+<li>Both left and right bounds should cover the front of the path and the end of the path.</li>
+</ul>
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">#</a></h2>
+<p>Currently, when clipping left bound or right bound, it can clip the bound more than necessary and the generated path might be conservative.</p>
+<h2 id="parameters-for-drivable-area-generation">Parameters for drivable area generation<a class="headerlink" href="#parameters-for-drivable-area-generation" title="Permanent link">#</a></h2>
+<h3 id="static-expansion">Static expansion<a class="headerlink" href="#static-expansion" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -13140,219 +13173,270 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">turn_signal_intersection_search_distance</td>
+<td align="left">drivable_area_right_bound_offset</td>
 <td align="left">[m]</td>
 <td align="left">double</td>
-<td align="left">constant search distance to decide activation of blinkers at intersections</td>
-<td align="left">30</td>
+<td align="left">right offset length to expand drivable area</td>
+<td align="left">5.0</td>
 </tr>
 <tr>
-<td align="left">turn_signal_intersection_angle_threshold_degree</td>
-<td align="left">deg</td>
-<td align="left">double</td>
-<td align="left">angle threshold to determined the end point of intersection required section</td>
-<td align="left">15</td>
-</tr>
-<tr>
-<td align="left">turn_signal_minimum_search_distance</td>
+<td align="left">drivable_area_left_bound_offset</td>
 <td align="left">[m]</td>
 <td align="left">double</td>
-<td align="left">minimum search distance for avoidance and lane change</td>
-<td align="left">10</td>
+<td align="left">left offset length to expand drivable area</td>
+<td align="left">5.0</td>
 </tr>
 <tr>
-<td align="left">turn_signal_search_time</td>
-<td align="left">[s]</td>
-<td align="left">double</td>
-<td align="left">search time for to decide activation of blinkers</td>
-<td align="left">3.0</td>
-</tr>
-<tr>
-<td align="left">turn_signal_shift_length_threshold</td>
-<td align="left">[m]</td>
-<td align="left">double</td>
-<td align="left">shift length threshold to decide activation of blinkers</td>
-<td align="left">0.3</td>
-</tr>
-<tr>
-<td align="left">turn_signal_remaining_shift_length_threshold</td>
-<td align="left">[m]</td>
-<td align="left">double</td>
-<td align="left">When the ego's current shift length minus its end shift length is less than this threshold, the turn signal will be turned off.</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left">turn_signal_on_swerving</td>
+<td align="left">drivable_area_types_to_skip</td>
 <td align="left">[-]</td>
-<td align="left">bool</td>
-<td align="left">flag to activate blinkers when swerving</td>
-<td align="left">true</td>
+<td align="left">string</td>
+<td align="left">linestring types (as defined in the lanelet map) that will not be expanded</td>
+<td align="left">road_border</td>
 </tr>
 </tbody>
 </table>
-<p>Note that the default values for <code>turn_signal_intersection_search_distance</code> and <code>turn_signal_search_time</code> is strictly followed by <a href="https://www.japaneselawtranslation.go.jp/ja/laws/view/2962">Japanese Road Traffic Laws</a>. So if your country does not allow to use these default values, you should change these values in configuration files.</p>
+<h3 id="dynamic-expansion">Dynamic expansion<a class="headerlink" href="#dynamic-expansion" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th align="left">Name</th>
+<th align="left">Unit</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+<th align="left">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">enabled</td>
+<td align="left">[-]</td>
+<td align="left">boolean</td>
+<td align="left">if true, dynamically expand the drivable area based on the path curvature</td>
+<td align="left">true</td>
+</tr>
+<tr>
+<td align="left">print_runtime</td>
+<td align="left">[-]</td>
+<td align="left">boolean</td>
+<td align="left">if true, runtime is logged by the node</td>
+<td align="left">true</td>
+</tr>
+<tr>
+<td align="left">max_expansion_distance</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">maximum distance by which the original drivable area can be expanded (no limit if set to 0)</td>
+<td align="left">0.0</td>
+</tr>
+<tr>
+<td align="left">smoothing.curvature_average_window</td>
+<td align="left">[-]</td>
+<td align="left">int</td>
+<td align="left">window size used for smoothing the curvatures using a moving window average</td>
+<td align="left">3</td>
+</tr>
+<tr>
+<td align="left">smoothing.max_bound_rate</td>
+<td align="left">[m/m]</td>
+<td align="left">double</td>
+<td align="left">maximum rate of change of the bound lateral distance over its arc length</td>
+<td align="left">1.0</td>
+</tr>
+<tr>
+<td align="left">smoothing.arc_length_range</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">arc length range where an expansion distance is initially applied</td>
+<td align="left">2.0</td>
+</tr>
+<tr>
+<td align="left">ego.extra_wheel_base</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">extra ego wheelbase</td>
+<td align="left">0.0</td>
+</tr>
+<tr>
+<td align="left">ego.extra_front_overhang</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">extra ego overhang</td>
+<td align="left">0.5</td>
+</tr>
+<tr>
+<td align="left">ego.extra_width</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">extra ego width</td>
+<td align="left">1.0</td>
+</tr>
+<tr>
+<td align="left">dynamic_objects.avoid</td>
+<td align="left">[-]</td>
+<td align="left">boolean</td>
+<td align="left">if true, the drivable area is not expanded in the predicted path of dynamic objects</td>
+<td align="left">true</td>
+</tr>
+<tr>
+<td align="left">dynamic_objects.extra_footprint_offset.front</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">extra length to add to the front of the ego footprint</td>
+<td align="left">0.5</td>
+</tr>
+<tr>
+<td align="left">dynamic_objects.extra_footprint_offset.rear</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">extra length to add to the rear of the ego footprint</td>
+<td align="left">0.5</td>
+</tr>
+<tr>
+<td align="left">dynamic_objects.extra_footprint_offset.left</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">extra length to add to the left of the ego footprint</td>
+<td align="left">0.5</td>
+</tr>
+<tr>
+<td align="left">dynamic_objects.extra_footprint_offset.right</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">extra length to add to the rear of the ego footprint</td>
+<td align="left">0.5</td>
+</tr>
+<tr>
+<td align="left">path_preprocessing.max_arc_length</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">maximum arc length along the path where the ego footprint is projected (0.0 means no limit)</td>
+<td align="left">100.0</td>
+</tr>
+<tr>
+<td align="left">path_preprocessing.resample_interval</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">fixed interval between resampled path points (0.0 means path points are directly used)</td>
+<td align="left">2.0</td>
+</tr>
+<tr>
+<td align="left">path_preprocessing.reuse_max_deviation</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">if the path changes by more than this value, the curvatures are recalculated. Otherwise they are reused</td>
+<td align="left">0.5</td>
+</tr>
+<tr>
+<td align="left">avoid_linestring.types</td>
+<td align="left">[-]</td>
+<td align="left">string array</td>
+<td align="left">linestring types in the lanelet maps that will not be crossed when expanding the drivable area</td>
+<td align="left">["road_border", "curbstone"]</td>
+</tr>
+<tr>
+<td align="left">avoid_linestring.distance</td>
+<td align="left">[m]</td>
+<td align="left">double</td>
+<td align="left">distance to keep between the drivable area and the linestrings to avoid</td>
+<td align="left">0.0</td>
+</tr>
+</tbody>
+</table>
 <h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
-<p>In this algorithm, it assumes that each blinker has two sections, which are <code>desired section</code> and <code>required section</code>. The image of these two sections are depicted in the following diagram.</p>
-<p><img alt="section_definition" src="../../images/turn_signal_decider/sections_definition.drawio.svg"></p>
-<p>These two sections have the following meanings.</p>
-<h3 id="-desired-section">- Desired Section<a class="headerlink" href="#-desired-section" title="Permanent link">#</a></h3>
-<div class="codehilite"><pre><span></span><code>- This section is defined by road traffic laws. It cannot be longer or shorter than the designated length defined by the law.
-- In this section, you do not have to activate the designated blinkers if it is dangerous to do so.
+<p>This section gives details of the generation of the drivable area (<code>left_bound</code> and <code>right_bound</code>).</p>
+<h3 id="drivable-lanes-generation">Drivable Lanes Generation<a class="headerlink" href="#drivable-lanes-generation" title="Permanent link">#</a></h3>
+<p>Before generating drivable areas, drivable lanes need to be sorted. Drivable Lanes are selected in each module (<code>Lane Follow</code>, <code>Avoidance</code>, <code>Lane Change</code>, <code>Goal Planner</code>, <code>Pull Out</code> and etc.), so more details about selection of drivable lanes can be found in each module's document. We use the following structure to define the drivable lanes.</p>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">DrivalbleLanes</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">lanelet</span><span class="o">::</span><span class="n">ConstLanelet</span><span class="w"> </span><span class="n">right_lanelet</span><span class="p">;</span><span class="w"> </span><span class="c1">// right most lane</span>
+<span class="w">    </span><span class="n">lanelet</span><span class="o">::</span><span class="n">ConstLanelet</span><span class="w"> </span><span class="n">left_lanelet</span><span class="p">;</span><span class="w"> </span><span class="c1">// left most lane</span>
+<span class="w">    </span><span class="n">lanelet</span><span class="o">::</span><span class="n">ConstLanelets</span><span class="w"> </span><span class="n">middle_lanelets</span><span class="p">;</span><span class="w"> </span><span class="c1">// middle lanes</span>
+<span class="p">};</span>
 </code></pre></div>
-
-<h3 id="-required-section">- Required Section<a class="headerlink" href="#-required-section" title="Permanent link">#</a></h3>
-<div class="codehilite"><pre><span></span><code>- In this section, ego vehicle must activate designated blinkers. However, if there are blinker conflicts, it must solve them based on the algorithm we mention later in this document.
-- Required section cannot be longer than desired section.
+<p>The image of the sorted drivable lanes is depicted in the following picture.</p>
+<p><img alt="sorted_lanes" src="../../images/drivable_area/sorted_lanes.drawio.svg"></p>
+<p>Note that, the order of drivable lanes become</p>
+<div class="highlight"><pre><span></span><code><span class="n">drivable_lanes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">DrivableLane1</span><span class="p">,</span><span class="w"> </span><span class="n">DrivableLanes2</span><span class="p">,</span><span class="w"> </span><span class="n">DrivableLanes3</span><span class="p">,</span><span class="w"> </span><span class="n">DrivableLanes4</span><span class="p">,</span><span class="w"> </span><span class="n">DrivableLanes5</span><span class="p">}</span>
 </code></pre></div>
-
-<p>When turning on the blinker, it decides whether or not to turn on the specified blinker based on the distance from the front of the ego vehicle to the start point of each section. Conversely, when turning off the blinker, it calculates the distance from the base link of the ego vehicle to the end point of each section and decide whether or not to turn it off based on that.</p>
-<p><img alt="activation_distance" src="../../images/turn_signal_decider/activation_distance.drawio.svg"></p>
-<p>For left turn, right turn, avoidance, lane change, goal planner and pull out, we define these two sections, which are elaborated in the following part.</p>
-<h4 id="1-left-and-right-turn">1. Left and Right turn<a class="headerlink" href="#1-left-and-right-turn" title="Permanent link">#</a></h4>
-<p>Turn signal decider checks each lanelet on the map if it has <code>turn_direction</code> information. If a lanelet has this information, it activates necessary blinker based on this information.</p>
-<ul>
-<li>desired start point
-  The <code>search_distance</code> for blinkers at intersections is <code>v * turn_signal_search_time + turn_signal_intersection_search_distance</code>. Then the start point becomes <code>search_distance</code> meters before the start point of the intersection lanelet(depicted in green in the following picture), where <code>v</code> is the velocity of the ego vehicle. However, if we set <code>turn_signal_distance</code> in the lanelet, we use that length as search distance.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the intersection lanelet.</li>
-</ul>
-<ul>
-<li>required start point
-  Initial point of the intersection lanelet.</li>
-</ul>
-<ul>
-<li>required end point
-  The earliest point that satisfies the following condition. <span class="arithmatex">\(\theta - \theta_{\textrm{end}} &lt; \delta\)</span>, where <span class="arithmatex">\(\theta_{\textrm{end}}\)</span> is yaw angle of the terminal point of the lanelet, <span class="arithmatex">\(\theta\)</span> is the angle of a required end point and <span class="arithmatex">\(\delta\)</span> is the threshold defined by the user.</li>
-</ul>
-<p><img alt="section_turn_signal" src="../../images/turn_signal_decider/left_right_turn.drawio.svg"></p>
-<h4 id="2-avoidance">2. Avoidance<a class="headerlink" href="#2-avoidance" title="Permanent link">#</a></h4>
-<p>Avoidance can be separated into two sections, first section and second section. The first section is from the start point of the path shift to the end of the path shift. The second section is from the end of shift point to the end of avoidance. Note that avoidance module will not activate turn signal when its shift length is below <code>turn_signal_shift_length_threshold</code>.</p>
-<p>First section</p>
-<ul>
-<li>desired start point
-  <code>v * turn_signal_search_time</code> meters before the start point of the avoidance shift path.</li>
-</ul>
-<ul>
-<li>desired end point
-  Shift complete point where the path shift is completed.</li>
-</ul>
-<ul>
-<li>required start point
-  Avoidance start point.</li>
-</ul>
-<ul>
-<li>required end point
-  Shift complete point same as the desired end point.</li>
-</ul>
-<p><img alt="section_first_avoidance" src="../../images/turn_signal_decider/avoidance_first_section.drawio.svg"></p>
-<p>Second section</p>
-<ul>
-<li>desired start point
-  Shift complete point.</li>
-</ul>
-<ul>
-<li>desired end point
-  Avoidance terminal point</li>
-</ul>
-<ul>
-<li>required start point
-  Shift complete point.</li>
-</ul>
-<ul>
-<li>required end point
-  Avoidance terminal point.</li>
-</ul>
-<p><img alt="section_second_avoidance" src="../../images/turn_signal_decider/avoidance_second_section.drawio.svg"></p>
-<h4 id="3-lane-change">3. Lane Change<a class="headerlink" href="#3-lane-change" title="Permanent link">#</a></h4>
-<ul>
-<li>desired start point
-  <code>v * turn_signal_search_time</code> meters before the start point of the lane change path.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the lane change path.</li>
-</ul>
-<ul>
-<li>required start point
-  Initial point of the lane change path.</li>
-</ul>
-<ul>
-<li>required end point
-  Cross point with lane change path and boundary line of the adjacent lane.</li>
-</ul>
-<p><img alt="section_lane_change" src="../../images/turn_signal_decider/lane_change.drawio.svg"></p>
-<h4 id="4-pull-out">4. Pull out<a class="headerlink" href="#4-pull-out" title="Permanent link">#</a></h4>
-<ul>
-<li>desired start point
-  Start point of the path of pull out.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the path of pull out.</li>
-</ul>
-<ul>
-<li>required start point
-  Start point of the path pull out.</li>
-</ul>
-<ul>
-<li>required end point
-  Terminal point of the path of pull out.</li>
-</ul>
-<p><img alt="section_pull_out" src="../../images/turn_signal_decider/pull_out.drawio.svg"></p>
-<h4 id="5-goal-planner">5. Goal Planner<a class="headerlink" href="#5-goal-planner" title="Permanent link">#</a></h4>
-<ul>
-<li>desired start point
-  <code>v * turn_signal_search_time</code> meters before the start point of the pull over path.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the path of pull over.</li>
-</ul>
-<ul>
-<li>required start point
-  Start point of the path of pull over.</li>
-</ul>
-<ul>
-<li>required end point
-  Terminal point of the path of pull over.</li>
-</ul>
-<p><img alt="section_pull_over" src="../../images/turn_signal_decider/pull_over.drawio.svg"></p>
-<p>When it comes to handle several blinkers, it gives priority to the first blinker that comes first. However, this rule sometimes activate unnatural blinkers, so turn signal decider uses the following five rules to decide the necessary turn signal.</p>
-<ul>
-<li>pattern1
-  <img alt="pattern1" src="../../images/turn_signal_decider/pattern1.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern2
-  <img alt="pattern2" src="../../images/turn_signal_decider/pattern2.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern3
-  <img alt="pattern3" src="../../images/turn_signal_decider/pattern3.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern4
-  <img alt="pattern4" src="../../images/turn_signal_decider/pattern4.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern5
-  <img alt="pattern5" src="../../images/turn_signal_decider/pattern5.drawio.svg"></li>
-</ul>
-<p>Based on these five rules, turn signal decider can solve <code>blinker conflicts</code>. The following pictures show some examples of this kind of conflicts.</p>
-<h4 id="-several-right-and-left-turns-on-short-sections">- Several right and left turns on short sections<a class="headerlink" href="#-several-right-and-left-turns-on-short-sections" title="Permanent link">#</a></h4>
-<p>In this scenario, ego vehicle has to pass several turns that are close each other. Since this pattern can be solved by the pattern1 rule, the overall result is depicted in the following picture.</p>
-<p><img alt="continuous_turns" src="../../images/turn_signal_decider/continuous_turns.drawio.svg"></p>
-<h4 id="-avoidance-with-left-turn-1">- Avoidance with left turn (1)<a class="headerlink" href="#-avoidance-with-left-turn-1" title="Permanent link">#</a></h4>
-<p>In this scene, ego vehicle has to deal with the obstacle that is on its original path as well as make a left turn. The overall result can be varied by the position of the obstacle, but the image of the result is described in the following picture.</p>
-<p><img alt="avoidance_and_turn" src="../../images/turn_signal_decider/avoidance_and_turn.drawio.svg"></p>
-<h4 id="-avoidance-with-left-turn-2">- Avoidance with left turn (2)<a class="headerlink" href="#-avoidance-with-left-turn-2" title="Permanent link">#</a></h4>
-<p>Same as the previous scenario, ego vehicle has to avoid the obstacle as well as make a turn left. However, in this scene, the obstacle is parked after the intersection. Similar to the previous one, the overall result can be varied by the position of the obstacle, but the image of the result is described in the following picture.</p>
-<p><img alt="avoidance_and_turn" src="../../images/turn_signal_decider/avoidance_and_turn2.drawio.svg"></p>
-<h4 id="-lane-change-and-left-turn">- Lane change and left turn<a class="headerlink" href="#-lane-change-and-left-turn" title="Permanent link">#</a></h4>
-<p>In this scenario, ego vehicle has to do lane change before making a left turn. In the following example, ego vehicle does not activate left turn signal until it reaches the end point of the lane change path.</p>
-<p><img alt="avoidance_and_turn" src="../../images/turn_signal_decider/lane_change_and_turn.drawio.svg"></p></div>
+<h3 id="drivable-area-generation">Drivable Area Generation<a class="headerlink" href="#drivable-area-generation" title="Permanent link">#</a></h3>
+<p>In this section, a drivable area is created using drivable lanes arranged in the order in which vehicles pass by. We created <code>left_bound</code> from left boundary of the leftmost lanelet and <code>right_bound</code> from right boundary of the rightmost lanelet. The image of the created drivable area will be the following blue lines. Note that the drivable area is defined in the <code>Path</code> and <code>PathWithLaneId</code> messages as</p>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">geometry_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">Point</span><span class="o">&gt;</span><span class="w"> </span><span class="n">left_bound</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">geometry_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">Point</span><span class="o">&gt;</span><span class="w"> </span><span class="n">right_bound</span><span class="p">;</span>
+</code></pre></div>
+<p>and each point of right bound and left bound has a position in the absolute coordinate system.</p>
+<p><img alt="drivable_lines" src="../../images/drivable_area/drivable_lines.drawio.svg"></p>
+<h3 id="drivable-area-expansion">Drivable Area Expansion<a class="headerlink" href="#drivable-area-expansion" title="Permanent link">#</a></h3>
+<h4 id="static-expansion_1">Static Expansion<a class="headerlink" href="#static-expansion_1" title="Permanent link">#</a></h4>
+<p>Each module can statically expand the left and right bounds of the target lanes by the parameter defined values.
+This enables large vehicles to pass narrow curve. The image of this process can be described as</p>
+<p><img alt="expanded_lanes" src="../../images/drivable_area/expanded_lanes.drawio.svg"></p>
+<p>Note that we only expand right bound of the rightmost lane and left bound of the leftmost lane.</p>
+<h4 id="dynamic-expansion_1">Dynamic Expansion<a class="headerlink" href="#dynamic-expansion_1" title="Permanent link">#</a></h4>
+<p>The drivable area can also be expanded dynamically based on a minimum width calculated from the path curvature and the ego vehicle's properties.
+If static expansion is also enabled, the dynamic expansion will be done after the static expansion such that both expansions are applied.</p>
+<table>
+<thead>
+<tr>
+<th>Without dynamic expansion</th>
+<th>With dynamic expansion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="dynamic_expansion_off" src="../../images/drivable_area/dynamic_expansion_off.png"></td>
+<td><img alt="dynamic_expansion_on" src="../../images/drivable_area/dynamic_expansion_on.png"></td>
+</tr>
+</tbody>
+</table>
+<p>Next we detail the algorithm used to expand the drivable area bounds.</p>
+<h5 id="1-calculate-and-smooth-the-path-curvature">1 Calculate and smooth the path curvature<a class="headerlink" href="#1-calculate-and-smooth-the-path-curvature" title="Permanent link">#</a></h5>
+<p>To avoid sudden changes of the dynamically expanded drivable area, we first try to reuse as much of the previous path and its calculated curvatures as possible.
+Previous path points and curvatures are reused up to the first previous path point that deviates from the new path by more than the <code>reuse_max_deviation</code> parameter.
+At this stage, the path is also resampled according to the <code>resampled_interval</code> and cropped according to the <code>max_arc_length</code>.
+With the resulting preprocessed path points and previous curvatures, curvatures of the new path points are calculated using the 3 points method and smoothed using a moving window average with window size <code>curvature_average_window</code>.</p>
+<h5 id="2-for-each-path-point-calculate-the-closest-bound-segment-and-the-minimum-drivable-area-width">2 For each path point, calculate the closest bound segment and the minimum drivable area width<a class="headerlink" href="#2-for-each-path-point-calculate-the-closest-bound-segment-and-the-minimum-drivable-area-width" title="Permanent link">#</a></h5>
+<p>Each path point is projected on the original left and right drivable area bounds to calculate its corresponding bound index, original distance from the bounds, and the projected point.
+Additionally, for each path point, the minimum drivable area width is calculated using the following equation:
+<script type="math/tex; mode=display"> W = \frac{a² + 2 al + 2kw + l² + w²}{2k + w}</script>
+Where <span class="arithmatex">\(W\)</span> is the minimum drivable area width, <span class="arithmatex">\(a\)</span>, is the front overhang of ego, <span class="arithmatex">\(l\)</span> is the wheelbase of ego, <span class="arithmatex">\(w\)</span> is the width of ego, and <span class="arithmatex">\(k\)</span> is the path curvature.
+This equation was derived from the work of <a href="https://www.sae.org/publications/technical-papers/content/2021-01-0099/">Lim, H., Kim, C., and Jo, A., "Model Predictive Control-Based Lateral Control of Autonomous Large-Size Bus on Road with Large Curvature," SAE Technical Paper 2021-01-0099, 2021</a>.</p>
+<p><img alt="min width" src="../../images/drivable_area/DynamicDrivableArea-MinWidth.drawio.svg"></p>
+<h5 id="3-calculate-maximum-expansion-distances-of-each-bound-point-based-on-dynamic-objects-and-linestring-of-the-vector-map-optional">3 Calculate maximum expansion distances of each bound point based on dynamic objects and linestring of the vector map (optional)<a class="headerlink" href="#3-calculate-maximum-expansion-distances-of-each-bound-point-based-on-dynamic-objects-and-linestring-of-the-vector-map-optional" title="Permanent link">#</a></h5>
+<p>For each drivable area bound point, we calculate its maximum expansion distance as its distance to the closest "obstacle" (either a map linestring with type <code>avoid_linestrings.type</code>, or a dynamic object footprint if <code>dynamic_objects.avoid</code> is set to <code>true</code>).
+If <code>max_expansion_distance</code> is not <code>0.0</code>, it is use here if smaller than the distance to the closest obstacle.</p>
+<p><img alt="max distances" src="../../images/drivable_area/DynamicDrivableArea-MaxWidth.drawio.svg"></p>
+<h5 id="4-calculate-by-how-much-each-bound-point-should-be-pushed-away-from-the-path">4 Calculate by how much each bound point should be pushed away from the path<a class="headerlink" href="#4-calculate-by-how-much-each-bound-point-should-be-pushed-away-from-the-path" title="Permanent link">#</a></h5>
+<p>For each bound point, a shift distance is calculated.
+such that the resulting width between corresponding left and right bound points is as close as possible to the minimum width calculated in step 2 but the individual shift distance stays bellow the previously calculated maximum expansion distance.</p>
+<p><img alt="expansion distances" src="../../images/drivable_area/DynamicDrivableArea-ExpDistances.drawio.svg"></p>
+<h5 id="5-shift-bound-points-by-the-values-calculated-in-step-4-and-remove-all-loops-in-the-resulting-bound">5 Shift bound points by the values calculated in step 4 and remove all loops in the resulting bound<a class="headerlink" href="#5-shift-bound-points-by-the-values-calculated-in-step-4-and-remove-all-loops-in-the-resulting-bound" title="Permanent link">#</a></h5>
+<p>Finally, each bound point is shifted away from the path by the distance calculated in step 4.
+Once all points have been shifted, loops are removed from the bound and we obtain our final expanded drivable area.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="expansion" src="../../images/drivable_area/DynamicDrivableArea-Expansion.drawio.svg"></td>
+<td><img alt="result" src="../../images/drivable_area/DynamicDrivableArea-Result.drawio.svg"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="visualizing-maximum-drivable-area-debug">Visualizing maximum drivable area (Debug)<a class="headerlink" href="#visualizing-maximum-drivable-area-debug" title="Permanent link">#</a></h3>
+<p>Sometimes, the developers might get a different result between two maps that may look identical during visual inspection.</p>
+<p>For example, in the same area, one can perform avoidance and another cannot. This might be related to the maximum drivable area issues due to the non-compliance vector map design from the user.</p>
+<p>To debug the issue, the maximum drivable area boundary can be visualized.</p>
+<p><img alt="drivable_area_boundary_marker1" src="../../images/drivable_area/drivable_area_boundary_marker_example1.png"></p>
+<p><img alt="drivable_area_boundary_marker2" src="../../images/drivable_area/drivable_area_boundary_marker_example2.png"></p>
+<p>The maximum drivable area can be visualize by adding the marker from <code>/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/maximum_drivable_area</code></p>
+<h4 id="expansion-with-hatched-road-markings-area">Expansion with hatched road markings area<a class="headerlink" href="#expansion-with-hatched-road-markings-area" title="Permanent link">#</a></h4>
+<p>If the hatched road markings area is defined in the lanelet map, the area can be used as a drivable area.
+Since the area is expressed as a polygon format of Lanelet2, several steps are required for correct expansion.</p>
+<p><img alt="hatched_road_markings_drivable_area_expansion" src="../../images/drivable_area/hatched_road_markings_drivable_area_expansion.drawio.svg"></p></div>
 
 
 
@@ -13379,7 +13463,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../behavior_path_planner_safety_check/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Safety Check Utils" rel="prev">
+          <a href="../../../autoware_behavior_path_dynamic_obstacle_avoidance_module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Avoidance module for dynamic objects" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13388,20 +13472,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Safety Check Utils
+                Avoidance module for dynamic objects
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../../behavior_path_sampling_planner_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Behavior Path Sampling Based Planner" rel="next">
+          <a href="../behavior_path_planner_path_generation_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Path Generation design" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Behavior Path Sampling Based Planner
+                Path Generation design
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -7682,7 +7682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../planning/behavior_path_planner_common/docs/behavior_path_planner_path_generation_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design" class="md-nav__link">
         Path Generation
       </a>
     </li>
@@ -7696,7 +7696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../planning/behavior_path_planner_common/docs/behavior_path_planner_safety_check" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check" class="md-nav__link">
         Collision Assessment/Safety Check
       </a>
     </li>
@@ -7710,7 +7710,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../planning/behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design" class="md-nav__link">
         Dynamic Drivable Area
       </a>
     </li>
@@ -7724,7 +7724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../planning/behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design" class="md-nav__link">
         Turn Signal
       </a>
     </li>
@@ -13083,6 +13083,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#diagnostics" class="md-nav__link">
+    Diagnostics
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -13187,7 +13194,69 @@
 </ul>
 <ul>
 <li>[Limitation] We cannot produce reliable values for the lateral and vertical velocities. Therefore we assign large values to the corresponding elements in the output covariance matrix.</li>
-</ul></div>
+</ul>
+<h2 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">#</a></h2>
+<p><img src="./media/diagnostic.png" alt="drawing" width="600"></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Transition condition to Warning</th>
+<th>Transition condition to Error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>topic_time_stamp</code></td>
+<td>the time stamp of service calling. [nano second]</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>is_arrived_first_vehicle_twist</code></td>
+<td>whether the vehicle twist topic has been received even once.</td>
+<td>not arrive yet</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>is_arrived_first_imu</code></td>
+<td>whether the imu topic has been received even once.</td>
+<td>not arrive yet</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>vehicle_twist_time_stamp_dt</code></td>
+<td>the time difference between the current time and the latest vehicle twist topic. [second]</td>
+<td>none</td>
+<td>the time is <strong>longer</strong> than <code>message_timeout_sec</code></td>
+</tr>
+<tr>
+<td><code>imu_time_stamp_dt</code></td>
+<td>the time difference between the current time and the latest imu topic. [second]</td>
+<td>none</td>
+<td>the time is <strong>longer</strong> than <code>message_timeout_sec</code></td>
+</tr>
+<tr>
+<td><code>vehicle_twist_queue_size</code></td>
+<td>the size of vehicle_twist_queue.</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>imu_queue_size</code></td>
+<td>the size of gyro_queue.</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>is_succeed_transform_imu</code></td>
+<td>whether transform imu is succeed or not.</td>
+<td>none</td>
+<td>failed</td>
+</tr>
+</tbody>
+</table></div>
 
 
 

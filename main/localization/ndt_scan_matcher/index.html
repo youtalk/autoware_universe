@@ -14055,11 +14055,39 @@ initial_pose_offset_model_x &amp; initial_pose_offset_model_y must have the same
 <td>yes</td>
 </tr>
 <tr>
+<td><code>transform_probability_diff</code></td>
+<td>the tp score difference for the current ndt optimization</td>
+<td>none</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>transform_probability_before</code></td>
+<td>the tp score before the current ndt optimization</td>
+<td>none</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
 <td><code>nearest_voxel_transformation_likelihood</code></td>
 <td>the score of how well the map aligns with the sensor points</td>
 <td>the score is <strong>smaller</strong> than <code>score_estimation.converged_param_nearest_voxel_transformation_likelihood</code> (only in the case of <code>score_estimation.converged_param_type</code> is 1=NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD)</td>
 <td>none</td>
 <td>yes</td>
+</tr>
+<tr>
+<td><code>nearest_voxel_transformation_likelihood_diff</code></td>
+<td>the nvtl score difference for the current ndt optimization</td>
+<td>none</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>nearest_voxel_transformation_likelihood_before</code></td>
+<td>the nvtl score before the current ndt optimization</td>
+<td>none</td>
+<td>none</td>
+<td>no</td>
 </tr>
 <tr>
 <td><code>distance_initial_to_result</code></td>

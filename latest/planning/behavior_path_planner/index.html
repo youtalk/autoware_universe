@@ -7682,7 +7682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_planner_common/docs/behavior_path_planner_path_generation_design" class="md-nav__link">
+      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design" class="md-nav__link">
         Path Generation
       </a>
     </li>
@@ -7696,7 +7696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_planner_common/docs/behavior_path_planner_safety_check" class="md-nav__link">
+      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check" class="md-nav__link">
         Collision Assessment/Safety Check
       </a>
     </li>
@@ -7710,7 +7710,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design" class="md-nav__link">
+      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design" class="md-nav__link">
         Dynamic Drivable Area
       </a>
     </li>
@@ -7724,7 +7724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design" class="md-nav__link">
+      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design" class="md-nav__link">
         Turn Signal
       </a>
     </li>
@@ -13524,7 +13524,7 @@
 <p>The shifted path generation logic enables the behavior path planner to dynamically generate safe and efficient paths, precisely controlling the vehicle’s lateral movements to ensure the smooth execution of lane changes and avoidance maneuvers. This careful planning and execution adhere to the vehicle's dynamic capabilities and safety constraints, maximizing efficiency and safety in autonomous vehicle navigation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If you're a math lover, refer to <a href="../behavior_path_planner_common/docs/behavior_path_planner_path_generation_design/">Path Generation Design</a> for the nitty-gritty.</p>
+<p>If you're a math lover, refer to <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design/">Path Generation Design</a> for the nitty-gritty.</p>
 </div>
 <h2 id="collision-assessment-safety-check">Collision Assessment / Safety check<a class="headerlink" href="#collision-assessment-safety-check" title="Permanent link">#</a></h2>
 <p>The purpose of the collision assessment function in the Behavior Path Planner is to evaluate the potential for collisions with target objects across all modules. It is utilized in two scenarios:</p>
@@ -13537,7 +13537,7 @@
 <p>However, the module does have a limitation concerning the yaw angle of each point in the predicted paths of target objects, which may not always accurately point to the next point, leading to potential inaccuracies in some edge cases.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For further reading on the collision assessment  method, please refer to <a href="../behavior_path_planner_common/docs/behavior_path_planner_safety_check/">Safety check utils</a></p>
+<p>For further reading on the collision assessment  method, please refer to <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check/">Safety check utils</a></p>
 </div>
 <h2 id="generating-drivable-area">Generating Drivable Area<a class="headerlink" href="#generating-drivable-area" title="Permanent link">#</a></h2>
 <h3 id="static-drivable-area-logic">Static Drivable Area logic<a class="headerlink" href="#static-drivable-area-logic" title="Permanent link">#</a></h3>
@@ -13556,7 +13556,7 @@
 <p>Static drivable area expansion operates under assumptions about the correct arrangement of lanes and the coverage of both the front and rear of the vehicle within the left and right boundaries. Key parameters for drivable area generation include extra footprint offsets for the ego vehicle, the handling of dynamic objects, maximum expansion distance, and specific methods for expansion. Additionally, since each module generates its own drivable area, before passing it as the input to generate the next running module's drivable area, or before generating a unified drivable area, the system sorts drivable lanes based on the vehicle's passage order. This ensures the correct definition of the lanes used in drivable area generation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Further details can is provided in <a href="../behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design/">Drivable Area Design</a>.</p>
+<p>Further details can is provided in <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design/">Drivable Area Design</a>.</p>
 </div>
 <h3 id="dynamic-drivable-area-logic">Dynamic Drivable Area Logic<a class="headerlink" href="#dynamic-drivable-area-logic" title="Permanent link">#</a></h3>
 <p>Large vehicles require much more space, which sometimes causes them to veer out of their current lane. A typical example being a bus making a turn at a corner. In such cases, relying on a static drivable area is insufficient, since the static method depends on lane information provided by high-definition maps. To overcome the limitations of the static approach, the dynamic drivable area expansion algorithm adjusts the navigable space for an autonomous vehicle in real-time. It conserves computational power by reusing previously calculated path data, updating only when there is a significant change in the vehicle's position. The system evaluates the minimum lane width necessary to accommodate the vehicle's turning radius and other dynamic factors. It then calculates the optimal expansion of the drivable area's boundaries to ensure there is adequate space for safe maneuvering, taking into account the vehicle's path curvature. The rate at which these boundaries can expand or contract is moderated to maintain stability in the vehicle's navigation. The algorithm aims to maximize the drivable space while avoiding fixed obstacles and adhering to legal driving limits. Finally, it applies these boundary adjustments and smooths out the path curvature calculations to ensure a safe and legally compliant navigable path is maintained throughout the vehicle's operation.</p>
@@ -13570,7 +13570,7 @@
 <p>The <code>TurnIndicatorsCommand</code> message structure has a command field that can take one of several constants: <code>NO_COMMAND</code> indicates no signal is necessary, <code>DISABLE</code> to deactivate signals, <code>ENABLE_LEFT</code> to signal a left turn, and <code>ENABLE_RIGHT</code> to signal a right turn. The Behavior Path Planner sends these commands at the appropriate times, based on its rules-based system that considers both the <strong>desired</strong> and <strong>required</strong> scenarios for blinker activation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For more in-depth information, refer to <a href="../behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design/">Turn Signal Design</a> document.</p>
+<p>For more in-depth information, refer to <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design/">Turn Signal Design</a> document.</p>
 </div>
 <h2 id="rerouting">Rerouting<a class="headerlink" href="#rerouting" title="Permanent link">#</a></h2>
 <div class="admonition warning">

@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/behavior_path_planner_common/docs/behavior_path_planner_safety_check/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design/">
       
       
-        <link rel="prev" href="../behavior_path_planner_path_generation_design/">
+        <link rel="prev" href="../behavior_path_planner_drivable_area_design/">
       
       
-        <link rel="next" href="../behavior_path_planner_turn_signal_design/">
+        <link rel="next" href="../behavior_path_planner_safety_check/">
       
       <link rel="icon" href="../../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Safety Check Utils - Autoware Universe Documentation</title>
+        <title>Path Generation design - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#safety-check-utils" class="md-skip">
+        <a href="#path-generation-design" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Safety Check Utils
+              Path Generation design
             
           </span>
         </div>
@@ -7682,7 +7682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_planner_path_generation_design" class="md-nav__link">
+      <a href="." class="md-nav__link">
         Path Generation
       </a>
     </li>
@@ -7696,7 +7696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../behavior_path_planner_safety_check" class="md-nav__link">
         Collision Assessment/Safety Check
       </a>
     </li>
@@ -13036,36 +13036,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose-role" class="md-nav__link">
-    Purpose / Role
+  <a href="#overview" class="md-nav__link">
+    Overview
   </a>
   
-    <nav class="md-nav" aria-label="Purpose / Role">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mathematical-derivation" class="md-nav__link">
+    Mathematical Derivation
+  </a>
+  
+    <nav class="md-nav" aria-label="Mathematical Derivation">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#assumptions" class="md-nav__link">
-    Assumptions
+  <a href="#calculation-of-maximum-acceleration-from-transition-time-and-final-shift-length" class="md-nav__link">
+    Calculation of Maximum Acceleration from transition time and final shift length
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#limitations" class="md-nav__link">
-    Limitations
+  <a href="#calculation-of-ta-tj-and-jerk-from-acceleration-limit" class="md-nav__link">
+    Calculation of Ta, Tj and jerk from acceleration limit
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#inner-working-algorithm" class="md-nav__link">
-    Inner working / Algorithm
+  <a href="#calculation-of-required-time-from-jerk-and-acceleration-constraint" class="md-nav__link">
+    Calculation of Required Time from Jerk and Acceleration Constraint
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitation" class="md-nav__link">
+    Limitation
+  </a>
   
 </li>
       
@@ -13087,42 +13101,93 @@
   
 
 
-<div><h1 id="safety-check-utils">Safety Check Utils<a class="headerlink" href="#safety-check-utils" title="Permanent link">#</a></h1>
-<p>Safety check function checks if the given path will collide with a given target object.</p>
-<h2 id="purpose-role">Purpose / Role<a class="headerlink" href="#purpose-role" title="Permanent link">#</a></h2>
-<p>In the behavior path planner, certain modules (e.g., lane change) need to perform collision checks to ensure the safe navigation of the ego vehicle. These utility functions assist the user in conducting safety checks with other road participants.</p>
-<h3 id="assumptions">Assumptions<a class="headerlink" href="#assumptions" title="Permanent link">#</a></h3>
-<p>The safety check module is based on the following assumptions:</p>
-<ol>
-<li>Users must provide the position, velocity, and shape of both the ego and target objects to the utility functions.</li>
-<li>The yaw angle of each point in the predicted path of both the ego and target objects should point to the next point in the path.</li>
-<li>The safety check module uses RSS distance to determine the safety of a potential collision with other objects.</li>
-</ol>
-<h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">#</a></h3>
-<p>Currently the yaw angle of each point of predicted paths of a target object does not point to the next point. Therefore, the safety check function might returns incorrect result for some edge case.</p>
-<h3 id="inner-working-algorithm">Inner working / Algorithm<a class="headerlink" href="#inner-working-algorithm" title="Permanent link">#</a></h3>
-<p>The flow of the safety check algorithm is described in the following explanations.</p>
-<p><img alt="safety_check_flow" src="../../images/path_safety_checker/safety_check_flow.drawio.svg"></p>
-<p>Here we explain each step of the algorithm flow.</p>
-<h4 id="1-get-pose-of-the-target-object-at-a-given-time">1. Get pose of the target object at a given time<a class="headerlink" href="#1-get-pose-of-the-target-object-at-a-given-time" title="Permanent link">#</a></h4>
-<p>For the first step, we obtain the pose of the target object at a given time. This can be done by interpolating the predicted path of the object.</p>
-<h4 id="2-check-overlap">2. Check overlap<a class="headerlink" href="#2-check-overlap" title="Permanent link">#</a></h4>
-<p>With the interpolated pose obtained in the step.1, we check if the object and ego vehicle overlaps at a given time. If they are overlapped each other, the given path is unsafe.</p>
-<h4 id="3-get-front-object">3. Get front object<a class="headerlink" href="#3-get-front-object" title="Permanent link">#</a></h4>
-<p>After the overlap check, it starts to perform the safety check for the broader range. In this step, it judges if ego or target object is in front of the other vehicle. We use arc length of the front point of each object along the given path to judge which one is in front of the other. In the following example, target object (red rectangle) is running in front of the ego vehicle (black rectangle).</p>
-<p><img alt="front_object" src="../../images/path_safety_checker/front_object.drawio.svg"></p>
-<h4 id="4-calculate-rss-distance">4. Calculate RSS distance<a class="headerlink" href="#4-calculate-rss-distance" title="Permanent link">#</a></h4>
-<p>After we find which vehicle is running ahead of the other vehicle, we start to compute the RSS distance. With the reaction time <span class="arithmatex">\(t_{reaction}\)</span> and safety time margin <span class="arithmatex">\(t_{margin}\)</span>, RSS distance can be described as:</p>
+<div><h1 id="path-generation-design">Path Generation design<a class="headerlink" href="#path-generation-design" title="Permanent link">#</a></h1>
+<p>This document explains how the path is generated for lane change and avoidance, etc. The implementation can be found in <a href="https://github.com/autowarefoundation/autoware.universe/blob/main/planning/autoware_behavior_path_planner_common/include/autoware_behavior_path_planner_common/utils/path_shifter/path_shifter.hpp">path_shifter.hpp</a>.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>The base idea of the path generation in lane change and avoidance is to smoothly shift the reference path, such as the center line, in the lateral direction. This is achieved by using a constant-jerk profile as in the figure below. More details on how it is used can be found in <a href="https://github.com/autowarefoundation/autoware.universe/blob/main/planning/behavior_path_planner/README.md">README</a>. It is assumed that the reference path is smooth enough for this algorithm.</p>
+<p>The figure below explains how the application of a constant lateral jerk <span class="arithmatex">\(l^{'''}(s)\)</span> can be used to induce lateral shifting. In order to comply with the limits on lateral acceleration and velocity, zero-jerk time is employed in the figure ( <span class="arithmatex">\(T_a\)</span> and <span class="arithmatex">\(T_v\)</span> ). In each interval where constant jerk is applied, the shift position <span class="arithmatex">\(l(s)\)</span> can be characterized by a third-degree polynomial. Therefore the shift length from the reference path can then be calculated by combining spline curves.</p>
+<p><img alt="path-shifter" src="../../images/path_shifter/path_shifter.png"></p>
+<p>Note that, due to the rarity of the <span class="arithmatex">\(T_v\)</span> in almost all cases of lane change and avoidance, <span class="arithmatex">\(T_v\)</span> is not considered in the current implementation.</p>
+<h2 id="mathematical-derivation">Mathematical Derivation<a class="headerlink" href="#mathematical-derivation" title="Permanent link">#</a></h2>
+<p>With initial longitudinal velocity <span class="arithmatex">\(v_0^{\rm lon}\)</span> and longitudinal acceleration <span class="arithmatex">\(a^{\rm lon}\)</span>, longitudinal position <span class="arithmatex">\(s(t)\)</span> and longitudinal velocity at each time <span class="arithmatex">\(v^{\rm lon}(t)\)</span> can be derived as:</p>
 <div class="arithmatex">\[
-rss_{dist} = v_{rear} (t_{reaction} + t_{margin}) + \frac{v_{rear}^2}{2|a_{rear, decel}|} - \frac{v_{front}^2}{2|a_{front, decel|}}
+\begin{align}
+s_1&amp;= v^{\rm lon}_0 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_1&amp;= v^{\rm lon}_0 + a^{\rm lon} T_j \\
+s_2&amp;= v^{\rm lon}_1 T_a + \frac{1}{2} a^{\rm lon} T_a^2 \\
+v_2&amp;= v^{\rm lon}_1 + a^{\rm lon} T_a \\
+s_3&amp;= v^{\rm lon}_2 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_3&amp;= v^{\rm lon}_2 + a^{\rm lon} T_j \\
+s_4&amp;= v^{\rm lon}_3 T_v + \frac{1}{2} a^{\rm lon} T_v^2 \\
+v_4&amp;= v^{\rm lon}_3 + a^{\rm lon} T_v \\
+s_5&amp;= v^{\rm lon}_4 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_5&amp;= v^{\rm lon}_4 + a^{\rm lon} T_j \\
+s_6&amp;= v^{\rm lon}_5 T_a + \frac{1}{2} a^{\rm lon} T_a^2 \\
+v_6&amp;= v^{\rm lon}_5 + a^{\rm lon} T_a \\
+s_7&amp;= v^{\rm lon}_6 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_7&amp;= v^{\rm lon}_6 + a^{\rm lon} T_j
+\end{align}
 \]</div>
-<p>where <span class="arithmatex">\(V_{front}\)</span>, <span class="arithmatex">\(v_{rear}\)</span> are front and rear vehicle velocity respectively and <span class="arithmatex">\(a_{rear, front}\)</span>, <span class="arithmatex">\(a_{rear, decel}\)</span> are front and rear vehicle deceleration.</p>
-<h4 id="5-create-extended-ego-and-target-object-polygons">5. Create extended ego and target object polygons<a class="headerlink" href="#5-create-extended-ego-and-target-object-polygons" title="Permanent link">#</a></h4>
-<p>In this step, we compute extended ego and target object polygons. The extended polygons can be described as:</p>
-<p><img alt="extended_polygons" src="../../images/path_safety_checker/extended_polygons.drawio.svg"></p>
-<p>As the picture shows, we expand the rear object polygon. For the longitudinal side, we extend it with the RSS distance, and for the lateral side, we extend it by the lateral margin</p>
-<h4 id="6-check-overlap">6. Check overlap<a class="headerlink" href="#6-check-overlap" title="Permanent link">#</a></h4>
-<p>Similar to the previous step, we check the overlap of the extended rear object polygon and front object polygon. If they are overlapped each other, we regard it as the unsafe situation.</p></div>
+<p>By applying simple integral operations, the following analytical equations can be derived to describe the shift distance <span class="arithmatex">\(l(t)\)</span> at each time under lateral jerk, lateral acceleration, and velocity constraints.</p>
+<div class="arithmatex">\[
+\begin{align}
+l_1&amp;= \frac{1}{6}jT_j^3\\[10pt]
+l_2&amp;= \frac{1}{6}j T_j^3 + \frac{1}{2} j T_a T_j^2 + \frac{1}{2} j T_a^2 T_j\\[10pt]
+l_3&amp;= j  T_j^3 + \frac{3}{2} j T_a T_j^2 + \frac{1}{2} j T_a^2 T_j\\[10pt]
+l_4&amp;= j T_j^3 + \frac{3}{2} j T_a T_j^2 + \frac{1}{2} j T_a^2 T_j + j(T_a + T_j)T_j T_v\\[10pt]
+l_5&amp;= \frac{11}{6} j T_j^3 + \frac{5}{2} j T_a T_j^2 + \frac{1}{2} j T_a^2 T_j + j(T_a + T_j)T_j T_v \\[10pt]
+l_6&amp;= \frac{11}{6} j T_j^3 + 3 j T_a T_j^2 + j T_a^2 T_j + j(T_a + T_j)T_j T_v\\[10pt]
+l_7&amp;= 2 j T_j^3 + 3 j T_a T_j^2 + j T_a^2 T_j + j(T_a + T_j)T_j T_v
+\end{align}
+\]</div>
+<p>These equations are used to determine the shape of a path. Additionally, by applying further mathematical operations to these basic equations, the expressions of the following subsections can be derived.</p>
+<h3 id="calculation-of-maximum-acceleration-from-transition-time-and-final-shift-length">Calculation of Maximum Acceleration from transition time and final shift length<a class="headerlink" href="#calculation-of-maximum-acceleration-from-transition-time-and-final-shift-length" title="Permanent link">#</a></h3>
+<p>In the case where there are no limitations on lateral velocity and lateral acceleration, the maximum lateral acceleration during the shifting can be calculated as follows. The constant-jerk time is given by <span class="arithmatex">\(T_j = T_{\rm total}/4\)</span> because of its symmetric property. Since <span class="arithmatex">\(T_a=T_v=0\)</span>, the final shift length <span class="arithmatex">\(L=l_7=2jT_j^3\)</span> can be determined using the above equation. The maximum lateral acceleration is then given by <span class="arithmatex">\(a_{\rm max} =jT_j\)</span>. This results in the following expression for the maximum lateral acceleration:</p>
+<div class="arithmatex">\[
+\begin{align}
+a_{\rm max}^{\rm lat}  = \frac{8L}{T_{\rm total}^2}
+\end{align}
+\]</div>
+<h3 id="calculation-of-ta-tj-and-jerk-from-acceleration-limit">Calculation of Ta, Tj and jerk from acceleration limit<a class="headerlink" href="#calculation-of-ta-tj-and-jerk-from-acceleration-limit" title="Permanent link">#</a></h3>
+<p>In the case where there are no limitations on lateral velocity, the constant-jerk and acceleration times, as well as the required jerk can be calculated from the acceleration limit, total time, and final shift length as follows. Since <span class="arithmatex">\(T_v=0\)</span>, the final shift length is given by:</p>
+<div class="arithmatex">\[
+\begin{align}
+L = l_7 = 2 j T_j^3 + 3 j T_a T_j^2 + j T_a^2 T_j
+\end{align}
+\]</div>
+<p>Additionally, the velocity profile reveals the following relations:</p>
+<div class="arithmatex">\[
+\begin{align}
+a_{\rm lim}^{\rm lat} &amp;= j T_j\\
+T_{\rm total} &amp;= 4T_j + 2T_a
+\end{align}
+\]</div>
+<p>By solving these three equations, the following can be obtained:</p>
+<div class="arithmatex">\[
+\begin{align}
+T_j&amp;=\frac{T_{\rm total}}{2} - \frac{2L}{a_{\rm lim}^{\rm lat} T_{\rm total}}\\[10pt]
+T_a&amp;=\frac{4L}{a_{\rm lim}^{\rm lat} T_{\rm total}} - \frac{T_{\rm total}}{2}\\[10pt]
+jerk&amp;=\frac{2a_{\rm lim} ^2T_{\rm total}}{a_{\rm lim}^{\rm lat} T_{\rm total}^2-4L}
+\end{align}
+\]</div>
+<p>where <span class="arithmatex">\(T_j\)</span> is the constant-jerk time, <span class="arithmatex">\(T_a\)</span> is the constant acceleration time, <span class="arithmatex">\(j\)</span> is the required jerk, <span class="arithmatex">\(a_{\rm lim}^{\rm lat}\)</span> is the lateral acceleration limit, and <span class="arithmatex">\(L\)</span> is the final shift length.</p>
+<h3 id="calculation-of-required-time-from-jerk-and-acceleration-constraint">Calculation of Required Time from Jerk and Acceleration Constraint<a class="headerlink" href="#calculation-of-required-time-from-jerk-and-acceleration-constraint" title="Permanent link">#</a></h3>
+<p>In the case where there are no limitations on lateral velocity, the total time required for shifting can be calculated from the lateral jerk and lateral acceleration limits and the final shift length as follows. By solving the two equations given above:</p>
+<div class="arithmatex">\[
+L = l_7 = 2 j T_j^3 + 3 j T_a T_j^2 + j T_a^2 T_j,\quad a_{\rm lim}^{\rm lat} = j T_j
+\]</div>
+<p>we obtain the following expressions:</p>
+<div class="arithmatex">\[
+\begin{align}
+T_j &amp;= \frac{a_{\rm lim}^{\rm lat}}{j}\\[10pt]
+T_a &amp;= \frac{1}{2}\sqrt{\frac{a_{\rm lim}^{\rm lat}}{j}^2 + \frac{4L}{a_{\rm lim}^{\rm lat}}} - \frac{3a_{\rm lim}^{\rm lat}}{2j}
+\end{align}
+\]</div>
+<p>The total time required for shifting can then be calculated as <span class="arithmatex">\(T_{\rm total}=4T_j+2T_a\)</span>.</p>
+<h2 id="limitation">Limitation<a class="headerlink" href="#limitation" title="Permanent link">#</a></h2>
+<ul>
+<li>Since <span class="arithmatex">\(T_v\)</span> is zero in almost all cases of lane change and avoidance, <span class="arithmatex">\(T_v\)</span> is not considered in the current implementation.</li>
+</ul></div>
 
 
 
@@ -13149,7 +13214,7 @@ rss_{dist} = v_{rear} (t_{reaction} + t_{margin}) + \frac{v_{rear}^2}{2|a_{rear,
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../behavior_path_planner_path_generation_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Path Generation design" rel="prev">
+          <a href="../behavior_path_planner_drivable_area_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Drivable Area design" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13158,20 +13223,20 @@ rss_{dist} = v_{rear} (t_{reaction} + t_{margin}) + \frac{v_{rear}^2}{2|a_{rear,
                 Previous
               </span>
               <div class="md-ellipsis">
-                Path Generation design
+                Drivable Area design
               </div>
             </div>
           </a>
         
         
           
-          <a href="../behavior_path_planner_turn_signal_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Turn Signal design" rel="next">
+          <a href="../behavior_path_planner_safety_check/" class="md-footer__link md-footer__link--next" aria-label="Next: Safety Check Utils" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Turn Signal design
+                Safety Check Utils
               </div>
             </div>
             <div class="md-footer__button md-icon">

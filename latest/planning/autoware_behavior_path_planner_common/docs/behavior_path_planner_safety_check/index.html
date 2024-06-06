@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check/">
       
       
-        <link rel="prev" href="../behavior_path_planner_safety_check/">
+        <link rel="prev" href="../behavior_path_planner_path_generation_design/">
       
       
-        <link rel="next" href="../../../behavior_path_sampling_planner_module/">
+        <link rel="next" href="../behavior_path_planner_turn_signal_design/">
       
       <link rel="icon" href="../../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Turn Signal design - Autoware Universe Documentation</title>
+        <title>Safety Check Utils - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#turn-signal-design" class="md-skip">
+        <a href="#safety-check-utils" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Turn Signal design
+              Safety Check Utils
             
           </span>
         </div>
@@ -7696,7 +7696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_planner_safety_check" class="md-nav__link">
+      <a href="." class="md-nav__link">
         Collision Assessment/Safety Check
       </a>
     </li>
@@ -7724,7 +7724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../behavior_path_planner_turn_signal_design" class="md-nav__link">
         Turn Signal
       </a>
     </li>
@@ -13057,36 +13057,9 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters-for-turn-signal-decider" class="md-nav__link">
-    Parameters for turn signal decider
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
-  </a>
-  
-    <nav class="md-nav" aria-label="Inner-workings / Algorithms">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#-desired-section" class="md-nav__link">
-    - Desired Section
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#-required-section" class="md-nav__link">
-    - Required Section
+  <a href="#inner-working-algorithm" class="md-nav__link">
+    Inner working / Algorithm
   </a>
   
 </li>
@@ -13114,245 +13087,42 @@
   
 
 
-<div><h1 id="turn-signal-design">Turn Signal design<a class="headerlink" href="#turn-signal-design" title="Permanent link">#</a></h1>
-<p>Turn Signal decider determines necessary blinkers.</p>
+<div><h1 id="safety-check-utils">Safety Check Utils<a class="headerlink" href="#safety-check-utils" title="Permanent link">#</a></h1>
+<p>Safety check function checks if the given path will collide with a given target object.</p>
 <h2 id="purpose-role">Purpose / Role<a class="headerlink" href="#purpose-role" title="Permanent link">#</a></h2>
-<p>This module is responsible for activating a necessary blinker during driving. It uses rule-based algorithm to determine blinkers, and the details of this algorithm are described in the following sections. Note that this algorithm is strictly based on the Japanese Road Traffic Law.</p>
+<p>In the behavior path planner, certain modules (e.g., lane change) need to perform collision checks to ensure the safe navigation of the ego vehicle. These utility functions assist the user in conducting safety checks with other road participants.</p>
 <h3 id="assumptions">Assumptions<a class="headerlink" href="#assumptions" title="Permanent link">#</a></h3>
-<p>Autoware has following order of priorities for turn signals.</p>
+<p>The safety check module is based on the following assumptions:</p>
 <ol>
-<li>Activate turn signal to safely navigate ego vehicle and protect other road participants</li>
-<li>Follow traffic laws</li>
-<li>Follow human driving practices</li>
+<li>Users must provide the position, velocity, and shape of both the ego and target objects to the utility functions.</li>
+<li>The yaw angle of each point in the predicted path of both the ego and target objects should point to the next point in the path.</li>
+<li>The safety check module uses RSS distance to determine the safety of a potential collision with other objects.</li>
 </ol>
 <h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">#</a></h3>
-<p>Currently, this algorithm can sometimes give unnatural (not wrong) blinkers in complicated situations. This is because it tries to follow the road traffic law and cannot solve <code>blinker conflicts</code> clearly in that environment.</p>
-<h2 id="parameters-for-turn-signal-decider">Parameters for turn signal decider<a class="headerlink" href="#parameters-for-turn-signal-decider" title="Permanent link">#</a></h2>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Unit</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">turn_signal_intersection_search_distance</td>
-<td align="left">[m]</td>
-<td align="left">double</td>
-<td align="left">constant search distance to decide activation of blinkers at intersections</td>
-<td align="left">30</td>
-</tr>
-<tr>
-<td align="left">turn_signal_intersection_angle_threshold_degree</td>
-<td align="left">deg</td>
-<td align="left">double</td>
-<td align="left">angle threshold to determined the end point of intersection required section</td>
-<td align="left">15</td>
-</tr>
-<tr>
-<td align="left">turn_signal_minimum_search_distance</td>
-<td align="left">[m]</td>
-<td align="left">double</td>
-<td align="left">minimum search distance for avoidance and lane change</td>
-<td align="left">10</td>
-</tr>
-<tr>
-<td align="left">turn_signal_search_time</td>
-<td align="left">[s]</td>
-<td align="left">double</td>
-<td align="left">search time for to decide activation of blinkers</td>
-<td align="left">3.0</td>
-</tr>
-<tr>
-<td align="left">turn_signal_shift_length_threshold</td>
-<td align="left">[m]</td>
-<td align="left">double</td>
-<td align="left">shift length threshold to decide activation of blinkers</td>
-<td align="left">0.3</td>
-</tr>
-<tr>
-<td align="left">turn_signal_remaining_shift_length_threshold</td>
-<td align="left">[m]</td>
-<td align="left">double</td>
-<td align="left">When the ego's current shift length minus its end shift length is less than this threshold, the turn signal will be turned off.</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left">turn_signal_on_swerving</td>
-<td align="left">[-]</td>
-<td align="left">bool</td>
-<td align="left">flag to activate blinkers when swerving</td>
-<td align="left">true</td>
-</tr>
-</tbody>
-</table>
-<p>Note that the default values for <code>turn_signal_intersection_search_distance</code> and <code>turn_signal_search_time</code> is strictly followed by <a href="https://www.japaneselawtranslation.go.jp/ja/laws/view/2962">Japanese Road Traffic Laws</a>. So if your country does not allow to use these default values, you should change these values in configuration files.</p>
-<h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
-<p>In this algorithm, it assumes that each blinker has two sections, which are <code>desired section</code> and <code>required section</code>. The image of these two sections are depicted in the following diagram.</p>
-<p><img alt="section_definition" src="../../images/turn_signal_decider/sections_definition.drawio.svg"></p>
-<p>These two sections have the following meanings.</p>
-<h3 id="-desired-section">- Desired Section<a class="headerlink" href="#-desired-section" title="Permanent link">#</a></h3>
-<div class="codehilite"><pre><span></span><code>- This section is defined by road traffic laws. It cannot be longer or shorter than the designated length defined by the law.
-- In this section, you do not have to activate the designated blinkers if it is dangerous to do so.
-</code></pre></div>
-
-<h3 id="-required-section">- Required Section<a class="headerlink" href="#-required-section" title="Permanent link">#</a></h3>
-<div class="codehilite"><pre><span></span><code>- In this section, ego vehicle must activate designated blinkers. However, if there are blinker conflicts, it must solve them based on the algorithm we mention later in this document.
-- Required section cannot be longer than desired section.
-</code></pre></div>
-
-<p>When turning on the blinker, it decides whether or not to turn on the specified blinker based on the distance from the front of the ego vehicle to the start point of each section. Conversely, when turning off the blinker, it calculates the distance from the base link of the ego vehicle to the end point of each section and decide whether or not to turn it off based on that.</p>
-<p><img alt="activation_distance" src="../../images/turn_signal_decider/activation_distance.drawio.svg"></p>
-<p>For left turn, right turn, avoidance, lane change, goal planner and pull out, we define these two sections, which are elaborated in the following part.</p>
-<h4 id="1-left-and-right-turn">1. Left and Right turn<a class="headerlink" href="#1-left-and-right-turn" title="Permanent link">#</a></h4>
-<p>Turn signal decider checks each lanelet on the map if it has <code>turn_direction</code> information. If a lanelet has this information, it activates necessary blinker based on this information.</p>
-<ul>
-<li>desired start point
-  The <code>search_distance</code> for blinkers at intersections is <code>v * turn_signal_search_time + turn_signal_intersection_search_distance</code>. Then the start point becomes <code>search_distance</code> meters before the start point of the intersection lanelet(depicted in green in the following picture), where <code>v</code> is the velocity of the ego vehicle. However, if we set <code>turn_signal_distance</code> in the lanelet, we use that length as search distance.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the intersection lanelet.</li>
-</ul>
-<ul>
-<li>required start point
-  Initial point of the intersection lanelet.</li>
-</ul>
-<ul>
-<li>required end point
-  The earliest point that satisfies the following condition. <span class="arithmatex">\(\theta - \theta_{\textrm{end}} &lt; \delta\)</span>, where <span class="arithmatex">\(\theta_{\textrm{end}}\)</span> is yaw angle of the terminal point of the lanelet, <span class="arithmatex">\(\theta\)</span> is the angle of a required end point and <span class="arithmatex">\(\delta\)</span> is the threshold defined by the user.</li>
-</ul>
-<p><img alt="section_turn_signal" src="../../images/turn_signal_decider/left_right_turn.drawio.svg"></p>
-<h4 id="2-avoidance">2. Avoidance<a class="headerlink" href="#2-avoidance" title="Permanent link">#</a></h4>
-<p>Avoidance can be separated into two sections, first section and second section. The first section is from the start point of the path shift to the end of the path shift. The second section is from the end of shift point to the end of avoidance. Note that avoidance module will not activate turn signal when its shift length is below <code>turn_signal_shift_length_threshold</code>.</p>
-<p>First section</p>
-<ul>
-<li>desired start point
-  <code>v * turn_signal_search_time</code> meters before the start point of the avoidance shift path.</li>
-</ul>
-<ul>
-<li>desired end point
-  Shift complete point where the path shift is completed.</li>
-</ul>
-<ul>
-<li>required start point
-  Avoidance start point.</li>
-</ul>
-<ul>
-<li>required end point
-  Shift complete point same as the desired end point.</li>
-</ul>
-<p><img alt="section_first_avoidance" src="../../images/turn_signal_decider/avoidance_first_section.drawio.svg"></p>
-<p>Second section</p>
-<ul>
-<li>desired start point
-  Shift complete point.</li>
-</ul>
-<ul>
-<li>desired end point
-  Avoidance terminal point</li>
-</ul>
-<ul>
-<li>required start point
-  Shift complete point.</li>
-</ul>
-<ul>
-<li>required end point
-  Avoidance terminal point.</li>
-</ul>
-<p><img alt="section_second_avoidance" src="../../images/turn_signal_decider/avoidance_second_section.drawio.svg"></p>
-<h4 id="3-lane-change">3. Lane Change<a class="headerlink" href="#3-lane-change" title="Permanent link">#</a></h4>
-<ul>
-<li>desired start point
-  <code>v * turn_signal_search_time</code> meters before the start point of the lane change path.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the lane change path.</li>
-</ul>
-<ul>
-<li>required start point
-  Initial point of the lane change path.</li>
-</ul>
-<ul>
-<li>required end point
-  Cross point with lane change path and boundary line of the adjacent lane.</li>
-</ul>
-<p><img alt="section_lane_change" src="../../images/turn_signal_decider/lane_change.drawio.svg"></p>
-<h4 id="4-pull-out">4. Pull out<a class="headerlink" href="#4-pull-out" title="Permanent link">#</a></h4>
-<ul>
-<li>desired start point
-  Start point of the path of pull out.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the path of pull out.</li>
-</ul>
-<ul>
-<li>required start point
-  Start point of the path pull out.</li>
-</ul>
-<ul>
-<li>required end point
-  Terminal point of the path of pull out.</li>
-</ul>
-<p><img alt="section_pull_out" src="../../images/turn_signal_decider/pull_out.drawio.svg"></p>
-<h4 id="5-goal-planner">5. Goal Planner<a class="headerlink" href="#5-goal-planner" title="Permanent link">#</a></h4>
-<ul>
-<li>desired start point
-  <code>v * turn_signal_search_time</code> meters before the start point of the pull over path.</li>
-</ul>
-<ul>
-<li>desired end point
-  Terminal point of the path of pull over.</li>
-</ul>
-<ul>
-<li>required start point
-  Start point of the path of pull over.</li>
-</ul>
-<ul>
-<li>required end point
-  Terminal point of the path of pull over.</li>
-</ul>
-<p><img alt="section_pull_over" src="../../images/turn_signal_decider/pull_over.drawio.svg"></p>
-<p>When it comes to handle several blinkers, it gives priority to the first blinker that comes first. However, this rule sometimes activate unnatural blinkers, so turn signal decider uses the following five rules to decide the necessary turn signal.</p>
-<ul>
-<li>pattern1
-  <img alt="pattern1" src="../../images/turn_signal_decider/pattern1.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern2
-  <img alt="pattern2" src="../../images/turn_signal_decider/pattern2.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern3
-  <img alt="pattern3" src="../../images/turn_signal_decider/pattern3.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern4
-  <img alt="pattern4" src="../../images/turn_signal_decider/pattern4.drawio.svg"></li>
-</ul>
-<ul>
-<li>pattern5
-  <img alt="pattern5" src="../../images/turn_signal_decider/pattern5.drawio.svg"></li>
-</ul>
-<p>Based on these five rules, turn signal decider can solve <code>blinker conflicts</code>. The following pictures show some examples of this kind of conflicts.</p>
-<h4 id="-several-right-and-left-turns-on-short-sections">- Several right and left turns on short sections<a class="headerlink" href="#-several-right-and-left-turns-on-short-sections" title="Permanent link">#</a></h4>
-<p>In this scenario, ego vehicle has to pass several turns that are close each other. Since this pattern can be solved by the pattern1 rule, the overall result is depicted in the following picture.</p>
-<p><img alt="continuous_turns" src="../../images/turn_signal_decider/continuous_turns.drawio.svg"></p>
-<h4 id="-avoidance-with-left-turn-1">- Avoidance with left turn (1)<a class="headerlink" href="#-avoidance-with-left-turn-1" title="Permanent link">#</a></h4>
-<p>In this scene, ego vehicle has to deal with the obstacle that is on its original path as well as make a left turn. The overall result can be varied by the position of the obstacle, but the image of the result is described in the following picture.</p>
-<p><img alt="avoidance_and_turn" src="../../images/turn_signal_decider/avoidance_and_turn.drawio.svg"></p>
-<h4 id="-avoidance-with-left-turn-2">- Avoidance with left turn (2)<a class="headerlink" href="#-avoidance-with-left-turn-2" title="Permanent link">#</a></h4>
-<p>Same as the previous scenario, ego vehicle has to avoid the obstacle as well as make a turn left. However, in this scene, the obstacle is parked after the intersection. Similar to the previous one, the overall result can be varied by the position of the obstacle, but the image of the result is described in the following picture.</p>
-<p><img alt="avoidance_and_turn" src="../../images/turn_signal_decider/avoidance_and_turn2.drawio.svg"></p>
-<h4 id="-lane-change-and-left-turn">- Lane change and left turn<a class="headerlink" href="#-lane-change-and-left-turn" title="Permanent link">#</a></h4>
-<p>In this scenario, ego vehicle has to do lane change before making a left turn. In the following example, ego vehicle does not activate left turn signal until it reaches the end point of the lane change path.</p>
-<p><img alt="avoidance_and_turn" src="../../images/turn_signal_decider/lane_change_and_turn.drawio.svg"></p></div>
+<p>Currently the yaw angle of each point of predicted paths of a target object does not point to the next point. Therefore, the safety check function might returns incorrect result for some edge case.</p>
+<h3 id="inner-working-algorithm">Inner working / Algorithm<a class="headerlink" href="#inner-working-algorithm" title="Permanent link">#</a></h3>
+<p>The flow of the safety check algorithm is described in the following explanations.</p>
+<p><img alt="safety_check_flow" src="../../images/path_safety_checker/safety_check_flow.drawio.svg"></p>
+<p>Here we explain each step of the algorithm flow.</p>
+<h4 id="1-get-pose-of-the-target-object-at-a-given-time">1. Get pose of the target object at a given time<a class="headerlink" href="#1-get-pose-of-the-target-object-at-a-given-time" title="Permanent link">#</a></h4>
+<p>For the first step, we obtain the pose of the target object at a given time. This can be done by interpolating the predicted path of the object.</p>
+<h4 id="2-check-overlap">2. Check overlap<a class="headerlink" href="#2-check-overlap" title="Permanent link">#</a></h4>
+<p>With the interpolated pose obtained in the step.1, we check if the object and ego vehicle overlaps at a given time. If they are overlapped each other, the given path is unsafe.</p>
+<h4 id="3-get-front-object">3. Get front object<a class="headerlink" href="#3-get-front-object" title="Permanent link">#</a></h4>
+<p>After the overlap check, it starts to perform the safety check for the broader range. In this step, it judges if ego or target object is in front of the other vehicle. We use arc length of the front point of each object along the given path to judge which one is in front of the other. In the following example, target object (red rectangle) is running in front of the ego vehicle (black rectangle).</p>
+<p><img alt="front_object" src="../../images/path_safety_checker/front_object.drawio.svg"></p>
+<h4 id="4-calculate-rss-distance">4. Calculate RSS distance<a class="headerlink" href="#4-calculate-rss-distance" title="Permanent link">#</a></h4>
+<p>After we find which vehicle is running ahead of the other vehicle, we start to compute the RSS distance. With the reaction time <span class="arithmatex">\(t_{reaction}\)</span> and safety time margin <span class="arithmatex">\(t_{margin}\)</span>, RSS distance can be described as:</p>
+<div class="arithmatex">\[
+rss_{dist} = v_{rear} (t_{reaction} + t_{margin}) + \frac{v_{rear}^2}{2|a_{rear, decel}|} - \frac{v_{front}^2}{2|a_{front, decel|}}
+\]</div>
+<p>where <span class="arithmatex">\(V_{front}\)</span>, <span class="arithmatex">\(v_{rear}\)</span> are front and rear vehicle velocity respectively and <span class="arithmatex">\(a_{rear, front}\)</span>, <span class="arithmatex">\(a_{rear, decel}\)</span> are front and rear vehicle deceleration.</p>
+<h4 id="5-create-extended-ego-and-target-object-polygons">5. Create extended ego and target object polygons<a class="headerlink" href="#5-create-extended-ego-and-target-object-polygons" title="Permanent link">#</a></h4>
+<p>In this step, we compute extended ego and target object polygons. The extended polygons can be described as:</p>
+<p><img alt="extended_polygons" src="../../images/path_safety_checker/extended_polygons.drawio.svg"></p>
+<p>As the picture shows, we expand the rear object polygon. For the longitudinal side, we extend it with the RSS distance, and for the lateral side, we extend it by the lateral margin</p>
+<h4 id="6-check-overlap">6. Check overlap<a class="headerlink" href="#6-check-overlap" title="Permanent link">#</a></h4>
+<p>Similar to the previous step, we check the overlap of the extended rear object polygon and front object polygon. If they are overlapped each other, we regard it as the unsafe situation.</p></div>
 
 
 
@@ -13379,7 +13149,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../behavior_path_planner_safety_check/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Safety Check Utils" rel="prev">
+          <a href="../behavior_path_planner_path_generation_design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Path Generation design" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13388,20 +13158,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Safety Check Utils
+                Path Generation design
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../../behavior_path_sampling_planner_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Behavior Path Sampling Based Planner" rel="next">
+          <a href="../behavior_path_planner_turn_signal_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Turn Signal design" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Behavior Path Sampling Based Planner
+                Turn Signal design
               </div>
             </div>
             <div class="md-footer__button md-icon">

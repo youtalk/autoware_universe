@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/vehicle/steer_offset_estimator/Readme/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/vehicle/autoware_steer_offset_estimator/Readme/">
       
       
-        <link rel="prev" href="../../raw_vehicle_cmd_converter/">
+        <link rel="prev" href="../../accel_brake_map_calibrator/">
       
       
-        <link rel="next" href="../../vehicle_info_util/Readme/">
+        <link rel="next" href="../../external_cmd_converter/">
       
       <link rel="icon" href="../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#steer_offset_estimator" class="md-skip">
+        <a href="#macro-rendering-error" class="md-skip">
           Skip to content
         </a>
       
@@ -12799,41 +12799,59 @@
               
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
       
       
-        
-      
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_2" >
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13_2" checked>
       
       
         
           
-            
-          
         
       
       
-        
-        
-        <div class="md-nav__link md-nav__link--index ">
-          <a href="../../external_cmd_converter/">External cmd converter</a>
-          
-        </div>
+        <label class="md-nav__link" for="__nav_13_2" id="__nav_13_2_label" tabindex="0">
+          Autoware steer offset estimator
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_2_label" aria-expanded="false">
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_2_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_13_2">
           <span class="md-nav__icon md-icon"></span>
-          External cmd converter
+          Autoware steer offset estimator
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        steer_offset_estimator
+      </a>
+      
+    </li>
+  
+
             
           
         </ul>
@@ -12871,14 +12889,14 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../raw_vehicle_cmd_converter/">Raw vehicle cmd converter</a>
+          <a href="../../external_cmd_converter/">External cmd converter</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_3_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_13_3">
           <span class="md-nav__icon md-icon"></span>
-          Raw vehicle cmd converter
+          External cmd converter
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -12895,145 +12913,41 @@
               
   
   
-    
-  
   
     
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
       
       
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13_4" checked>
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_4" >
       
       
         
           
+            
+          
         
       
       
-        <label class="md-nav__link" for="__nav_13_4" id="__nav_13_4_label" tabindex="0">
-          Steer offset estimator
-          <span class="md-nav__icon md-icon"></span>
-        </label>
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../raw_vehicle_cmd_converter/">Raw vehicle cmd converter</a>
+          
+        </div>
       
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_4_label" aria-expanded="true">
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_4_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_13_4">
           <span class="md-nav__icon md-icon"></span>
-          Steer offset estimator
+          Raw vehicle cmd converter
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          steer_offset_estimator
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        steer_offset_estimator
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#purpose" class="md-nav__link">
-    Purpose
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inputs-outputs" class="md-nav__link">
-    Inputs / Outputs
-  </a>
-  
-    <nav class="md-nav" aria-label="Inputs / Outputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input" class="md-nav__link">
-    Input
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#output" class="md-nav__link">
-    Output
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#launch-calibrator" class="md-nav__link">
-    Launch Calibrator
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    Parameters
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#diagnostics" class="md-nav__link">
-    Diagnostics
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
             
           
         </ul>
@@ -13125,76 +13039,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#purpose" class="md-nav__link">
-    Purpose
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inputs-outputs" class="md-nav__link">
-    Inputs / Outputs
-  </a>
-  
-    <nav class="md-nav" aria-label="Inputs / Outputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input" class="md-nav__link">
-    Input
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#output" class="md-nav__link">
-    Output
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#launch-calibrator" class="md-nav__link">
-    Launch Calibrator
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    Parameters
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#diagnostics" class="md-nav__link">
-    Diagnostics
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -13211,150 +13055,20 @@
   
 
 
-<div><h1 id="steer_offset_estimator">steer_offset_estimator<a class="headerlink" href="#steer_offset_estimator" title="Permanent link">#</a></h1>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">#</a></h2>
-<p>The role of this node is to automatically calibrate <code>steer_offset</code> used in the <code>vehicle_interface</code> node.</p>
-<p>The base steer offset value is 0 by default, which is standard, is updated iteratively with the loaded driving data. This module is supposed to be used in below straight driving situation.
-<img alt="image" src="../image/steer_offset.png"></p>
-<h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
-<p>Estimates sequential steering offsets from kinematic model and state observations.
-<img alt="image2" src="../image/kinematic_constraints.png">
-Calculate yaw rate error and then calculate steering error recursively by least squared method, for more details see <code>updateSteeringOffset()</code> function.</p>
-<h2 id="inputs-outputs">Inputs / Outputs<a class="headerlink" href="#inputs-outputs" title="Permanent link">#</a></h2>
-<h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>~/input/twist</code></td>
-<td><code>geometry_msgs::msg::TwistStamped</code></td>
-<td>vehicle twist</td>
-</tr>
-<tr>
-<td><code>~/input/steer</code></td>
-<td><code>autoware_vehicle_msgs::msg::SteeringReport</code></td>
-<td>steering</td>
-</tr>
-</tbody>
-</table>
-<h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>~/output/steering_offset</code></td>
-<td><code>tier4_debug_msgs::msg::Float32Stamped</code></td>
-<td>steering offset</td>
-</tr>
-<tr>
-<td><code>~/output/steering_offset_covariance</code></td>
-<td><code>tier4_debug_msgs::msg::Float32Stamped</code></td>
-<td>covariance of steering offset</td>
-</tr>
-</tbody>
-</table>
-<h2 id="launch-calibrator">Launch Calibrator<a class="headerlink" href="#launch-calibrator" title="Permanent link">#</a></h2>
-<p>After launching Autoware, run the <code>steer_offset_estimator</code> by the following command and then perform autonomous driving. Note: You can collect data with manual driving if it is possible to use the same vehicle interface as during autonomous driving (e.g. using a joystick).</p>
-<div class="highlight"><pre><span></span><code>ros2<span class="w"> </span>launch<span class="w"> </span>steer_offset_estimator<span class="w"> </span>steer_offset_estimator.launch.xml
-</code></pre></div>
-<p>Or if you want to use rosbag files, run the following commands.</p>
-<div class="highlight"><pre><span></span><code>ros2<span class="w"> </span>param<span class="w"> </span><span class="nb">set</span><span class="w"> </span>/use_sim_time<span class="w"> </span><span class="nb">true</span>
-ros2<span class="w"> </span>bag<span class="w"> </span>play<span class="w"> </span>&lt;rosbag_file&gt;<span class="w"> </span>--clock
-</code></pre></div>
-<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-<th>Range</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>initial_covariance</td>
-<td>float</td>
-<td>steer offset is larger than tolerance</td>
-<td>1000</td>
-<td>N/A</td>
-</tr>
-<tr>
-<td>steer_update_hz</td>
-<td>float</td>
-<td>update hz of steer data</td>
-<td>10</td>
-<td>≥0.0</td>
-</tr>
-<tr>
-<td>forgetting_factor</td>
-<td>float</td>
-<td>weight of using previous value</td>
-<td>0.999</td>
-<td>≥0.0</td>
-</tr>
-<tr>
-<td>valid_min_velocity</td>
-<td>float</td>
-<td>velocity below this value is not used</td>
-<td>5</td>
-<td>≥0.0</td>
-</tr>
-<tr>
-<td>valid_max_steer</td>
-<td>float</td>
-<td>steer above this value is not used</td>
-<td>0.05</td>
-<td>N/A</td>
-</tr>
-<tr>
-<td>warn_steer_offset_deg</td>
-<td>float</td>
-<td>Warn if offset is above this value. ex. if absolute estimated offset is larger than 2.5[deg] =&gt; warning</td>
-<td>2.5</td>
-<td>N/A</td>
-</tr>
-</tbody>
-</table>
-<h2 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">#</a></h2>
-<p>The <code>steer_offset_estimator</code> publishes diagnostics message depending on the calibration status.
-Diagnostic type <code>WARN</code> indicates that the current steer_offset is estimated to be inaccurate. In this situation, it is strongly recommended to perform a re-calibration of the steer_offset.</p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Diagnostics Type</th>
-<th>Diagnostics message</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>No calibration required</td>
-<td><code>OK</code></td>
-<td>"Preparation"</td>
-</tr>
-<tr>
-<td>Calibration Required</td>
-<td><code>WARN</code></td>
-<td>"Steer offset is larger than tolerance"</td>
-</tr>
-</tbody>
-</table>
-<p>This diagnostics status can be also checked on the following ROS topic.</p>
-<div class="highlight"><pre><span></span><code>ros2<span class="w"> </span>topic<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>/vehicle/status/steering_offset
+<div><h1 id="macro-rendering-error"><em>Macro Rendering Error</em><a class="headerlink" href="#macro-rendering-error" title="Permanent link">#</a></h1>
+<p><em>File</em>: <code>vehicle/autoware_steer_offset_estimator/Readme.md</code></p>
+<p><em>FileNotFoundError</em>: [Errno 2] No such file or directory: 'vehicle/steer_offset_estimator/schema/steer_offset_estimator.schema.json'</p>
+<div class="highlight"><pre><span></span><code>Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/mkdocs_macros/plugin.py", line 527, in render
+    return md_template.render(**page_variables)
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/jinja2/environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/jinja2/environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "&lt;template&gt;", line 49, in top-level template code
+  File "/home/runner/work/autoware.universe/autoware.universe/mkdocs_macros.py", line 70, in json_to_markdown
+    with open(json_schema_file_path) as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'vehicle/steer_offset_estimator/schema/steer_offset_estimator.schema.json'
 </code></pre></div></div>
 
 
@@ -13382,7 +13096,7 @@ Diagnostic type <code>WARN</code> indicates that the current steer_offset is est
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../raw_vehicle_cmd_converter/" class="md-footer__link md-footer__link--prev" aria-label="Previous: raw_vehicle_cmd_converter" rel="prev">
+          <a href="../../accel_brake_map_calibrator/" class="md-footer__link md-footer__link--prev" aria-label="Previous: accel_brake_map_calibrator" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13391,20 +13105,20 @@ Diagnostic type <code>WARN</code> indicates that the current steer_offset is est
                 Previous
               </span>
               <div class="md-ellipsis">
-                raw_vehicle_cmd_converter
+                accel_brake_map_calibrator
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../vehicle_info_util/Readme/" class="md-footer__link md-footer__link--next" aria-label="Next: Vehicle Info Util" rel="next">
+          <a href="../../external_cmd_converter/" class="md-footer__link md-footer__link--next" aria-label="Next: external_cmd_converter" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Vehicle Info Util
+                external_cmd_converter
               </div>
             </div>
             <div class="md-footer__button md-icon">

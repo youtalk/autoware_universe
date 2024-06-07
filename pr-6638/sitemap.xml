@@ -266,7 +266,7 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/control/autonomous_emergency_braking/</loc>
+         <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/control/autoware_autonomous_emergency_braking/</loc>
          <lastmod>2024-06-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -277,6 +277,11 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/control/autoware_mpc_lateral_controller/model_predictive_control_algorithm/</loc>
+         <lastmod>2024-06-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/control/autoware_smart_mpc_trajectory_follower/</loc>
          <lastmod>2024-06-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -332,11 +337,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/control/shift_decider/</loc>
-         <lastmod>2024-06-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/control/smart_mpc_trajectory_follower/</loc>
          <lastmod>2024-06-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -996,6 +996,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/planning/autoware_rtc_interface/</loc>
+         <lastmod>2024-06-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/planning/autoware_static_centerline_generator/</loc>
          <lastmod>2024-06-07</lastmod>
          <changefreq>daily</changefreq>
@@ -1187,11 +1192,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/planning/route_handler/</loc>
-         <lastmod>2024-06-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/pr-6638/planning/rtc_interface/</loc>
          <lastmod>2024-06-07</lastmod>
          <changefreq>daily</changefreq>
     </url>

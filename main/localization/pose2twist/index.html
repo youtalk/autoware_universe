@@ -13105,7 +13105,7 @@
 <h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">#</a></h2>
 <p>This <code>pose2twist</code> calculates the velocity from the input pose history. In addition to the computed twist, this node outputs the linear-x and angular-z components as a float message to simplify debugging.</p>
 <p>The <code>twist.linear.x</code> is calculated as <code>sqrt(dx * dx + dy * dy + dz * dz) / dt</code>, and the values in the <code>y</code> and <code>z</code> fields are zero.
-The <code>twist.angular</code> is calculated as <code>d_roll / dt</code>, <code>d_pitch / dt</code> and <code>d_yaw / dt</code> for each field.</p>
+The <code>twist.angular</code> is calculated as <code>relative_rotation_vector / dt</code> for each field.</p>
 <h2 id="inputs-outputs">Inputs / Outputs<a class="headerlink" href="#inputs-outputs" title="Permanent link">#</a></h2>
 <h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
 <table>

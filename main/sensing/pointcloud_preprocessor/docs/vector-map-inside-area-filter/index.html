@@ -13206,6 +13206,7 @@
 <li>Extract the vector map area that intersects with the bounding box of input points to reduce the calculation cost</li>
 <li>Create the 2D polygon from the extracted vector map area</li>
 <li>Remove input points inside the polygon</li>
+<li>If the z value is used for filtering, remove points that are below the z threshold</li>
 </ul>
 <p><img alt="vector_map_inside_area_filter_figure" src="../image/vector_map_inside_area_filter_overview.svg"></p>
 <h2 id="inputs-outputs">Inputs / Outputs<a class="headerlink" href="#inputs-outputs" title="Permanent link">#</a></h2>
@@ -13263,6 +13264,16 @@
 <td><code>polygon_type</code></td>
 <td>string</td>
 <td>polygon type to be filtered</td>
+</tr>
+<tr>
+<td><code>use_z</code></td>
+<td>bool</td>
+<td>use z value for filtering</td>
+</tr>
+<tr>
+<td><code>z_threshold</code></td>
+<td>float</td>
+<td>z threshold for filtering</td>
 </tr>
 </tbody>
 </table>

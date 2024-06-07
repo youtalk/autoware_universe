@@ -271,6 +271,16 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/autoware_mpc_lateral_controller/</loc>
+         <lastmod>2024-06-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/autoware_mpc_lateral_controller/model_predictive_control_algorithm/</loc>
+         <lastmod>2024-06-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/control_performance_analysis/</loc>
          <lastmod>2024-06-07</lastmod>
          <changefreq>daily</changefreq>
@@ -292,16 +302,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/lane_departure_checker/</loc>
-         <lastmod>2024-06-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/mpc_lateral_controller/</loc>
-         <lastmod>2024-06-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/mpc_lateral_controller/model_predictive_control_algorithm/</loc>
          <lastmod>2024-06-07</lastmod>
          <changefreq>daily</changefreq>
     </url>

@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/sampling_based_planner/bezier_sampler/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/sampling_based_planner/autoware_frenet_planner/">
       
       
-        <link rel="prev" href="../../rtc_replayer/">
+        <link rel="prev" href="../autoware_bezier_sampler/">
       
       
-        <link rel="next" href="../frenet_planner/">
+        <link rel="next" href="../autoware_path_sampler/">
       
       <link rel="icon" href="../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Bézier sampler - Autoware Universe Documentation</title>
+        <title>Frenet planner - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#bezier-sampler" class="md-skip">
+        <a href="#frenet-planner" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Bézier sampler
+              Frenet planner
             
           </span>
         </div>
@@ -8740,7 +8740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../path_sampler" class="md-nav__link">
+      <a href="../autoware_path_sampler" class="md-nav__link">
         Path Sample
       </a>
     </li>
@@ -8754,7 +8754,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sampler_common" class="md-nav__link">
+      <a href="../autoware_sampler_common" class="md-nav__link">
         Common library
       </a>
     </li>
@@ -8768,7 +8768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../frenet_planner" class="md-nav__link">
+      <a href="." class="md-nav__link">
         Frenet Planner
       </a>
     </li>
@@ -8782,7 +8782,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../autoware_bezier_sampler" class="md-nav__link">
         Bezier Sampler
       </a>
     </li>
@@ -13029,6 +13029,21 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    Description
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -13045,8 +13060,10 @@
   
 
 
-<div><h1 id="bezier-sampler">Bézier sampler<a class="headerlink" href="#bezier-sampler" title="Permanent link">#</a></h1>
-<p>Implementation of bézier curves and their generation following the sampling strategy from <a href="https://ieeexplore.ieee.org/document/8932495">https://ieeexplore.ieee.org/document/8932495</a></p></div>
+<div><h1 id="frenet-planner">Frenet planner<a class="headerlink" href="#frenet-planner" title="Permanent link">#</a></h1>
+<p>Trajectory generation in Frenet frame.</p>
+<h2 id="description">Description<a class="headerlink" href="#description" title="Permanent link">#</a></h2>
+<p><a href="https://www.researchgate.net/publication/224156269_Optimal_Trajectory_Generation_for_Dynamic_Street_Scenarios_in_a_Frenet_Frame">Original paper</a></p></div>
 
 
 
@@ -13073,7 +13090,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../rtc_replayer/" class="md-footer__link md-footer__link--prev" aria-label="Previous: rtc_replayer" rel="prev">
+          <a href="../autoware_bezier_sampler/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Bézier sampler" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13082,20 +13099,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                rtc_replayer
+                Bézier sampler
               </div>
             </div>
           </a>
         
         
           
-          <a href="../frenet_planner/" class="md-footer__link md-footer__link--next" aria-label="Next: Frenet planner" rel="next">
+          <a href="../autoware_path_sampler/" class="md-footer__link md-footer__link--next" aria-label="Next: Path Sampler" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Frenet planner
+                Path Sampler
               </div>
             </div>
             <div class="md-footer__button md-icon">

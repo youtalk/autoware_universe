@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/rtc_interface/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/autoware_rtc_interface/">
       
       
-        <link rel="prev" href="../route_handler/">
+        <link rel="prev" href="../autoware_remaining_distance_time_calculator/">
       
       
-        <link rel="next" href="../rtc_replayer/">
+        <link rel="next" href="../autoware_static_centerline_generator/">
       
       <link rel="icon" href="../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
@@ -13162,7 +13162,7 @@
 <h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
 <h3 id="usage-example">Usage example<a class="headerlink" href="#usage-example" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1">// Generate instance (in this example, "intersection" is selected)</span>
-<span class="n">rtc_interface</span><span class="o">::</span><span class="n">RTCInterface</span><span class="w"> </span><span class="n">rtc_interface</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="s">"intersection"</span><span class="p">);</span>
+<span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">RTCInterface</span><span class="w"> </span><span class="n">rtc_interface</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="s">"intersection"</span><span class="p">);</span>
 
 <span class="c1">// Generate UUID</span>
 <span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">generateUUID</span><span class="p">(</span><span class="n">getModuleId</span><span class="p">());</span>
@@ -13199,10 +13199,10 @@
 </code></pre></div>
 <h2 id="inputs-outputs">Inputs / Outputs<a class="headerlink" href="#inputs-outputs" title="Permanent link">#</a></h2>
 <h3 id="rtcinterface-constructor">RTCInterface (Constructor)<a class="headerlink" href="#rtcinterface-constructor" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">rtc_interface</span><span class="o">::</span><span class="n">RTCInterface</span><span class="p">(</span><span class="n">rclcpp</span><span class="o">::</span><span class="n">Node</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">RTCInterface</span><span class="p">(</span><span class="n">rclcpp</span><span class="o">::</span><span class="n">Node</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">);</span>
 </code></pre></div>
 <h4 id="description">Description<a class="headerlink" href="#description" title="Permanent link">#</a></h4>
-<p>A constructor for <code>rtc_interface::RTCInterface</code>.</p>
+<p>A constructor for <code>autoware::rtc_interface::RTCInterface</code>.</p>
 <h4 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h4>
 <ul>
 <li><code>node</code> : Node calling this interface</li>
@@ -13215,7 +13215,7 @@
 <h4 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h4>
 <p>An instance of <code>RTCInterface</code></p>
 <h3 id="publishcooperatestatus">publishCooperateStatus<a class="headerlink" href="#publishcooperatestatus" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">rtc_interface</span><span class="o">::</span><span class="n">publishCooperateStatus</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">rclcpp</span><span class="o">::</span><span class="n">Time</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">stamp</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">publishCooperateStatus</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">rclcpp</span><span class="o">::</span><span class="n">Time</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">stamp</span><span class="p">)</span>
 </code></pre></div>
 <h4 id="description_1">Description<a class="headerlink" href="#description_1" title="Permanent link">#</a></h4>
 <p>Publish registered cooperate status.</p>
@@ -13226,7 +13226,7 @@
 <h4 id="output_1">Output<a class="headerlink" href="#output_1" title="Permanent link">#</a></h4>
 <p>Nothing</p>
 <h3 id="updatecooperatestatus">updateCooperateStatus<a class="headerlink" href="#updatecooperatestatus" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">rtc_interface</span><span class="o">::</span><span class="n">updateCooperateStatus</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">safe</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">start_distance</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">finish_distance</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">rclcpp</span><span class="o">::</span><span class="n">Time</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">stamp</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">updateCooperateStatus</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">safe</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">start_distance</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">finish_distance</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">rclcpp</span><span class="o">::</span><span class="n">Time</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">stamp</span><span class="p">)</span>
 </code></pre></div>
 <h4 id="description_2">Description<a class="headerlink" href="#description_2" title="Permanent link">#</a></h4>
 <p>Update cooperate status corresponding to <code>uuid</code>.
@@ -13242,7 +13242,7 @@ If cooperate status corresponding to <code>uuid</code> is not registered yet, ad
 <h4 id="output_2">Output<a class="headerlink" href="#output_2" title="Permanent link">#</a></h4>
 <p>Nothing</p>
 <h3 id="removecooperatestatus">removeCooperateStatus<a class="headerlink" href="#removecooperatestatus" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">rtc_interface</span><span class="o">::</span><span class="n">removeCooperateStatus</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">removeCooperateStatus</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">)</span>
 </code></pre></div>
 <h4 id="description_3">Description<a class="headerlink" href="#description_3" title="Permanent link">#</a></h4>
 <p>Remove cooperate status corresponding to <code>uuid</code> from registered statuses.</p>
@@ -13253,7 +13253,7 @@ If cooperate status corresponding to <code>uuid</code> is not registered yet, ad
 <h4 id="output_3">Output<a class="headerlink" href="#output_3" title="Permanent link">#</a></h4>
 <p>Nothing</p>
 <h3 id="clearcooperatestatus">clearCooperateStatus<a class="headerlink" href="#clearcooperatestatus" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">rtc_interface</span><span class="o">::</span><span class="n">clearCooperateStatus</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">clearCooperateStatus</span><span class="p">()</span>
 </code></pre></div>
 <h4 id="description_4">Description<a class="headerlink" href="#description_4" title="Permanent link">#</a></h4>
 <p>Remove all cooperate statuses.</p>
@@ -13262,7 +13262,7 @@ If cooperate status corresponding to <code>uuid</code> is not registered yet, ad
 <h4 id="output_4">Output<a class="headerlink" href="#output_4" title="Permanent link">#</a></h4>
 <p>Nothing</p>
 <h3 id="isactivated">isActivated<a class="headerlink" href="#isactivated" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">rtc_interface</span><span class="o">::</span><span class="n">isActivated</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">isActivated</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">)</span>
 </code></pre></div>
 <h4 id="description_5">Description<a class="headerlink" href="#description_5" title="Permanent link">#</a></h4>
 <p>Return received command status corresponding to <code>uuid</code>.</p>
@@ -13275,7 +13275,7 @@ If cooperate status corresponding to <code>uuid</code> is not registered yet, ad
 If not, if received command is <code>ACTIVATED</code>, return <code>true</code>.
 If not, return <code>false</code>.</p>
 <h3 id="isregistered">isRegistered<a class="headerlink" href="#isregistered" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">rtc_interface</span><span class="o">::</span><span class="n">isRegistered</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">autoware</span><span class="o">::</span><span class="n">rtc_interface</span><span class="o">::</span><span class="n">isRegistered</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">unique_identifier_msgs</span><span class="o">::</span><span class="n">msg</span><span class="o">::</span><span class="n">UUID</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">uuid</span><span class="p">)</span>
 </code></pre></div>
 <h4 id="description_6">Description<a class="headerlink" href="#description_6" title="Permanent link">#</a></h4>
 <p>Return <code>true</code> if <code>uuid</code> is registered.</p>
@@ -13314,7 +13314,7 @@ If not, return <code>false</code>.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../route_handler/" class="md-footer__link md-footer__link--prev" aria-label="Previous: route handler" rel="prev">
+          <a href="../autoware_remaining_distance_time_calculator/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Index" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13323,20 +13323,20 @@ If not, return <code>false</code>.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                route handler
+                Index
               </div>
             </div>
           </a>
         
         
           
-          <a href="../rtc_replayer/" class="md-footer__link md-footer__link--next" aria-label="Next: rtc_replayer" rel="next">
+          <a href="../autoware_static_centerline_generator/" class="md-footer__link md-footer__link--next" aria-label="Next: Static Centerline Generator" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                rtc_replayer
+                Static Centerline Generator
               </div>
             </div>
             <div class="md-footer__button md-icon">

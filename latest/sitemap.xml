@@ -286,6 +286,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/autoware_pid_longitudinal_controller/</loc>
+         <lastmod>2024-06-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/autoware_smart_mpc_trajectory_follower/</loc>
          <lastmod>2024-06-08</lastmod>
          <changefreq>daily</changefreq>
@@ -317,11 +322,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/operation_mode_transition_manager/</loc>
-         <lastmod>2024-06-08</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/pid_longitudinal_controller/</loc>
          <lastmod>2024-06-08</lastmod>
          <changefreq>daily</changefreq>
     </url>

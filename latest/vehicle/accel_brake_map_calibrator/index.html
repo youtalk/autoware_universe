@@ -14,7 +14,7 @@
         <link rel="prev" href="../../tools/reaction_analyzer/">
       
       
-        <link rel="next" href="../autoware_steer_offset_estimator/Readme/">
+        <link rel="next" href="../autoware_raw_vehicle_cmd_converter/">
       
       <link rel="icon" href="../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
@@ -12849,16 +12849,64 @@
       
         
           
+            
+          
         
       
       
-        <label class="md-nav__link" for="__nav_13_2" id="__nav_13_2_label" tabindex="0">
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../autoware_raw_vehicle_cmd_converter/">Autoware raw vehicle cmd converter</a>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_13_2">
+          <span class="md-nav__icon md-icon"></span>
+          Autoware raw vehicle cmd converter
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_3" >
+      
+      
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_13_3" id="__nav_13_3_label" tabindex="0">
           Autoware steer offset estimator
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_2_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_13_2">
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_13_3">
           <span class="md-nav__icon md-icon"></span>
           Autoware steer offset estimator
         </label>
@@ -12900,7 +12948,7 @@
       
         
       
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_3" >
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_4" >
       
       
         
@@ -12908,13 +12956,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_13_3" id="__nav_13_3_label" tabindex="0">
+        <label class="md-nav__link" for="__nav_13_4" id="__nav_13_4_label" tabindex="0">
           Autoware vehicle info utils
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_3_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_13_3">
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_13_4">
           <span class="md-nav__icon md-icon"></span>
           Autoware vehicle info utils
         </label>
@@ -12956,7 +13004,7 @@
       
         
       
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_4" >
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_5" >
       
       
         
@@ -12973,58 +13021,10 @@
           
         </div>
       
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_4_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_13_4">
-          <span class="md-nav__icon md-icon"></span>
-          External cmd converter
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-      
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-      
-      
-      
-        
-      
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13_5" >
-      
-      
-        
-          
-            
-          
-        
-      
-      
-        
-        
-        <div class="md-nav__link md-nav__link--index ">
-          <a href="../raw_vehicle_cmd_converter/">Raw vehicle cmd converter</a>
-          
-        </div>
-      
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_13_5_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_13_5">
           <span class="md-nav__icon md-icon"></span>
-          Raw vehicle cmd converter
+          External cmd converter
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -13225,7 +13225,7 @@
 
 
 <div><h1 id="accel_brake_map_calibrator">accel_brake_map_calibrator<a class="headerlink" href="#accel_brake_map_calibrator" title="Permanent link">#</a></h1>
-<p>The role of this node is to automatically calibrate <code>accel_map.csv</code> / <code>brake_map.csv</code> used in the <code>raw_vehicle_cmd_converter</code> node.</p>
+<p>The role of this node is to automatically calibrate <code>accel_map.csv</code> / <code>brake_map.csv</code> used in the <code>autoware_raw_vehicle_cmd_converter</code> node.</p>
 <p>The base map, which is lexus's one by default, is updated iteratively with the loaded driving data.</p>
 <h2 id="how-to-calibrate">How to calibrate<a class="headerlink" href="#how-to-calibrate" title="Permanent link">#</a></h2>
 <h3 id="launch-calibrator">Launch Calibrator<a class="headerlink" href="#launch-calibrator" title="Permanent link">#</a></h3>
@@ -13376,7 +13376,7 @@ Diagnostic type <code>WARN</code> indicates that the current accel/brake map is 
 <td align="left">default_map_dir</td>
 <td align="left">str</td>
 <td align="left">directory of default map</td>
-<td align="left">[directory of <em>raw_vehicle_cmd_converter</em>]/data/default/</td>
+<td align="left">[directory of <em>autoware_raw_vehicle_cmd_converter</em>]/data/default/</td>
 </tr>
 <tr>
 <td align="left">calibrated_map_dir</td>
@@ -13650,13 +13650,13 @@ ros2<span class="w"> </span>run<span class="w"> </span>accel_brake_map_calibrato
         
         
           
-          <a href="../autoware_steer_offset_estimator/Readme/" class="md-footer__link md-footer__link--next" aria-label="Next: steer_offset_estimator" rel="next">
+          <a href="../autoware_raw_vehicle_cmd_converter/" class="md-footer__link md-footer__link--next" aria-label="Next: autoware_raw_vehicle_cmd_converter" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                steer_offset_estimator
+                autoware_raw_vehicle_cmd_converter
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -1656,7 +1656,7 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/vehicle/accel_brake_map_calibrator/</loc>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/vehicle/autoware_accel_brake_map_calibrator/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>

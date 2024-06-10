@@ -891,6 +891,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_behavior_path_lane_change_module/</loc>
+         <lastmod>2024-06-10</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
@@ -1077,11 +1082,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_path_goal_planner_module/</loc>
-         <lastmod>2024-06-10</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_path_lane_change_module/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>

@@ -7882,7 +7882,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_lane_change_module" class="md-nav__link">
+      <a href="../autoware_behavior_path_lane_change_module" class="md-nav__link">
         Lane Change
       </a>
     </li>
@@ -13138,7 +13138,7 @@
 </ul>
 <p><img alt="avoidance_by_lane_change" src="images/avoidance_by_lane_change.svg"></p>
 <h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
-<p>Basically, this module is implemented by reusing the avoidance target filtering logic of the existing <a href="../autoware_behavior_path_static_obstacle_avoidance_module/">Static Object Avoidance Module</a> and the path generation logic of the <a href="../behavior_path_lane_change_module/">Normal Lane Change Module</a>. On the other hand, the conditions under which the module is activated differ from those of a normal avoidance module.</p>
+<p>Basically, this module is implemented by reusing the avoidance target filtering logic of the existing <a href="../autoware_behavior_path_static_obstacle_avoidance_module/">Static Object Avoidance Module</a> and the path generation logic of the <a href="../autoware_behavior_path_lane_change_module/">Normal Lane Change Module</a>. On the other hand, the conditions under which the module is activated differ from those of a normal avoidance module.</p>
 <p>Check that the following conditions are satisfied after the filtering process for the avoidance target.</p>
 <h3 id="number-of-the-avoidance-target-objects">Number of the avoidance target objects<a class="headerlink" href="#number-of-the-avoidance-target-objects" title="Permanent link">#</a></h3>
 <p>This module is launched when the number of avoidance target objects on <strong>EGO DRIVING LANE</strong> is greater than <code>execute_object_num</code>. If there are no avoidance targets in the ego driving lane or their number is less than the parameter, the obstacle is avoided by normal avoidance behavior (if the normal avoidance module is registered).</p>

@@ -931,6 +931,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/latest/planning/autoware_behavior_velocity_occlusion_spot_module/</loc>
+         <lastmod>2024-06-10</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/planning/autoware_behavior_velocity_planner/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
@@ -1117,11 +1122,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/planning/behavior_velocity_no_stopping_area_module/</loc>
-         <lastmod>2024-06-10</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/latest/planning/behavior_velocity_occlusion_spot_module/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>

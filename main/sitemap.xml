@@ -1661,6 +1661,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/vehicle/autoware_external_cmd_converter/</loc>
+         <lastmod>2024-06-10</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/vehicle/autoware_raw_vehicle_cmd_converter/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
@@ -1672,11 +1677,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/vehicle/autoware_vehicle_info_utils/Readme/</loc>
-         <lastmod>2024-06-10</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/vehicle/external_cmd_converter/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>

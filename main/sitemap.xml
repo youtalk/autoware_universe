@@ -576,6 +576,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/perception/autoware_crosswalk_traffic_light_estimator/</loc>
+         <lastmod>2024-06-10</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/perception/autoware_map_based_prediction/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
@@ -592,11 +597,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/perception/compare_map_segmentation/</loc>
-         <lastmod>2024-06-10</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/perception/crosswalk_traffic_light_estimator/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>

@@ -311,6 +311,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/autoware_trajectory_follower_base/</loc>
+         <lastmod>2024-06-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/autoware_vehicle_cmd_gate/</loc>
          <lastmod>2024-06-11</lastmod>
          <changefreq>daily</changefreq>
@@ -342,11 +347,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/shift_decider/</loc>
-         <lastmod>2024-06-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/latest/control/trajectory_follower_base/</loc>
          <lastmod>2024-06-11</lastmod>
          <changefreq>daily</changefreq>
     </url>

@@ -311,6 +311,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/control/autoware_pure_pursuit/</loc>
+         <lastmod>2024-06-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/control/autoware_shift_decider/</loc>
          <lastmod>2024-06-11</lastmod>
          <changefreq>daily</changefreq>
@@ -352,11 +357,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/control/predicted_path_checker/</loc>
-         <lastmod>2024-06-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/control/pure_pursuit/</loc>
          <lastmod>2024-06-11</lastmod>
          <changefreq>daily</changefreq>
     </url>

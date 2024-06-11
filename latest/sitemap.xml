@@ -1201,11 +1201,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/latest/planning/rtc_replayer/</loc>
-         <lastmod>2024-06-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/latest/planning/sampling_based_planner/autoware_bezier_sampler/</loc>
          <lastmod>2024-06-11</lastmod>
          <changefreq>daily</changefreq>

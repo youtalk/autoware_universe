@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/pr-7094/planning/behavior_path_planner/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/pr-7094/control/autoware_pure_pursuit/">
       
       
-        <link rel="prev" href="../autoware_velocity_smoother/README.ja/">
+        <link rel="prev" href="../autoware_pid_longitudinal_controller/">
       
       
-        <link rel="next" href="docs/behavior_path_planner_interface_design/">
+        <link rel="next" href="../autoware_shift_decider/">
       
       <link rel="icon" href="../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Behavior Path Planner - Autoware Universe Documentation</title>
+        <title>Pure Pursuit Controller - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#behavior-path-planner" class="md-skip">
+        <a href="#pure-pursuit-controller" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Behavior Path Planner
+              Pure Pursuit Controller
             
           </span>
         </div>
@@ -224,6 +224,8 @@
         
   
   
+    
+  
 
 
   
@@ -235,7 +237,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../control/autoware_autonomous_emergency_braking/" class="md-tabs__link">
+      <a href="../autoware_autonomous_emergency_braking/" class="md-tabs__link md-tabs__link--active">
         Control
       </a>
     </li>
@@ -362,15 +364,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link md-tabs__link--active">
+      <a href="../../planning" class="md-tabs__link">
         Planning
       </a>
     </li>
@@ -624,6 +624,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
@@ -660,6 +662,20 @@
     <li class="md-nav__item">
       <a href="../../common/fake_test_node/design/fake_test_node-design" class="md-nav__link">
         fake_test_node
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../common/autoware_test_utils" class="md-nav__link">
+        Test Utils
       </a>
     </li>
   
@@ -1685,16 +1701,16 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
       
       
-        
-      
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
       
       
         
@@ -1739,7 +1755,7 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
           Control
@@ -1774,7 +1790,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_autonomous_emergency_braking/">Autoware autonomous emergency braking</a>
+          <a href="../autoware_autonomous_emergency_braking/">Autoware autonomous emergency braking</a>
           
         </div>
       
@@ -1822,7 +1838,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_control_validator/">Autoware control validator</a>
+          <a href="../autoware_control_validator/">Autoware control validator</a>
           
         </div>
       
@@ -1870,7 +1886,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_external_cmd_selector/">Autoware external cmd selector</a>
+          <a href="../autoware_external_cmd_selector/">Autoware external cmd selector</a>
           
         </div>
       
@@ -1918,7 +1934,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_joy_controller/">Autoware joy controller</a>
+          <a href="../autoware_joy_controller/">Autoware joy controller</a>
           
         </div>
       
@@ -1966,7 +1982,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_lane_departure_checker/">Autoware lane departure checker</a>
+          <a href="../autoware_lane_departure_checker/">Autoware lane departure checker</a>
           
         </div>
       
@@ -2016,7 +2032,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_mpc_lateral_controller/">Autoware mpc lateral controller</a>
+          <a href="../autoware_mpc_lateral_controller/">Autoware mpc lateral controller</a>
           
             <label for="__nav_2_6">
               <span class="md-nav__icon md-icon"></span>
@@ -2039,7 +2055,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../control/autoware_mpc_lateral_controller/model_predictive_control_algorithm/" class="md-nav__link">
+      <a href="../autoware_mpc_lateral_controller/model_predictive_control_algorithm/" class="md-nav__link">
         MPC Algorithm
       </a>
     </li>
@@ -2082,7 +2098,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_operation_mode_transition_manager/">Autoware operation mode transition manager</a>
+          <a href="../autoware_operation_mode_transition_manager/">Autoware operation mode transition manager</a>
           
         </div>
       
@@ -2130,7 +2146,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_pid_longitudinal_controller/">Autoware pid longitudinal controller</a>
+          <a href="../autoware_pid_longitudinal_controller/">Autoware pid longitudinal controller</a>
           
         </div>
       
@@ -2154,18 +2170,18 @@
               
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
       
       
-        
-      
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" checked>
       
       
         
@@ -2177,15 +2193,15 @@
       
         
         
-        <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_shift_decider/">Autoware shift decider</a>
+        <div class="md-nav__link md-nav__link--index md-nav__link--active">
+          <a href="./">Autoware pure pursuit</a>
           
         </div>
       
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_2_9">
           <span class="md-nav__icon md-icon"></span>
-          Autoware shift decider
+          Autoware pure pursuit
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -2226,14 +2242,14 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_smart_mpc_trajectory_follower/">Autoware smart mpc trajectory follower</a>
+          <a href="../autoware_shift_decider/">Autoware shift decider</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_10_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_10">
           <span class="md-nav__icon md-icon"></span>
-          Autoware smart mpc trajectory follower
+          Autoware shift decider
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -2274,14 +2290,14 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_trajectory_follower_base/">Autoware trajectory follower base</a>
+          <a href="../autoware_smart_mpc_trajectory_follower/">Autoware smart mpc trajectory follower</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_11_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_11">
           <span class="md-nav__icon md-icon"></span>
-          Autoware trajectory follower base
+          Autoware smart mpc trajectory follower
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -2317,82 +2333,22 @@
             
           
         
-          
-        
       
       
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_trajectory_follower_node/">Autoware trajectory follower node</a>
-          
-            <label for="__nav_2_12">
-              <span class="md-nav__icon md-icon"></span>
-            </label>
+          <a href="../autoware_trajectory_follower_base/">Autoware trajectory follower base</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_12">
           <span class="md-nav__icon md-icon"></span>
-          Autoware trajectory follower node
+          Autoware trajectory follower base
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
-            
-          
-            
-              
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-      
-      
-        
-      
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_12_2" >
-      
-      
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_2_12_2" id="__nav_2_12_2_label" tabindex="0">
-          Design
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_12_2_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_2_12_2">
-          <span class="md-nav__icon md-icon"></span>
-          Design
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../control/autoware_trajectory_follower_node/design/simple_trajectory_follower-design/" class="md-nav__link">
-        Simple Trajectory Follower
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
             
           
         </ul>
@@ -2425,22 +2381,82 @@
             
           
         
+          
+        
       
       
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/autoware_vehicle_cmd_gate/">Autoware vehicle cmd gate</a>
+          <a href="../autoware_trajectory_follower_node/">Autoware trajectory follower node</a>
+          
+            <label for="__nav_2_13">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_13">
           <span class="md-nav__icon md-icon"></span>
-          Autoware vehicle cmd gate
+          Autoware trajectory follower node
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_13_2" >
+      
+      
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2_13_2" id="__nav_2_13_2_label" tabindex="0">
+          Design
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_13_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_13_2">
+          <span class="md-nav__icon md-icon"></span>
+          Design
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autoware_trajectory_follower_node/design/simple_trajectory_follower-design/" class="md-nav__link">
+        Simple Trajectory Follower
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
             
           
         </ul>
@@ -2478,14 +2494,14 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/control_performance_analysis/">Control performance analysis</a>
+          <a href="../autoware_vehicle_cmd_gate/">Autoware vehicle cmd gate</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_14">
           <span class="md-nav__icon md-icon"></span>
-          Control performance analysis
+          Autoware vehicle cmd gate
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -2526,14 +2542,14 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/obstacle_collision_checker/">Obstacle collision checker</a>
+          <a href="../control_performance_analysis/">Control performance analysis</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_15">
           <span class="md-nav__icon md-icon"></span>
-          Obstacle collision checker
+          Control performance analysis
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -2574,14 +2590,14 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/predicted_path_checker/">Predicted path checker</a>
+          <a href="../obstacle_collision_checker/">Obstacle collision checker</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_16_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_16">
           <span class="md-nav__icon md-icon"></span>
-          Predicted path checker
+          Obstacle collision checker
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -2622,14 +2638,14 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../control/pure_pursuit/">Pure pursuit</a>
+          <a href="../predicted_path_checker/">Predicted path checker</a>
           
         </div>
       
       <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_17_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_2_17">
           <span class="md-nav__icon md-icon"></span>
-          Pure pursuit
+          Predicted path checker
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -7541,16 +7557,16 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
       
       
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
       
       
         
@@ -7581,7 +7597,7 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_8">
           <span class="md-nav__icon md-icon"></span>
           Planning
@@ -7594,7 +7610,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../planning" class="md-nav__link">
         Introduction
       </a>
     </li>
@@ -7647,7 +7663,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner" class="md-nav__link">
         About Behavior Path
       </a>
     </li>
@@ -7704,7 +7720,7 @@
   
   
     <li class="md-nav__item">
-      <a href="docs/behavior_path_planner_manager_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner/docs/behavior_path_planner_manager_design" class="md-nav__link">
         Planner Manager
       </a>
     </li>
@@ -7718,7 +7734,7 @@
   
   
     <li class="md-nav__item">
-      <a href="docs/behavior_path_planner_interface_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner/docs/behavior_path_planner_interface_design" class="md-nav__link">
         Scene Module Interface
       </a>
     </li>
@@ -7732,7 +7748,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design" class="md-nav__link">
         Path Generation
       </a>
     </li>
@@ -7746,7 +7762,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check" class="md-nav__link">
         Collision Assessment/Safety Check
       </a>
     </li>
@@ -7760,7 +7776,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design" class="md-nav__link">
         Dynamic Drivable Area
       </a>
     </li>
@@ -7774,7 +7790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design" class="md-nav__link">
         Turn Signal
       </a>
     </li>
@@ -7840,7 +7856,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_avoidance_by_lane_change_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_avoidance_by_lane_change_module" class="md-nav__link">
         Avoidance by Lane Change
       </a>
     </li>
@@ -7854,7 +7870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_dynamic_obstacle_avoidance_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_dynamic_obstacle_avoidance_module" class="md-nav__link">
         Dynamic Obstacle Avoidance
       </a>
     </li>
@@ -7868,7 +7884,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_path_goal_planner_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_goal_planner_module" class="md-nav__link">
         Goal Planner
       </a>
     </li>
@@ -7882,7 +7898,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_lane_change_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_lane_change_module" class="md-nav__link">
         Lane Change
       </a>
     </li>
@@ -7896,7 +7912,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_side_shift_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_side_shift_module" class="md-nav__link">
         Side Shift
       </a>
     </li>
@@ -7910,7 +7926,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_start_planner_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_start_planner_module" class="md-nav__link">
         Start Planner
       </a>
     </li>
@@ -7924,7 +7940,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_path_static_obstacle_avoidance_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_path_static_obstacle_avoidance_module" class="md-nav__link">
         Static Obstacle Avoidance
       </a>
     </li>
@@ -7991,7 +8007,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_planner" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_planner" class="md-nav__link">
         About Behavior Velocity
       </a>
     </li>
@@ -8005,7 +8021,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_template_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_template_module" class="md-nav__link">
         Template for Custom Module
       </a>
     </li>
@@ -8078,7 +8094,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_blind_spot_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_blind_spot_module" class="md-nav__link">
         Blind Spot
       </a>
     </li>
@@ -8092,7 +8108,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_crosswalk_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_crosswalk_module" class="md-nav__link">
         Crosswalk
       </a>
     </li>
@@ -8106,7 +8122,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_velocity_detection_area_module" class="md-nav__link">
+      <a href="../../planning/behavior_velocity_detection_area_module" class="md-nav__link">
         Detection Area
       </a>
     </li>
@@ -8120,7 +8136,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_velocity_dynamic_obstacle_stop_module" class="md-nav__link">
+      <a href="../../planning/behavior_velocity_dynamic_obstacle_stop_module" class="md-nav__link">
         Dynamic Obstacle Stop
       </a>
     </li>
@@ -8134,7 +8150,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_intersection_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_intersection_module" class="md-nav__link">
         Intersection
       </a>
     </li>
@@ -8148,7 +8164,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_velocity_no_drivable_lane_module" class="md-nav__link">
+      <a href="../../planning/behavior_velocity_no_drivable_lane_module" class="md-nav__link">
         No Drivable Lane
       </a>
     </li>
@@ -8162,7 +8178,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_velocity_no_stopping_area_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_no_stopping_area_module" class="md-nav__link">
         No Stopping Area
       </a>
     </li>
@@ -8176,7 +8192,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_occlusion_spot_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_occlusion_spot_module" class="md-nav__link">
         Occlusion Spot
       </a>
     </li>
@@ -8190,7 +8206,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_run_out_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_run_out_module" class="md-nav__link">
         Run Out
       </a>
     </li>
@@ -8204,7 +8220,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../behavior_velocity_speed_bump_module" class="md-nav__link">
+      <a href="../../planning/behavior_velocity_speed_bump_module" class="md-nav__link">
         Speed Bump
       </a>
     </li>
@@ -8218,7 +8234,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_stop_line_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_stop_line_module" class="md-nav__link">
         Stop Line
       </a>
     </li>
@@ -8232,7 +8248,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_traffic_light_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_traffic_light_module" class="md-nav__link">
         Traffic Light
       </a>
     </li>
@@ -8246,7 +8262,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_virtual_traffic_light_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_virtual_traffic_light_module" class="md-nav__link">
         Virtual Traffic Light
       </a>
     </li>
@@ -8260,7 +8276,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_behavior_velocity_walkway_module" class="md-nav__link">
+      <a href="../../planning/autoware_behavior_velocity_walkway_module" class="md-nav__link">
         Walkway
       </a>
     </li>
@@ -8360,7 +8376,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../freespace_planner" class="md-nav__link">
+      <a href="../../planning/autoware_freespace_planner" class="md-nav__link">
         About Freespace Planner
       </a>
     </li>
@@ -8374,7 +8390,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../freespace_planning_algorithms" class="md-nav__link">
+      <a href="../../planning/autoware_freespace_planning_algorithms" class="md-nav__link">
         Algorithm
       </a>
     </li>
@@ -8388,7 +8404,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../freespace_planning_algorithms/rrtstar" class="md-nav__link">
+      <a href="../../planning/autoware_freespace_planning_algorithms/rrtstar" class="md-nav__link">
         RRT*
       </a>
     </li>
@@ -8416,7 +8432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mission_planner" class="md-nav__link">
+      <a href="../../planning/autoware_mission_planner" class="md-nav__link">
         Mission Planner
       </a>
     </li>
@@ -8442,8 +8458,6 @@
       <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_6" >
       
       
-        
-          
         
           
         
@@ -8518,7 +8532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_path_optimizer" class="md-nav__link">
+      <a href="../../planning/autoware_path_optimizer" class="md-nav__link">
         About Path Optimizer
       </a>
     </li>
@@ -8532,7 +8546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_path_optimizer/docs/mpt" class="md-nav__link">
+      <a href="../../planning/autoware_path_optimizer/docs/mpt" class="md-nav__link">
         Model Predictive Trajectory (MPT)
       </a>
     </li>
@@ -8546,7 +8560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_path_optimizer/docs/debug" class="md-nav__link">
+      <a href="../../planning/autoware_path_optimizer/docs/debug" class="md-nav__link">
         How to Debug
       </a>
     </li>
@@ -8602,7 +8616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_obstacle_cruise_planner" class="md-nav__link">
+      <a href="../../planning/autoware_obstacle_cruise_planner" class="md-nav__link">
         About Obstacle Cruise
       </a>
     </li>
@@ -8616,7 +8630,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_obstacle_cruise_planner/docs/debug" class="md-nav__link">
+      <a href="../../planning/autoware_obstacle_cruise_planner/docs/debug" class="md-nav__link">
         How to Debug
       </a>
     </li>
@@ -8637,7 +8651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../obstacle_stop_planner" class="md-nav__link">
+      <a href="../../planning/obstacle_stop_planner" class="md-nav__link">
         Obstacle Stop Planner
       </a>
     </li>
@@ -8650,10 +8664,66 @@
   
   
   
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_6_4" >
+      
+      
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_8_6_4" id="__nav_8_6_4_label" tabindex="0">
+          Path Smoother
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_8_6_4">
+          <span class="md-nav__icon md-icon"></span>
+          Path Smoother
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../obstacle_velocity_limiter" class="md-nav__link">
-        Obstacle Velocity Limiter
+      <a href="../../planning/autoware_path_smoother" class="md-nav__link">
+        About Path Smoother
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../planning/autoware_path_smoother/docs/eb" class="md-nav__link">
+        Elastic Band
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -8680,17 +8750,21 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_8_6_5" id="__nav_8_6_5_label" tabindex="0">
-          Path Smoother
+          Sampling Based Planner
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_5_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_8_6_5">
           <span class="md-nav__icon md-icon"></span>
-          Path Smoother
+          Sampling Based Planner
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -8700,8 +8774,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_path_smoother" class="md-nav__link">
-        About Path Smoother
+      <a href="../../planning/sampling_based_planner/autoware_path_sampler" class="md-nav__link">
+        Path Sample
       </a>
     </li>
   
@@ -8714,8 +8788,36 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_path_smoother/docs/eb" class="md-nav__link">
-        Elastic Band
+      <a href="../../planning/sampling_based_planner/autoware_sampler_common" class="md-nav__link">
+        Common library
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../planning/sampling_based_planner/autoware_frenet_planner" class="md-nav__link">
+        Frenet Planner
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../planning/sampling_based_planner/autoware_bezier_sampler" class="md-nav__link">
+        Bezier Sampler
       </a>
     </li>
   
@@ -8750,21 +8852,17 @@
         
           
         
-          
-        
-          
-        
       
       
         <label class="md-nav__link" for="__nav_8_6_6" id="__nav_8_6_6_label" tabindex="0">
-          Sampling Based Planner
+          Surround Obstacle Checker
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_6_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_8_6_6">
           <span class="md-nav__icon md-icon"></span>
-          Sampling Based Planner
+          Surround Obstacle Checker
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -8774,8 +8872,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../sampling_based_planner/autoware_path_sampler" class="md-nav__link">
-        Path Sample
+      <a href="../../planning/autoware_surround_obstacle_checker" class="md-nav__link">
+        About Surround Obstacle Checker
       </a>
     </li>
   
@@ -8788,36 +8886,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../sampling_based_planner/autoware_sampler_common" class="md-nav__link">
-        Common library
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sampling_based_planner/autoware_frenet_planner" class="md-nav__link">
-        Frenet Planner
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sampling_based_planner/autoware_bezier_sampler" class="md-nav__link">
-        Bezier Sampler
+      <a href="../../planning/autoware_surround_obstacle_checker/surround_obstacle_checker-design.ja" class="md-nav__link">
+        About Surround Obstacle Checker (Japanese)
       </a>
     </li>
   
@@ -8855,14 +8925,14 @@
       
       
         <label class="md-nav__link" for="__nav_8_6_7" id="__nav_8_6_7_label" tabindex="0">
-          Surround Obstacle Checker
+          Motion Velocity Planner
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_7_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_8_6_7">
           <span class="md-nav__icon md-icon"></span>
-          Surround Obstacle Checker
+          Motion Velocity Planner
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -8872,8 +8942,57 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_surround_obstacle_checker" class="md-nav__link">
-        About Surround Obstacle Checker
+      <a href="../../planning/motion_velocity_planner/autoware_motion_velocity_planner_node/" class="md-nav__link">
+        About Motion Velocity Planner
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_6_7_2" >
+      
+      
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_8_6_7_2" id="__nav_8_6_7_2_label" tabindex="0">
+          Available Modules
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_8_6_7_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_8_6_7_2">
+          <span class="md-nav__icon md-icon"></span>
+          Available Modules
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../planning/motion_velocity_planner/autoware_motion_velocity_planner_out_of_lane_module/" class="md-nav__link">
+        Out of Lane
       </a>
     </li>
   
@@ -8886,9 +9005,16 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_surround_obstacle_checker/surround_obstacle_checker-design.ja" class="md-nav__link">
-        About Surround Obstacle Checker (Japanese)
+      <a href="../../planning/motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/" class="md-nav__link">
+        Obstacle Velocity Limiter
       </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -8925,123 +9051,13 @@
       
       
         <label class="md-nav__link" for="__nav_8_6_8" id="__nav_8_6_8_label" tabindex="0">
-          Motion Velocity Planner
+          Velocity Smoother
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_8_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_8_6_8">
           <span class="md-nav__icon md-icon"></span>
-          Motion Velocity Planner
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_planner_node/" class="md-nav__link">
-        About Motion Velocity Planner
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-      
-      
-        
-      
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_6_8_2" >
-      
-      
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_8_6_8_2" id="__nav_8_6_8_2_label" tabindex="0">
-          Available Modules
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_8_6_8_2_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_8_6_8_2">
-          <span class="md-nav__icon md-icon"></span>
-          Available Modules
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_planner_out_of_lane_module/" class="md-nav__link">
-        Out of Lane
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-      
-      
-        
-      
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_6_9" >
-      
-      
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_8_6_9" id="__nav_8_6_9_label" tabindex="0">
-          Velocity Smoother
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_9_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_8_6_9">
-          <span class="md-nav__icon md-icon"></span>
           Velocity Smoother
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
@@ -9052,7 +9068,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_velocity_smoother" class="md-nav__link">
+      <a href="../../planning/autoware_velocity_smoother" class="md-nav__link">
         About Velocity Smoother
       </a>
     </li>
@@ -9066,7 +9082,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_velocity_smoother/README.ja" class="md-nav__link">
+      <a href="../../planning/autoware_velocity_smoother/README.ja" class="md-nav__link">
         About Velocity Smoother (Japanese)
       </a>
     </li>
@@ -9094,7 +9110,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_scenario_selector" class="md-nav__link">
+      <a href="../../planning/autoware_scenario_selector" class="md-nav__link">
         Scenario Selector
       </a>
     </li>
@@ -9108,7 +9124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_static_centerline_generator" class="md-nav__link">
+      <a href="../../planning/autoware_static_centerline_generator" class="md-nav__link">
         Static Centerline Generator
       </a>
     </li>
@@ -9165,7 +9181,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../costmap_generator" class="md-nav__link">
+      <a href="../../planning/costmap_generator" class="md-nav__link">
         Costmap Generator
       </a>
     </li>
@@ -9179,7 +9195,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_external_velocity_limit_selector" class="md-nav__link">
+      <a href="../../planning/autoware_external_velocity_limit_selector" class="md-nav__link">
         External Velocity Limit Selector
       </a>
     </li>
@@ -9193,7 +9209,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_objects_of_interest_marker_interface" class="md-nav__link">
+      <a href="../../planning/autoware_objects_of_interest_marker_interface" class="md-nav__link">
         Objects of Interest Marker Interface
       </a>
     </li>
@@ -9207,7 +9223,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_route_handler" class="md-nav__link">
+      <a href="../../planning/autoware_route_handler" class="md-nav__link">
         Route Handler
       </a>
     </li>
@@ -9221,7 +9237,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_rtc_interface" class="md-nav__link">
+      <a href="../../planning/autoware_rtc_interface" class="md-nav__link">
         RTC Interface
       </a>
     </li>
@@ -9267,8 +9283,6 @@
         
           
         
-          
-        
       
       
         <label class="md-nav__link" for="__nav_8_10" id="__nav_8_10_label" tabindex="0">
@@ -9289,7 +9303,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_remaining_distance_time_calculator" class="md-nav__link">
+      <a href="../../planning/autoware_remaining_distance_time_calculator" class="md-nav__link">
         Remaining Distance Time Calculator
       </a>
     </li>
@@ -9303,7 +9317,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rtc_replayer" class="md-nav__link">
+      <a href="../../planning/rtc_replayer" class="md-nav__link">
         RTC Replayer
       </a>
     </li>
@@ -9387,21 +9401,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../planning_test_utils" class="md-nav__link">
-        Planning Test Utils
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../autoware_planning_test_manager" class="md-nav__link">
+      <a href="../../planning/autoware_planning_test_manager" class="md-nav__link">
         Planning Test Manager
       </a>
     </li>
@@ -9415,7 +9415,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_planning_topic_converter" class="md-nav__link">
+      <a href="../../planning/autoware_planning_topic_converter" class="md-nav__link">
         Planning Topic Converter
       </a>
     </li>
@@ -9429,7 +9429,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_planning_validator" class="md-nav__link">
+      <a href="../../planning/autoware_planning_validator" class="md-nav__link">
         Planning Validator
       </a>
     </li>
@@ -13120,145 +13120,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose-use-cases" class="md-nav__link">
-    Purpose / Use Cases
+  <a href="#inputs" class="md-nav__link">
+    Inputs
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    Features
-  </a>
-  
-    <nav class="md-nav" aria-label="Features">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#supported-scene-modules" class="md-nav__link">
-    Supported Scene Modules
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#planner-manager" class="md-nav__link">
-    Planner Manager
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inputs-outputs-api" class="md-nav__link">
-    Inputs / Outputs / API
-  </a>
-  
-    <nav class="md-nav" aria-label="Inputs / Outputs / API">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input" class="md-nav__link">
-    Input
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#output" class="md-nav__link">
-    Output
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#debug" class="md-nav__link">
-    Debug
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-enable-or-disable-the-modules" class="md-nav__link">
-    How to enable or disable the modules
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#generating-path" class="md-nav__link">
-    Generating Path
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#collision-assessment-safety-check" class="md-nav__link">
-    Collision Assessment / Safety check
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#generating-drivable-area" class="md-nav__link">
-    Generating Drivable Area
-  </a>
-  
-    <nav class="md-nav" aria-label="Generating Drivable Area">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#static-drivable-area-logic" class="md-nav__link">
-    Static Drivable Area logic
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dynamic-drivable-area-logic" class="md-nav__link">
-    Dynamic Drivable Area Logic
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#generating-turn-signal" class="md-nav__link">
-    Generating Turn Signal
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rerouting" class="md-nav__link">
-    Rerouting
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters-and-configuration" class="md-nav__link">
-    Parameters and Configuration
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#limitations-future-work" class="md-nav__link">
-    Limitations &amp; Future Work
+  <a href="#outputs" class="md-nav__link">
+    Outputs
   </a>
   
 </li>
@@ -13281,422 +13151,24 @@
   
 
 
-<div><h1 id="behavior-path-planner">Behavior Path Planner<a class="headerlink" href="#behavior-path-planner" title="Permanent link">#</a></h1>
-<p>The Behavior Path Planner's main objective is to significantly enhance the safety of autonomous vehicles by minimizing the risk of accidents. It improves driving efficiency through time conservation and underpins reliability with its rule-based approach. Additionally, it allows users to integrate their own custom behavior modules or use it with different types of vehicles, such as cars, buses, and delivery robots, as well as in various environments, from busy urban streets to open highways.</p>
-<p>The module begins by thoroughly analyzing the ego vehicle's current situation, including its position, speed, and surrounding environment. This analysis leads to essential driving decisions about lane changes or stopping and subsequently generates a path that is both safe and efficient. It considers road geometry, traffic rules, and dynamic conditions while also incorporating obstacle avoidance to respond to static and dynamic obstacles such as other vehicles, pedestrians, or unexpected roadblocks, ensuring safe navigation.</p>
-<p>Moreover, the planner actively interacts with other traffic participants, predicting their actions and accordingly adjusting the vehicle's path. This ensures not only the safety of the autonomous vehicle but also contributes to smooth traffic flow. Its adherence to traffic laws, including speed limits and traffic signals, further guarantees lawful and predictable driving behavior. The planner is also designed to minimize sudden or abrupt maneuvers, aiming for a comfortable and natural driving experience.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The <a href="https://autowarefoundation.github.io/autoware-documentation/main/design/autoware-architecture/planning/">Planning Component Design</a> Document outlines the foundational philosophy guiding the design and future development of the Behavior Path Planner module. We strongly encourage readers to consult this document to understand the rationale behind its current configuration and the direction of its ongoing development.</p>
-</div>
-<h2 id="purpose-use-cases">Purpose / Use Cases<a class="headerlink" href="#purpose-use-cases" title="Permanent link">#</a></h2>
-<p>Essentially, the module has three primary responsibilities:</p>
-<ol>
-<li>Creating a <strong>path based</strong> on the traffic situation.</li>
-<li>Generating <strong>drivable area</strong>, i.e. the area within which the vehicle can maneuver.</li>
-<li>Generating <strong>turn signal</strong> commands to be relayed to the vehicle interface.</li>
-</ol>
-<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">#</a></h2>
-<h3 id="supported-scene-modules">Supported Scene Modules<a class="headerlink" href="#supported-scene-modules" title="Permanent link">#</a></h3>
-<p>Behavior Path Planner has following scene modules</p>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Description</th>
-<th align="left">Details</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">Lane Following</td>
-<td align="left">this module generates reference path from lanelet centerline.</td>
-<td align="left">LINK</td>
-</tr>
-<tr>
-<td align="left">Static Obstacle Avoidance</td>
-<td align="left">this module generates avoidance path when there is objects that should be avoid.</td>
-<td align="left"><a href="../autoware_behavior_path_static_obstacle_avoidance_module/">LINK</a></td>
-</tr>
-<tr>
-<td align="left">Dynamic Obstacle Avoidance</td>
-<td align="left">WIP</td>
-<td align="left"><a href="../autoware_behavior_path_dynamic_obstacle_avoidance_module/">LINK</a></td>
-</tr>
-<tr>
-<td align="left">Avoidance By Lane Change</td>
-<td align="left">this module generates lane change path when there is objects that should be avoid.</td>
-<td align="left"><a href="../behavior_path_avoidance_by_lane_change_module/README.md">LINK</a></td>
-</tr>
-<tr>
-<td align="left">Lane Change</td>
-<td align="left">this module is performed when it is necessary and a collision check with other vehicles is cleared.</td>
-<td align="left"><a href="../autoware_behavior_path_lane_change_module/">LINK</a></td>
-</tr>
-<tr>
-<td align="left">External Lane Change</td>
-<td align="left">WIP</td>
-<td align="left">LINK</td>
-</tr>
-<tr>
-<td align="left">Goal Planner</td>
-<td align="left">this module is performed when ego-vehicle is in the road lane and goal is in the shoulder lane. ego-vehicle will stop at the goal.</td>
-<td align="left"><a href="../autoware_behavior_path_goal_planner_module/">LINK</a></td>
-</tr>
-<tr>
-<td align="left">Start Planner</td>
-<td align="left">this module is performed when ego-vehicle is stationary and footprint of ego-vehicle is included in shoulder lane. This module ends when ego-vehicle merges into the road.</td>
-<td align="left"><a href="../autoware_behavior_path_start_planner_module/">LINK</a></td>
-</tr>
-<tr>
-<td align="left">Side Shift</td>
-<td align="left">(for remote control) shift the path to left or right according to an external instruction.</td>
-<td align="left"><a href="../autoware_behavior_path_side_shift_module/">LINK</a></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>click on the following images to view the video of their execution</p>
-<p></p><div align="center">
-    <table>
-        <tr>
-            <td><img src="./image/supported_module_lane_following.svg" alt="Lane Following Module" width="300"></td>
-            <td><a href="https://www.youtube.com/watch?v=A_V9yvfKZ4E"><img src="./image/supported_module_avoidance.svg" alt="Avoidance Module" width="300"></a></td>
-            <td><img src="./image/supported_module_avoidance_by_lane_change.svg" alt="Avoidance by Lane Change Module" width="300"></td>
-        </tr>
-        <tr>
-            <td><a href="https://www.youtube.com/watch?v=0jRDGQ84cD4"><img src="./image/supported_module_lane_change.svg" alt="Lane Change Module" width="300"></a></td>
-            <td><a href="https://www.youtube.com/watch?v=xOjnPqoHup4"><img src="./image/supported_module_start_planner.svg" alt="Start Planner Module" width="300"></a></td>
-            <td><a href="https://www.youtube.com/watch?v=ornbzkWxRWU"><img src="./image/supported_module_goal_planner.svg" alt="Goal Planner Module" width="300"></a></td>
-        </tr>
-    </table>
-</div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Users can refer to <a href="https://autowarefoundation.github.io/autoware-documentation/main/design/autoware-architecture/planning/#supported-functions">Planning component design</a> for some additional behavior.</p>
-</div>
-<h4 id="how-to-add-or-implement-new-module">How to add or implement new module?<a class="headerlink" href="#how-to-add-or-implement-new-module" title="Permanent link">#</a></h4>
-<p>All scene modules are implemented by inheriting base class <code>scene_module_interface.hpp</code>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The remainder of this subsection is work in progress (WIP).</p>
-</div>
-<h3 id="planner-manager">Planner Manager<a class="headerlink" href="#planner-manager" title="Permanent link">#</a></h3>
-<p>The Planner Manager's responsibilities include:</p>
-<ol>
-<li>Activating the relevant scene module in response to the specific situation faced by the autonomous vehicle. For example, when a parked vehicle blocks the ego vehicle's driving lane, the manager would engage the avoidance module.</li>
-<li>Managing the execution order when multiple modules are running simultaneously. For instance, if both the lane-changing and avoidance modules are operational, the manager decides which should take precedence.</li>
-<li>Merging paths from multiple modules when they are activated simultaneously and each generates its own path, thereby creating a single functional path.</li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>To check the scene module's transition, i.e.: registered, approved and candidate modules, set <code>verbose: true</code> in the <a href="https://github.com/autowarefoundation/autoware_launch/blob/0cd5d891a36ac34a32a417205905c109f2bafe7b/autoware_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/behavior_path_planner.param.yaml#L3">behavior path planner configuration file</a>.</p>
-<p><img alt="Scene module's transition table" src="image/checking_module_transition.png"></p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For more in-depth information, refer to <a href="docs/behavior_path_planner_manager_design/">Manager design</a> document.</p>
-</div>
-<h2 id="inputs-outputs-api">Inputs / Outputs / API<a class="headerlink" href="#inputs-outputs-api" title="Permanent link">#</a></h2>
-<h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="center">Required?</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">~/input/odometry</td>
-<td align="center">○</td>
-<td align="left"><code>nav_msgs::msg::Odometry</code></td>
-<td align="left">for ego velocity.</td>
-</tr>
-<tr>
-<td align="left">~/input/accel</td>
-<td align="center">○</td>
-<td align="left"><code>geometry_msgs::msg::AccelWithCovarianceStamped</code></td>
-<td align="left">for ego acceleration.</td>
-</tr>
-<tr>
-<td align="left">~/input/objects</td>
-<td align="center">○</td>
-<td align="left"><code>autoware_perception_msgs::msg::PredictedObjects</code></td>
-<td align="left">dynamic objects from perception module.</td>
-</tr>
-<tr>
-<td align="left">~/input/occupancy_grid_map</td>
-<td align="center">○</td>
-<td align="left"><code>nav_msgs::msg::OccupancyGrid</code></td>
-<td align="left">occupancy grid map from perception module. This is used for only Goal Planner module.</td>
-</tr>
-<tr>
-<td align="left">~/input/traffic_signals</td>
-<td align="center">○</td>
-<td align="left"><code>autoware_perception_msgs::msg::TrafficLightGroupArray</code></td>
-<td align="left">traffic signals information from the perception module</td>
-</tr>
-<tr>
-<td align="left">~/input/vector_map</td>
-<td align="center">○</td>
-<td align="left"><code>autoware_map_msgs::msg::LaneletMapBin</code></td>
-<td align="left">vector map information.</td>
-</tr>
-<tr>
-<td align="left">~/input/route</td>
-<td align="center">○</td>
-<td align="left"><code>autoware_planning_msgs::msg::LaneletRoute</code></td>
-<td align="left">current route from start to goal.</td>
-</tr>
-<tr>
-<td align="left">~/input/scenario</td>
-<td align="center">○</td>
-<td align="left"><code>tier4_planning_msgs::msg::Scenario</code></td>
-<td align="left">Launches behavior path planner if current scenario == <code>Scenario:LaneDriving</code>.</td>
-</tr>
-<tr>
-<td align="left">~/input/lateral_offset</td>
-<td align="center">△</td>
-<td align="left"><code>tier4_planning_msgs::msg::LateralOffset</code></td>
-<td align="left">lateral offset to trigger side shift</td>
-</tr>
-<tr>
-<td align="left">~/system/operation_mode/state</td>
-<td align="center">○</td>
-<td align="left"><code>autoware_adapi_v1_msgs::msg::OperationModeState</code></td>
-<td align="left">Allows planning module to know if vehicle is in autonomous mode or can be controlled<sup><a href="https://github.com/autowarefoundation/autoware.universe/blob/main/system/default_ad_api/document/operation-mode.md">ref</a></sup></td>
-</tr>
-</tbody>
-</table>
+<div><h1 id="pure-pursuit-controller">Pure Pursuit Controller<a class="headerlink" href="#pure-pursuit-controller" title="Permanent link">#</a></h1>
+<p>The Pure Pursuit Controller module calculates the steering angle for tracking a desired trajectory using the pure pursuit algorithm. This is used as a lateral controller plugin in the <code>autoware_trajectory_follower_node</code>.</p>
+<h2 id="inputs">Inputs<a class="headerlink" href="#inputs" title="Permanent link">#</a></h2>
+<p>Set the following from the <a href="../autoware_trajectory_follower_node/">controller_node</a></p>
 <ul>
-<li>○ Mandatory: Planning Module would not work if anyone of this is not present.</li>
-<li>△ Optional: Some module would not work, but Planning Module can still be operated.</li>
+<li><code>autoware_planning_msgs/Trajectory</code> : reference trajectory to follow.</li>
+<li><code>nav_msgs/Odometry</code>: current ego pose and velocity information</li>
 </ul>
-<h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th>QoS Durability</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">~/output/path</td>
-<td align="left"><code>tier4_planning_msgs::msg::PathWithLaneId</code></td>
-<td align="left">the path generated by modules.</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/output/turn_indicators_cmd</td>
-<td align="left"><code>autoware_vehicle_msgs::msg::TurnIndicatorsCommand</code></td>
-<td align="left">turn indicators command.</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/output/hazard_lights_cmd</td>
-<td align="left"><code>autoware_vehicle_msgs::msg::HazardLightsCommand</code></td>
-<td align="left">hazard lights command.</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/output/modified_goal</td>
-<td align="left"><code>autoware_planning_msgs::msg::PoseWithUuidStamped</code></td>
-<td align="left">output modified goal commands.</td>
-<td><code>transient_local</code></td>
-</tr>
-<tr>
-<td align="left">~/output/stop_reasons</td>
-<td align="left"><code>tier4_planning_msgs::msg::StopReasonArray</code></td>
-<td align="left">describe the reason for ego vehicle stop</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/output/reroute_availability</td>
-<td align="left"><code>tier4_planning_msgs::msg::RerouteAvailability</code></td>
-<td align="left">the path the module is about to take. to be executed as soon as external approval is obtained.</td>
-<td><code>volatile</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="debug">Debug<a class="headerlink" href="#debug" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th>QoS Durability</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">~/debug/avoidance_debug_message_array</td>
-<td align="left"><code>tier4_planning_msgs::msg::AvoidanceDebugMsgArray</code></td>
-<td align="left">debug message for avoidance. notify users reasons for avoidance path cannot be generated.</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/debug/lane_change_debug_message_array</td>
-<td align="left"><code>tier4_planning_msgs::msg::LaneChangeDebugMsgArray</code></td>
-<td align="left">debug message for lane change. notify users unsafe reason during lane changing process</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/debug/maximum_drivable_area</td>
-<td align="left"><code>visualization_msgs::msg::MarkerArray</code></td>
-<td align="left">shows maximum static drivable area.</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/debug/turn_signal_info</td>
-<td align="left"><code>visualization_msgs::msg::MarkerArray</code></td>
-<td align="left">TBA</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/debug/bound</td>
-<td align="left"><code>visualization_msgs::msg::MarkerArray</code></td>
-<td align="left">debug for static drivable area</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/planning/path_candidate/*</td>
-<td align="left"><code>autoware_planning_msgs::msg::Path</code></td>
-<td align="left">the path before approval.</td>
-<td><code>volatile</code></td>
-</tr>
-<tr>
-<td align="left">~/planning/path_reference/*</td>
-<td align="left"><code>autoware_planning_msgs::msg::Path</code></td>
-<td align="left">reference path generated by each modules.</td>
-<td><code>volatile</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For specific information of which topics are being subscribed and published, refer to <a href="https://github.com/autowarefoundation/autoware.universe/blob/9000f430c937764c14e43109539302f1f878ed70/planning/behavior_path_planner/launch/behavior_path_planner.launch.xml#L36-L49">behavior_path_planner.xml</a>.</p>
-</div>
-<h2 id="how-to-enable-or-disable-the-modules">How to enable or disable the modules<a class="headerlink" href="#how-to-enable-or-disable-the-modules" title="Permanent link">#</a></h2>
-<p>Enabling and disabling the modules in the behavior path planner is primarily managed through two key files: <code>default_preset.yaml</code> and <code>behavior_path_planner.launch.xml</code>.</p>
-<p>The <code>default_preset.yaml</code> file acts as a configuration file for enabling or disabling specific modules within the planner. It contains a series of arguments which represent the behavior path planner's modules or features. For example:</p>
+<h2 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">#</a></h2>
+<p>Return LateralOutput which contains the following to the controller node</p>
 <ul>
-<li><code>launch_static_obstacle_avoidance_module</code>: Set to <code>true</code> to enable the avoidance module, or <code>false</code> to disable it.</li>
+<li><code>autoware_control_msgs/Lateral</code>: target steering angle</li>
+<li>LateralSyncData<ul>
+<li>steer angle convergence</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a href="https://github.com/autowarefoundation/autoware_launch/blob/main/autoware_launch/config/planning/preset/default_preset.yaml">here</a> to view the <code>default_preset.yaml</code>.</p>
-</div>
-<p>The <code>behavior_path_planner.launch.xml</code> file references the settings defined in <code>default_preset.yaml</code> to apply the configurations when the behavior path planner's node is running. For instance, the parameter <code>static_obstacle_avoidance.enable_module</code> in</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">"static_obstacle_avoidance.enable_module"</span><span class="w"> </span><span class="na">value=</span><span class="s">"$(var launch_static_obstacle_avoidance_module)"</span><span class="nt">/&gt;</span>
-</code></pre></div>
-<p>corresponds to launch_static_obstacle_avoidance_module from <code>default_preset.yaml</code>.</p>
-<p>Therefore, to enable or disable a module, simply set the corresponding module in <code>default_preset.yaml</code> to <code>true</code> or <code>false</code>. These changes will be applied upon the next launch of Autoware.</p>
-<h2 id="generating-path">Generating Path<a class="headerlink" href="#generating-path" title="Permanent link">#</a></h2>
-<p>A sophisticated methodology is used for path generation, particularly focusing on maneuvers like lane changes and avoidance. At the core of this design is the smooth lateral shifting of the reference path, achieved through a constant-jerk profile. This approach ensures a consistent rate of change in acceleration, facilitating smooth transitions and minimizing abrupt changes in lateral dynamics, crucial for passenger comfort and safety.</p>
-<p>The design involves complex mathematical formulations for calculating the lateral shift of the vehicle's path over time. These calculations include determining lateral displacement, velocity, and acceleration, while considering the vehicle's lateral acceleration and velocity limits. This is essential for ensuring that the vehicle's movements remain safe and manageable.</p>
-<p>The <code>ShiftLine</code> struct (as seen <a href="https://github.com/autowarefoundation/autoware.universe/blob/9000f430c937764c14e43109539302f1f878ed70/planning/behavior_path_planner/include/behavior_path_planner/utils/path_shifter/path_shifter.hpp#L35-L48">here</a>) is utilized to represent points along the path where the lateral shift starts and ends. It includes details like the start and end points in absolute coordinates, the relative shift lengths at these points compared to the reference path, and the associated indexes on the reference path. This struct is integral to managing the path shifts, as it allows the path planner to dynamically adjust the trajectory based on the vehicle's current position and planned maneuver.</p>
-<p>Furthermore, the design and its implementation incorporate various equations and mathematical models to calculate essential parameters for the path shift. These include the total distance of the lateral shift, the maximum allowable lateral acceleration and jerk, and the total time required for the shift. Practical considerations are also noted, such as simplifying assumptions in the absence of a specific time interval for most lane change and avoidance cases.</p>
-<p>The shifted path generation logic enables the behavior path planner to dynamically generate safe and efficient paths, precisely controlling the vehicle’s lateral movements to ensure the smooth execution of lane changes and avoidance maneuvers. This careful planning and execution adhere to the vehicle's dynamic capabilities and safety constraints, maximizing efficiency and safety in autonomous vehicle navigation.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If you're a math lover, refer to <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design/">Path Generation Design</a> for the nitty-gritty.</p>
-</div>
-<h2 id="collision-assessment-safety-check">Collision Assessment / Safety check<a class="headerlink" href="#collision-assessment-safety-check" title="Permanent link">#</a></h2>
-<p>The purpose of the collision assessment function in the Behavior Path Planner is to evaluate the potential for collisions with target objects across all modules. It is utilized in two scenarios:</p>
-<ol>
-<li>During candidate path generation, to ensure that the generated candidate path is collision-free.</li>
-<li>When the path is approved by the manager, and the ego vehicle is executing the current module. If the current situation is deemed unsafe, depending on each module's requirements, the planner will either cancel the execution or opt to execute another module.</li>
-</ol>
-<p>The safety check process involves several steps. Initially, it obtains the pose of the target object at a specific time, typically through interpolation of the predicted path. It then checks for any overlap between the ego vehicle and the target object at this time. If an overlap is detected, the path is deemed unsafe. The function also identifies which vehicle is in front by using the arc length along the given path. The function operates under the assumption that accurate data on the position, velocity, and shape of both the ego vehicle (the autonomous vehicle) and any target objects are available. It also relies on the yaw angle of each point in the predicted paths of these objects, which is expected to point towards the next path point.</p>
-<p>A critical part of the safety check is the calculation of the RSS (Responsibility-Sensitive Safety) distance-inspired algorithm. This algorithm considers factors such as reaction time, safety time margin, and the velocities and decelerations of both vehicles. Extended object polygons are created for both the ego and target vehicles. Notably, the rear object’s polygon is extended by the RSS distance longitudinally and by a lateral margin. The function finally checks for overlap between this extended rear object polygon and the front object polygon. Any overlap indicates a potential unsafe situation.</p>
-<p>However, the module does have a limitation concerning the yaw angle of each point in the predicted paths of target objects, which may not always accurately point to the next point, leading to potential inaccuracies in some edge cases.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For further reading on the collision assessment  method, please refer to <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check/">Safety check utils</a></p>
-</div>
-<h2 id="generating-drivable-area">Generating Drivable Area<a class="headerlink" href="#generating-drivable-area" title="Permanent link">#</a></h2>
-<h3 id="static-drivable-area-logic">Static Drivable Area logic<a class="headerlink" href="#static-drivable-area-logic" title="Permanent link">#</a></h3>
-<p>The drivable area is used to determine the area in which the ego vehicle can travel. The primary goal of static drivable area expansion is to ensure safe travel by generating an area that encompasses only the necessary spaces for the vehicle's current behavior, while excluding non-essential areas. For example, while <code>avoidance</code> module is running, the drivable area includes additional space needed for maneuvers around obstacles, and it limits the behavior by not extending the avoidance path outside of lanelet areas.</p>
-<div align="center">
-    <table>
-        <tr>
-            <td><img src="./image/static_drivable_area_before_expansion.png" alt="Before expansion"></td>
-        </tr>
-        <tr>
-            <td><img src="./image/static_drivable_area_after_expansion.png" alt="After expansion"></td>
-        </tr>
-    </table>
-</div>
-
-<p>Static drivable area expansion operates under assumptions about the correct arrangement of lanes and the coverage of both the front and rear of the vehicle within the left and right boundaries. Key parameters for drivable area generation include extra footprint offsets for the ego vehicle, the handling of dynamic objects, maximum expansion distance, and specific methods for expansion. Additionally, since each module generates its own drivable area, before passing it as the input to generate the next running module's drivable area, or before generating a unified drivable area, the system sorts drivable lanes based on the vehicle's passage order. This ensures the correct definition of the lanes used in drivable area generation.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Further details can is provided in <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design/">Drivable Area Design</a>.</p>
-</div>
-<h3 id="dynamic-drivable-area-logic">Dynamic Drivable Area Logic<a class="headerlink" href="#dynamic-drivable-area-logic" title="Permanent link">#</a></h3>
-<p>Large vehicles require much more space, which sometimes causes them to veer out of their current lane. A typical example being a bus making a turn at a corner. In such cases, relying on a static drivable area is insufficient, since the static method depends on lane information provided by high-definition maps. To overcome the limitations of the static approach, the dynamic drivable area expansion algorithm adjusts the navigable space for an autonomous vehicle in real-time. It conserves computational power by reusing previously calculated path data, updating only when there is a significant change in the vehicle's position. The system evaluates the minimum lane width necessary to accommodate the vehicle's turning radius and other dynamic factors. It then calculates the optimal expansion of the drivable area's boundaries to ensure there is adequate space for safe maneuvering, taking into account the vehicle's path curvature. The rate at which these boundaries can expand or contract is moderated to maintain stability in the vehicle's navigation. The algorithm aims to maximize the drivable space while avoiding fixed obstacles and adhering to legal driving limits. Finally, it applies these boundary adjustments and smooths out the path curvature calculations to ensure a safe and legally compliant navigable path is maintained throughout the vehicle's operation.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The feature can be enabled in the <a href="https://github.com/autowarefoundation/autoware_launch/blob/0cd5d891a36ac34a32a417205905c109f2bafe7b/autoware_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/drivable_area_expansion.param.yaml#L10">drivable_area_expansion.param.yaml</a>.</p>
-</div>
-<h2 id="generating-turn-signal">Generating Turn Signal<a class="headerlink" href="#generating-turn-signal" title="Permanent link">#</a></h2>
-<p>The Behavior Path Planner module uses the <code>autoware_vehicle_msgs::msg::TurnIndicatorsCommand</code> to output turn signal commands (see <a href="https://github.com/autowarefoundation/autoware_msgs/blob/main/autoware_vehicle_msgs/msg/TurnIndicatorsCommand.msg">TurnIndicatorsCommand.idl</a>). The system evaluates the driving context and determines when to activate turn signals based on its maneuver planning—like turning, lane changing, or obstacle avoidance.</p>
-<p>Within this framework, the system differentiates between <strong>desired</strong> and <strong>required</strong> blinker activations. <strong>Desired</strong> activations are those recommended by traffic laws for typical driving scenarios, such as signaling before a lane change or turn. <strong>Required</strong> activations are those that are deemed mandatory for safety reasons, like signaling an abrupt lane change to avoid an obstacle.</p>
-<p>The <code>TurnIndicatorsCommand</code> message structure has a command field that can take one of several constants: <code>NO_COMMAND</code> indicates no signal is necessary, <code>DISABLE</code> to deactivate signals, <code>ENABLE_LEFT</code> to signal a left turn, and <code>ENABLE_RIGHT</code> to signal a right turn. The Behavior Path Planner sends these commands at the appropriate times, based on its rules-based system that considers both the <strong>desired</strong> and <strong>required</strong> scenarios for blinker activation.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For more in-depth information, refer to <a href="../autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design/">Turn Signal Design</a> document.</p>
-</div>
-<h2 id="rerouting">Rerouting<a class="headerlink" href="#rerouting" title="Permanent link">#</a></h2>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Rerouting is a feature that was still under progress. Further information will be included on a later date.</p>
-</div>
-<h2 id="parameters-and-configuration">Parameters and Configuration<a class="headerlink" href="#parameters-and-configuration" title="Permanent link">#</a></h2>
-<p>The <a href="https://github.com/autowarefoundation/autoware_launch/tree/main/autoware_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner">configuration files</a> are organized in a hierarchical directory structure for ease of navigation and management. Each subdirectory contains specific configuration files relevant to its module. The root directory holds general configuration files that apply to the overall behavior of the planner. The following is an overview of the directory structure with the respective configuration files.</p>
-<div class="highlight"><pre><span></span><code>behavior_path_planner
-├── behavior_path_planner.param.yaml
-├── drivable_area_expansion.param.yaml
-├── scene_module_manager.param.yaml
-├── static_obstacle_avoidance
-│   └── static_obstacle_avoidance.param.yaml
-├── avoidance_by_lc
-│   └── avoidance_by_lc.param.yaml
-├── dynamic_obstacle_avoidance
-│   └── dynamic_obstacle_avoidance.param.yaml
-├── goal_planner
-│   └── goal_planner.param.yaml
-├── lane_change
-│   └── lane_change.param.yaml
-├── side_shift
-│   └── side_shift.param.yaml
-└── start_planner
-    └── start_planner.param.yaml
-</code></pre></div>
-<p>Similarly, the <a href="https://github.com/autowarefoundation/autoware_launch/tree/main/autoware_launch/config/planning/scenario_planning/common">common</a> directory contains configuration files that are used across various modules, providing shared parameters and settings essential for the functioning of the Behavior Path Planner:</p>
-<div class="highlight"><pre><span></span><code>common
-├── common.param.yaml
-├── costmap_generator.param.yaml
-└── nearest_search.param.yaml
-</code></pre></div>
-<p>The <a href="https://github.com/autowarefoundation/autoware_launch/tree/main/autoware_launch/config/planning/preset">preset</a> directory contains the configurations for managing the operational state of various modules. It includes the default_preset.yaml file, which specifically caters to enabling and disabling modules within the system.</p>
-<div class="highlight"><pre><span></span><code>preset
-└── default_preset.yaml
-</code></pre></div>
-<h2 id="limitations-future-work">Limitations &amp; Future Work<a class="headerlink" href="#limitations-future-work" title="Permanent link">#</a></h2>
-<ol>
-<li>Goal Planner module cannot be simultaneously executed together with other modules.</li>
-<li>Module is not designed as plugin. Integrating custom module is not straightforward and user have to modify some part of the behavior path planner main code.</li>
-</ol></div>
+</li>
+<li><code>autoware_planning_msgs/Trajectory</code>: predicted path for ego vehicle</li>
+</ul></div>
 
 
 
@@ -13723,7 +13195,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../autoware_velocity_smoother/README.ja/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Velocity Smoother" rel="prev">
+          <a href="../autoware_pid_longitudinal_controller/" class="md-footer__link md-footer__link--prev" aria-label="Previous: PID Longitudinal Controller" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13732,20 +13204,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Velocity Smoother
+                PID Longitudinal Controller
               </div>
             </div>
           </a>
         
         
           
-          <a href="docs/behavior_path_planner_interface_design/" class="md-footer__link md-footer__link--next" aria-label="Next: Interface design" rel="next">
+          <a href="../autoware_shift_decider/" class="md-footer__link md-footer__link--next" aria-label="Next: Shift Decider" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Interface design
+                Shift Decider
               </div>
             </div>
             <div class="md-footer__button md-icon">

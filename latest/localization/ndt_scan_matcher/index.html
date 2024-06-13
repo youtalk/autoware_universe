@@ -13484,6 +13484,13 @@
 </thead>
 <tbody>
 <tr>
+<td>timeout_sec</td>
+<td>float</td>
+<td>Tolerance of timestamp difference between current time and sensor pointcloud. [sec]</td>
+<td>1</td>
+<td>≥0.0</td>
+</tr>
+<tr>
 <td>required_distance</td>
 <td>float</td>
 <td>Required distance of input sensor points [m]. If the max distance of input sensor points is lower than this value, the scan matching will not be performed.</td>
@@ -13582,13 +13589,6 @@
 </thead>
 <tbody>
 <tr>
-<td>lidar_topic_timeout_sec</td>
-<td>float</td>
-<td>Tolerance of timestamp difference between current time and sensor pointcloud. [sec]</td>
-<td>1</td>
-<td>≥0.0</td>
-</tr>
-<tr>
 <td>initial_pose_timeout_sec</td>
 <td>float</td>
 <td>Tolerance of timestamp difference between initial_pose and sensor pointcloud. [sec]</td>
@@ -13603,11 +13603,25 @@
 <td>≥0.0</td>
 </tr>
 <tr>
+<td>initial_to_result_distance_tolerance_m</td>
+<td>float</td>
+<td>Tolerance of distance difference from initial pose to result pose. [m]</td>
+<td>3</td>
+<td>≥0.0</td>
+</tr>
+<tr>
 <td>critical_upper_bound_exe_time_ms</td>
 <td>float</td>
 <td>The execution time which means probably NDT cannot matches scans properly. [ms]</td>
 <td>100</td>
 <td>≥0.0</td>
+</tr>
+<tr>
+<td>skipping_publish_num</td>
+<td>float</td>
+<td>Tolerance for the number for times rejected estimation results consecutively.</td>
+<td>5</td>
+<td>≥1</td>
 </tr>
 </tbody>
 </table>
@@ -13978,7 +13992,7 @@ initial_pose_offset_model_x &amp; initial_pose_offset_model_y must have the same
 <tr>
 <td><code>sensor_points_delay_time_sec</code></td>
 <td>the delay time of sensor points</td>
-<td>the time is <strong>longer</strong> than <code>validation.lidar_topic_timeout_sec</code></td>
+<td>the time is <strong>longer</strong> than <code>sensor_points.timeout_sec</code></td>
 <td>none</td>
 <td>yes</td>
 </tr>
@@ -14076,7 +14090,7 @@ initial_pose_offset_model_x &amp; initial_pose_offset_model_y must have the same
 <tr>
 <td><code>distance_initial_to_result</code></td>
 <td>the distance between the position before convergence processing and the position after</td>
-<td>the distance is <strong>longer</strong> than 3</td>
+<td>the distance is <strong>longer</strong> than <code>validation.initial_to_result_distance_tolerance_m</code></td>
 <td>none</td>
 <td>no</td>
 </tr>
@@ -14090,7 +14104,7 @@ initial_pose_offset_model_x &amp; initial_pose_offset_model_y must have the same
 <tr>
 <td><code>skipping_publish_num</code></td>
 <td>the number of times rejected estimation results consecutively</td>
-<td>the number of times is 5 or more</td>
+<td>the number of times is <code>validation.skipping_publish_num</code> or more</td>
 <td>none</td>
 <td>-</td>
 </tr>

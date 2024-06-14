@@ -13583,13 +13583,13 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.</p>
 <td align="left">enable_integration_at_low_speed</td>
 <td align="left">bool</td>
 <td align="left">Whether to enable integration of acceleration errors when the vehicle speed is lower than <code>current_vel_threshold_pid_integration</code> or not.</td>
-<td align="left"></td>
+<td align="left">false</td>
 </tr>
 <tr>
 <td align="left">current_vel_threshold_pid_integration</td>
 <td align="left">double</td>
 <td align="left">Velocity error is integrated for I-term only when the absolute value of current velocity is larger than this parameter. [m/s]</td>
-<td align="left"></td>
+<td align="left">0.5</td>
 </tr>
 <tr>
 <td align="left">time_threshold_before_pid_integration</td>

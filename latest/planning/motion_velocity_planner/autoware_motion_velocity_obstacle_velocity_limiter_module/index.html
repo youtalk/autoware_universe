@@ -822,6 +822,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../common/autoware_grid_map_utils" class="md-nav__link">
+        autoware_grid_map_utils
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../common/autoware_point_types" class="md-nav__link">
         autoware_point_types
       </a>
@@ -880,20 +894,6 @@
     <li class="md-nav__item">
       <a href="../../../common/glog_component" class="md-nav__link">
         Glog Component
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../common/grid_map_utils" class="md-nav__link">
-        grid_map_utils
       </a>
     </li>
   
@@ -13205,7 +13205,7 @@ However, the cost of masking the envelope is usually too high to be interesting.
 If any linestring has a <code>type</code> with one of the value from parameter <code>obstacles.static_map_tags</code>, then it will be used as an obstacle.</p>
 <p>Obstacles from the lanelet map are not impacted by the masks.</p>
 <h4 id="occupancy-grid">Occupancy Grid<a class="headerlink" href="#occupancy-grid" title="Permanent link">#</a></h4>
-<p>Masking is performed by iterating through the cells inside each polygon mask using the <a href="https://github.com/autowarefoundation/autoware.universe/tree/main/common/grid_map_utils"><code>grid_map_utils::PolygonIterator</code></a> function.
+<p>Masking is performed by iterating through the cells inside each polygon mask using the <a href="https://github.com/autowarefoundation/autoware.universe/tree/main/common/autoware_grid_map_utils"><code>autoware::grid_map_utils::PolygonIterator</code></a> function.
 A threshold is then applied to only keep cells with an occupancy value above parameter <code>obstacles.occupancy_grid_threshold</code>.
 Finally, the image is converted to an image and obstacle linestrings are extracted using the opencv function
 <a href="https://docs.opencv.org/3.4/d3/dc0/group__imgproc__shape.html#ga17ed9f5d79ae97bd4c7cf18403e1689a"><code>findContour</code></a>.</p>

@@ -36,6 +36,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/common/autoware_grid_map_utils/</loc>
+         <lastmod>2024-06-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/common/autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin/</loc>
          <lastmod>2024-06-14</lastmod>
          <changefreq>daily</changefreq>
@@ -112,11 +117,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/main/common/goal_distance_calculator/Readme/</loc>
-         <lastmod>2024-06-14</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/common/grid_map_utils/</loc>
          <lastmod>2024-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>

@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/common/grid_map_utils/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/common/autoware_grid_map_utils/">
       
       
-        <link rel="prev" href="../goal_distance_calculator/Readme/">
+        <link rel="prev" href="../autoware_auto_common/design/comparisons/">
       
       
-        <link rel="next" href="../interpolation/">
+        <link rel="next" href="../autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin/">
       
       <link rel="icon" href="../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
@@ -822,6 +822,20 @@
   
   
     <li class="md-nav__item">
+      <a href="." class="md-nav__link">
+        autoware_grid_map_utils
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../autoware_point_types" class="md-nav__link">
         autoware_point_types
       </a>
@@ -880,20 +894,6 @@
     <li class="md-nav__item">
       <a href="../glog_component" class="md-nav__link">
         Glog Component
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="." class="md-nav__link">
-        grid_map_utils
       </a>
     </li>
   
@@ -13101,13 +13101,13 @@ The main idea of the algorithm adapted to a grid map is as follow:</p>
 </ul>
 <p>More details on the scan line algorithm can be found in the References.</p>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">#</a></h2>
-<p>The <code>grid_map_utils::PolygonIterator</code> follows the same API as the original <a href="https://docs.ros.org/en/kinetic/api/grid_map_core/html/classgrid__map_1_1PolygonIterator.html"><code>grid_map::PolygonIterator</code></a>.</p>
+<p>The <code>autoware::grid_map_utils::PolygonIterator</code> follows the same API as the original <a href="https://docs.ros.org/en/kinetic/api/grid_map_core/html/classgrid__map_1_1PolygonIterator.html"><code>grid_map::PolygonIterator</code></a>.</p>
 <h2 id="assumptions">Assumptions<a class="headerlink" href="#assumptions" title="Permanent link">#</a></h2>
-<p>The behavior of the <code>grid_map_utils::PolygonIterator</code> is only guaranteed to match the <code>grid_map::PolygonIterator</code> if edges of the polygon do not <em>exactly</em> cross any cell center.
+<p>The behavior of the <code>autoware::grid_map_utils::PolygonIterator</code> is only guaranteed to match the <code>grid_map::PolygonIterator</code> if edges of the polygon do not <em>exactly</em> cross any cell center.
 In such a case, whether the crossed cell is considered inside or outside of the polygon can vary due to floating precision error.</p>
 <h2 id="performances">Performances<a class="headerlink" href="#performances" title="Permanent link">#</a></h2>
-<p>Benchmarking code is implemented in <code>test/benchmarking.cpp</code> and is also used to validate that the <code>grid_map_utils::PolygonIterator</code> behaves exactly like the <code>grid_map::PolygonIterator</code>.</p>
-<p>The following figure shows a comparison of the runtime between the implementation of this package (<code>grid_map_utils</code>) and the original implementation (<code>grid_map</code>).
+<p>Benchmarking code is implemented in <code>test/benchmarking.cpp</code> and is also used to validate that the <code>autoware::grid_map_utils::PolygonIterator</code> behaves exactly like the <code>grid_map::PolygonIterator</code>.</p>
+<p>The following figure shows a comparison of the runtime between the implementation of this package (<code>autoware_grid_map_utils</code>) and the original implementation (<code>grid_map</code>).
 The time measured includes the construction of the iterator and the iteration over all indexes and is shown using a logarithmic scale.
 Results were obtained varying the side size of a square grid map with <code>100 &lt;= n &lt;= 1000</code> (size=<code>n</code> means a grid of <code>n x n</code> cells),
 random polygons with a number of vertices <code>3 &lt;= m &lt;= 100</code> and with each parameter <code>(n,m)</code> repeated 10 times.</p>
@@ -13148,7 +13148,7 @@ This behavior could be changed for example to only return all cells overlapped b
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../goal_distance_calculator/Readme/" class="md-footer__link md-footer__link--prev" aria-label="Previous: goal_distance_calculator" rel="prev">
+          <a href="../autoware_auto_common/design/comparisons/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Comparisons" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13157,20 +13157,20 @@ This behavior could be changed for example to only return all cells overlapped b
                 Previous
               </span>
               <div class="md-ellipsis">
-                goal_distance_calculator
+                Comparisons
               </div>
             </div>
           </a>
         
         
           
-          <a href="../interpolation/" class="md-footer__link md-footer__link--next" aria-label="Next: Interpolation package" rel="next">
+          <a href="../autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin/" class="md-footer__link md-footer__link--next" aria-label="Next: autoware_mission_details_overlay_rviz_plugin" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Interpolation package
+                autoware_mission_details_overlay_rviz_plugin
               </div>
             </div>
             <div class="md-footer__button md-icon">

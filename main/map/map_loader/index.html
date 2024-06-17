@@ -13360,6 +13360,13 @@ Please see <a href="https://github.com/tier4/tier4_autoware_msgs/blob/tier4/univ
 <td>N/A</td>
 </tr>
 <tr>
+<td>use_waypoints</td>
+<td>boolean</td>
+<td>If true, <code>centerline</code> in the Lanelet2 map will be used as a <code>waypoints</code> tag.</td>
+<td>True</td>
+<td>N/A</td>
+</tr>
+<tr>
 <td>lanelet2_map_path</td>
 <td>string</td>
 <td>The lanelet2 map path pointing to the .osm file</td>
@@ -13368,6 +13375,8 @@ Please see <a href="https://github.com/tier4/tier4_autoware_msgs/blob/tier4/univ
 </tr>
 </tbody>
 </table>
+<p><code>use_waypoints</code> decides how to handle a centerline.
+This flag enables to use the <code>overwriteLaneletsCenterlineWithWaypoints</code> function instead of <code>overwriteLaneletsCenterline</code>. Please see <a href="https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md#centerline">the document of the lanelet2_extension package</a> in detail.</p>
 <hr>
 <h2 id="lanelet2_map_visualization">lanelet2_map_visualization<a class="headerlink" href="#lanelet2_map_visualization" title="Permanent link">#</a></h2>
 <h3 id="feature_2">Feature<a class="headerlink" href="#feature_2" title="Permanent link">#</a></h3>

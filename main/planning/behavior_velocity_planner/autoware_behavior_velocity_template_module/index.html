@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_velocity_smoother/README.ja/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_velocity_planner/autoware_behavior_velocity_template_module/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../autoware_behavior_velocity_stop_line_module/">
       
       
-        <link rel="next" href="../../behavior_velocity_planner/autoware_behavior_velocity_blind_spot_module/">
+        <link rel="next" href="../autoware_behavior_velocity_traffic_light_module/">
       
       <link rel="icon" href="../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Velocity Smoother - Autoware Universe Documentation</title>
+        <title>Index - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#velocity-smoother" class="md-skip">
+        <a href="#template" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Velocity Smoother
+              Index
             
           </span>
         </div>
@@ -9018,7 +9018,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../autoware_velocity_smoother" class="md-nav__link">
         About Velocity Smoother
       </a>
     </li>
@@ -9032,7 +9032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../../autoware_velocity_smoother/README.ja" class="md-nav__link">
         About Velocity Smoother (Japanese)
       </a>
     </li>
@@ -13010,8 +13010,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -13020,23 +13018,31 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose" class="md-nav__link">
-    Purpose
+  <a href="#template" class="md-nav__link">
+    Template
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
+  <a href="#autoware-behavior-velocity-module-template" class="md-nav__link">
+    Autoware Behavior Velocity Module Template
   </a>
   
-    <nav class="md-nav" aria-label="Inner-workings / Algorithms">
+    <nav class="md-nav" aria-label="Autoware Behavior Velocity Module Template">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#flow-chart" class="md-nav__link">
-    Flow chart
+  <a href="#scene" class="md-nav__link">
+    Scene
+  </a>
+  
+    <nav class="md-nav" aria-label="Scene">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#templatemodule-class" class="md-nav__link">
+    TemplateModule Class
   </a>
   
 </li>
@@ -13045,25 +13051,25 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#inputs-outputs" class="md-nav__link">
-    Inputs / Outputs
+        
+          <li class="md-nav__item">
+  <a href="#manager" class="md-nav__link">
+    Manager
   </a>
   
-    <nav class="md-nav" aria-label="Inputs / Outputs">
+    <nav class="md-nav" aria-label="Manager">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#input" class="md-nav__link">
-    Input
+  <a href="#templatemodulemanager-class" class="md-nav__link">
+    TemplateModuleManager Class
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#output" class="md-nav__link">
-    Output
+  <a href="#templatemoduleplugin-class" class="md-nav__link">
+    TemplateModulePlugin Class
   </a>
   
 </li>
@@ -13072,122 +13078,16 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    Parameters
-  </a>
-  
-    <nav class="md-nav" aria-label="Parameters">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#constraint-parameters" class="md-nav__link">
-    Constraint parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#external-velocity-limit-parameter" class="md-nav__link">
-    External velocity limit parameter
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#curve-parameters" class="md-nav__link">
-    Curve parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#engage-replan-parameters" class="md-nav__link">
-    Engage &amp; replan parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stopping-velocity-parameters" class="md-nav__link">
-    Stopping velocity parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#extraction-parameters" class="md-nav__link">
-    Extraction parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resampling-parameters" class="md-nav__link">
-    Resampling parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resampling-parameters-for-post-process" class="md-nav__link">
-    Resampling parameters for post process
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#weights-for-optimization" class="md-nav__link">
-    Weights for optimization
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#others" class="md-nav__link">
-    Others
+  <a href="#example-usage" class="md-nav__link">
+    Example Usage
   </a>
   
 </li>
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#assumptions-known-limits" class="md-nav__link">
-    Assumptions / Known limits
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-error-detection-and-handling" class="md-nav__link">
-    (Optional) Error detection and handling
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-performance-characterization" class="md-nav__link">
-    (Optional) Performance characterization
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-referencesexternal-links" class="md-nav__link">
-    (Optional) References/External links
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-future-extensions-unimplemented-parts" class="md-nav__link">
-    (Optional) Future extensions / Unimplemented parts
-  </a>
   
 </li>
       
@@ -13209,648 +13109,78 @@
   
 
 
-<div><h1 id="velocity-smoother">Velocity Smoother<a class="headerlink" href="#velocity-smoother" title="Permanent link">#</a></h1>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">#</a></h2>
-<p><code>autoware_velocity_smoother</code>は目標軌道上の各点における望ましい車速を計画して出力するモジュールである。
-このモジュールは、速度の最大化と乗り心地の良さを両立するために、事前に指定された制限速度、制限加速度および制限躍度の範囲で車速を計画する。
-加速度や躍度の制限を与えることは車速の変化を滑らかにすることに対応するため、このモジュールを<code>autoware_velocity_smoother</code>と呼んでいる。</p>
-<h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
-<h3 id="flow-chart">Flow chart<a class="headerlink" href="#flow-chart" title="Permanent link">#</a></h3>
-<p><img alt="motion_velocity_smoother_flow" src="../media/motion_velocity_smoother_flow.drawio.svg"></p>
-<h4 id="extract-trajectory">Extract trajectory<a class="headerlink" href="#extract-trajectory" title="Permanent link">#</a></h4>
-<p>自車後輪軸中心位置に最も近い参照経路上の点に対し、<code>extract_behind_dist</code>だけ戻った点から<code>extract_ahead_dist</code>だけ進んだ点までの参照経路を抜き出す。</p>
-<h4 id="apply-external-velocity-limit">Apply external velocity limit<a class="headerlink" href="#apply-external-velocity-limit" title="Permanent link">#</a></h4>
-<p>モジュール外部から指定された速度制限を適用する。
-ここで扱う外部の速度制限は<code>/planning/scenario_planning/max_velocity</code>の topic で渡されるもので、地図上で設定された速度制限など、参照経路にすでに設定されている制限速度とは別である。
-外部から指定される速度制限は、パラメータで指定されている減速度および躍度の制限の範囲で減速可能な位置から速度制限を適用する。</p>
-<h4 id="apply-stop-approaching-velocity">Apply stop approaching velocity<a class="headerlink" href="#apply-stop-approaching-velocity" title="Permanent link">#</a></h4>
-<p>停止点に近づいたときの速度を設定する。障害物近傍まで近づく場合や、正着精度向上などの目的に用いる。</p>
-<h4 id="apply-lateral-acceleration-limit">Apply lateral acceleration limit<a class="headerlink" href="#apply-lateral-acceleration-limit" title="Permanent link">#</a></h4>
-<p>経路の曲率に応じて、指定された最大横加速度<code>max_lateral_accel</code>を超えない速度を制限速度として設定する。ただし、制限速度は<code>min_curve_velocity</code>を下回らないように設定する。</p>
-<h4 id="resample-trajectory">Resample trajectory<a class="headerlink" href="#resample-trajectory" title="Permanent link">#</a></h4>
-<p>指定された時間間隔で経路の点を再サンプルする。ただし、経路全体の長さは<code>min_trajectory_length</code>から<code>max_trajectory_length</code>の間となるように再サンプルを行い、点の間隔は<code>min_trajectory_interval_distance</code>より小さくならないようにする。
-現在車速で<code>resample_time</code>の間進む距離までは密にサンプリングし、それ以降は疎にサンプリングする。
-この方法でサンプリングすることで、低速時は密に、高速時は疎にサンプルされるため、停止精度と計算負荷軽減の両立を図っている。</p>
-<h4 id="calculate-initial-state">Calculate initial state<a class="headerlink" href="#calculate-initial-state" title="Permanent link">#</a></h4>
-<p>速度計画のための初期値を計算する。初期値は状況に応じて下表のように計算する。</p>
-<table>
-<thead>
-<tr>
-<th>状況</th>
-<th>初期速度</th>
-<th>初期加速度</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>最初の計算時</td>
-<td>現在車速</td>
-<td>0.0</td>
-</tr>
-<tr>
-<td>発進時</td>
-<td><code>engage_velocity</code></td>
-<td><code>engage_acceleration</code></td>
-</tr>
-<tr>
-<td>現在車速と計画車速が乖離</td>
-<td>現在車速</td>
-<td>前回計画値</td>
-</tr>
-<tr>
-<td>通常時</td>
-<td>前回計画値</td>
-<td>前回計画値</td>
-</tr>
-</tbody>
-</table>
-<h4 id="smooth-velocity">Smooth velocity<a class="headerlink" href="#smooth-velocity" title="Permanent link">#</a></h4>
-<p>速度の計画を行う。速度計画のアルゴリズムは<code>JerkFiltered</code>, <code>L2</code>, <code>Linf</code>の 3 種類のうちからコンフィグで指定する。
-最適化のソルバは OSQP[1]を利用する。</p>
-<h5 id="jerkfiltered">JerkFiltered<a class="headerlink" href="#jerkfiltered" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗、制限ジャーク逸脱量の 2 乗、ジャークの 2 乗の総和を最小化する。</p>
-<h5 id="l2">L2<a class="headerlink" href="#l2" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗、疑似ジャーク[2]の 2 乗の総和を最小化する。</p>
-<h5 id="linf">Linf<a class="headerlink" href="#linf" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗の総和と疑似ジャーク[2]の絶対最大値の和の最小化する。</p>
-<h4 id="post-process">Post process<a class="headerlink" href="#post-process" title="Permanent link">#</a></h4>
-<p>計画された軌道の後処理を行う。</p>
+<div><h2 id="template">Template<a class="headerlink" href="#template" title="Permanent link">#</a></h2>
+<p>A template for behavior velocity modules based on the behavior_velocity_speed_bump_module.</p>
+<h1 id="autoware-behavior-velocity-module-template">Autoware Behavior Velocity Module Template<a class="headerlink" href="#autoware-behavior-velocity-module-template" title="Permanent link">#</a></h1>
+<h2 id="scene"><code>Scene</code><a class="headerlink" href="#scene" title="Permanent link">#</a></h2>
+<h3 id="templatemodule-class"><code>TemplateModule</code> Class<a class="headerlink" href="#templatemodule-class" title="Permanent link">#</a></h3>
+<p>The <code>TemplateModule</code> class serves as a foundation for creating a scene module within the Autoware behavior velocity planner. It defines the core methods and functionality needed for the module's behavior. You should replace the placeholder code with actual implementations tailored to your specific behavior velocity module.</p>
+<h4 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">#</a></h4>
 <ul>
-<li>停止点より先の速度を 0 に設定</li>
-<li>速度がパラメータで与えられる<code>max_velocity</code>以下となるように設定</li>
-<li>自車位置より手前の点における速度を設定</li>
-<li>Trajectory の仕様に合わせてリサンプリング(<code>post resampling</code>)</li>
-<li>デバッグデータの出力</li>
+<li>The constructor for <code>TemplateModule</code> takes the essential parameters to create a module: <code>const int64_t module_id</code>, <code>const rclcpp::Logger &amp; logger</code>, and <code>const rclcpp::Clock::SharedPtr clock</code>. These parameters are supplied by the <code>TemplateModuleManager</code> when registering a new module. Other parameters can be added to the constructor, if required by your specific module implementation.</li>
 </ul>
-<p>最適化の計算が終わったあと、次のノードに経路を渡す前に<code>post resampling</code>と呼ばれるリサンプリングを行う。ここで再度リサンプリングを行っている理由としては、最適化前で必要な経路間隔と後段のモジュールに渡す経路間隔が必ずしも一致していないからであり、その差を埋めるために再度サンプリングを行っている。そのため、<code>post resampling</code>では後段モジュールの経路仕様を確認してパラメータを決める必要がある。なお、最適化アルゴリズムの計算負荷が高く、最初のリサンプリングで経路間隔が後段モジュールの経路仕様より疎になっている場合、<code>post resampling</code>で経路を蜜にリサンプリングする。逆に最適化アルゴリズムの計算負荷が小さく、最初のリサンプリングで経路間隔が後段の経路仕様より蜜になっている場合は、<code>post resampling</code>で経路をその仕様に合わせて疎にリサンプリングする。</p>
-<h2 id="inputs-outputs">Inputs / Outputs<a class="headerlink" href="#inputs-outputs" title="Permanent link">#</a></h2>
-<h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>~/input/trajectory</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Reference trajectory</td>
-</tr>
-<tr>
-<td><code>/planning/scenario_planning/max_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>External velocity limit [m/s]</td>
-</tr>
-<tr>
-<td><code>/localization/kinematic_state</code></td>
-<td><code>nav_msgs/Odometry</code></td>
-<td>Current odometry</td>
-</tr>
-<tr>
-<td><code>/tf</code></td>
-<td><code>tf2_msgs/TFMessage</code></td>
-<td>TF</td>
-</tr>
-<tr>
-<td><code>/tf_static</code></td>
-<td><code>tf2_msgs/TFMessage</code></td>
-<td>TF static</td>
-</tr>
-</tbody>
-</table>
-<h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>~/output/trajectory</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Modified trajectory</td>
-</tr>
-<tr>
-<td><code>/planning/scenario_planning/current_max_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Current external velocity limit [m/s]</td>
-</tr>
-<tr>
-<td><code>~/closest_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned velocity closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/closest_acceleration</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned acceleration closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/closest_jerk</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned jerk closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_raw</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Extracted trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_external_velocity_limited</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>External velocity limited trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_lateral_acc_filtered</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Lateral acceleration limit filtered trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_time_resampled</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Time resampled trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/distance_to_stopline</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Distance to stop line from current ego pose (max 50 m) (for debug)</td>
-</tr>
-<tr>
-<td><code>~/stop_speed_exceeded</code></td>
-<td><code>std_msgs/Bool</code></td>
-<td>It publishes <code>true</code> if planned velocity on the point which the maximum velocity is zero is over threshold</td>
-</tr>
-</tbody>
-</table>
-<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h2>
-<h3 id="constraint-parameters">Constraint parameters<a class="headerlink" href="#constraint-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>max_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max velocity limit [m/s]</td>
-<td align="left">20.0</td>
-</tr>
-<tr>
-<td align="left"><code>max_accel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max acceleration limit [m/ss]</td>
-<td align="left">1.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_decel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min deceleration limit [m/ss]</td>
-<td align="left">-0.5</td>
-</tr>
-<tr>
-<td align="left"><code>stop_decel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Stop deceleration value at a stop point [m/ss]</td>
-<td align="left">0.0</td>
-</tr>
-<tr>
-<td align="left"><code>max_jerk</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max jerk limit [m/sss]</td>
-<td align="left">1.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_jerk</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min jerk limit [m/sss]</td>
-<td align="left">-0.5</td>
-</tr>
-</tbody>
-</table>
-<h3 id="external-velocity-limit-parameter">External velocity limit parameter<a class="headerlink" href="#external-velocity-limit-parameter" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>margin_to_insert_external_velocity_limit</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">margin distance to insert external velocity limit [m]</td>
-<td align="left">0.3</td>
-</tr>
-</tbody>
-</table>
-<h3 id="curve-parameters">Curve parameters<a class="headerlink" href="#curve-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>max_lateral_accel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max lateral acceleration limit [m/ss]</td>
-<td align="left">0.5</td>
-</tr>
-<tr>
-<td align="left"><code>min_curve_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min velocity at lateral acceleration limit [m/ss]</td>
-<td align="left">2.74</td>
-</tr>
-<tr>
-<td align="left"><code>decel_distance_before_curve</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Distance to slowdown before a curve for lateral acceleration limit [m]</td>
-<td align="left">3.5</td>
-</tr>
-<tr>
-<td align="left"><code>decel_distance_after_curve</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Distance to slowdown after a curve for lateral acceleration limit [m]</td>
-<td align="left">2.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="engage-replan-parameters">Engage &amp; replan parameters<a class="headerlink" href="#engage-replan-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>replan_vel_deviation</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Velocity deviation to replan initial velocity [m/s]</td>
-<td align="left">5.53</td>
-</tr>
-<tr>
-<td align="left"><code>engage_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Engage velocity threshold [m/s] (if the trajectory velocity is higher than this value, use this velocity for engage vehicle speed)</td>
-<td align="left">0.25</td>
-</tr>
-<tr>
-<td align="left"><code>engage_acceleration</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Engage acceleration [m/ss] (use this acceleration when engagement)</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>engage_exit_ratio</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Exit engage sequence to normal velocity planning when the velocity exceeds engage_exit_ratio x engage_velocity.</td>
-<td align="left">0.5</td>
-</tr>
-<tr>
-<td align="left"><code>stop_dist_to_prohibit_engage</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">If the stop point is in this distance, the speed is set to 0 not to move the vehicle [m]</td>
-<td align="left">0.5</td>
-</tr>
-</tbody>
-</table>
-<h3 id="stopping-velocity-parameters">Stopping velocity parameters<a class="headerlink" href="#stopping-velocity-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>stopping_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">change target velocity to this value before v=0 point [m/s]</td>
-<td align="left">2.778</td>
-</tr>
-<tr>
-<td align="left"><code>stopping_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">distance for the stopping_velocity [m]. 0 means the stopping velocity is not applied.</td>
-<td align="left">0.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="extraction-parameters">Extraction parameters<a class="headerlink" href="#extraction-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>extract_ahead_dist</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Forward trajectory distance used for planning [m]</td>
-<td align="left">200.0</td>
-</tr>
-<tr>
-<td align="left"><code>extract_behind_dist</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">backward trajectory distance used for planning [m]</td>
-<td align="left">5.0</td>
-</tr>
-<tr>
-<td align="left"><code>delta_yaw_threshold</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Allowed delta yaw between ego pose and trajectory pose [radian]</td>
-<td align="left">1.0472</td>
-</tr>
-</tbody>
-</table>
-<h3 id="resampling-parameters">Resampling parameters<a class="headerlink" href="#resampling-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>max_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max trajectory length for resampling [m]</td>
-<td align="left">200.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min trajectory length for resampling [m]</td>
-<td align="left">30.0</td>
-</tr>
-<tr>
-<td align="left"><code>resample_time</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Resample total time [s]</td>
-<td align="left">10.0</td>
-</tr>
-<tr>
-<td align="left"><code>dense_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for dense sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>dense_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for dense sampling [m]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>sparse_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for sparse sampling [s]</td>
-<td align="left">0.5</td>
-</tr>
-<tr>
-<td align="left"><code>sparse_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for sparse sampling [m]</td>
-<td align="left">4.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="resampling-parameters-for-post-process">Resampling parameters for post process<a class="headerlink" href="#resampling-parameters-for-post-process" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>post_max_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">max trajectory length for resampling [m]</td>
-<td align="left">300.0</td>
-</tr>
-<tr>
-<td align="left"><code>post_min_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">min trajectory length for resampling [m]</td>
-<td align="left">30.0</td>
-</tr>
-<tr>
-<td align="left"><code>post_resample_time</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample total time for dense sampling [s]</td>
-<td align="left">10.0</td>
-</tr>
-<tr>
-<td align="left"><code>post_dense_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for dense sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_dense_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for dense sampling [m]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_sparse_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for sparse sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_sparse_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for sparse sampling [m]</td>
-<td align="left">1.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="weights-for-optimization">Weights for optimization<a class="headerlink" href="#weights-for-optimization" title="Permanent link">#</a></h3>
-<h4 id="jerkfiltered_1">JerkFiltered<a class="headerlink" href="#jerkfiltered_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost for jerk</td>
-<td align="left">10.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">5000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_j_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over jerk limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h4 id="l2_1">L2<a class="headerlink" href="#l2_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>pseudo_jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost</td>
-<td align="left">100.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h4 id="linf_1">Linf<a class="headerlink" href="#linf_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>pseudo_jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost</td>
-<td align="left">100.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="others">Others<a class="headerlink" href="#others" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>over_stop_velocity_warn_thr</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Threshold to judge that the optimized velocity exceeds the input velocity on the stop point [m/s]</td>
-<td align="left">1.389</td>
-</tr>
-</tbody>
-</table>
-<!-- Write parameters of this package.
-
-Example:
-  ### Node Parameters
-
-  | Name                   | Type | Description                     |
-  | ---------------------- | ---- | ------------------------------- |
-  | `output_debug_markers` | bool | whether to output debug markers |
-
-  ### Core Parameters
-
-  | Name                 | Type     | Description                                                          |
-  | -------------------- | -------- | -------------------------------------------------------------------- |
-  | `min_object_size_m`  | `double` | minimum object size to be selected as avoidance target obstacles [m] |
-  | `avoidance_margin_m` | `double` | avoidance margin to obstacles [m]                                    |
--->
-
-<h2 id="assumptions-known-limits">Assumptions / Known limits<a class="headerlink" href="#assumptions-known-limits" title="Permanent link">#</a></h2>
+<h4 id="modifypathvelocity-method"><code>modifyPathVelocity</code> Method<a class="headerlink" href="#modifypathvelocity-method" title="Permanent link">#</a></h4>
 <ul>
-<li>参照経路上の点には制限速度（停止点）が正しく設定されていることを仮定</li>
-<li>参照経路に設定されている制限速度を指定した減速度やジャークで達成不可能な場合、可能な範囲で速度、加速度、ジャークの逸脱量を抑えながら減速</li>
-<li>各逸脱量の重視の度合いはパラメータにより指定</li>
+<li>This method, defined in the <code>TemplateModule</code> class, is expected to modify the velocity of the input path based on certain conditions. In the provided code, it logs an informational message once when the template module is executing.</li>
+<li>The specific logic for velocity modification should be implemented in this method based on the module's requirements.</li>
 </ul>
-<h2 id="optional-error-detection-and-handling">(Optional) Error detection and handling<a class="headerlink" href="#optional-error-detection-and-handling" title="Permanent link">#</a></h2>
-<h2 id="optional-performance-characterization">(Optional) Performance characterization<a class="headerlink" href="#optional-performance-characterization" title="Permanent link">#</a></h2>
-<h2 id="optional-referencesexternal-links">(Optional) References/External links<a class="headerlink" href="#optional-referencesexternal-links" title="Permanent link">#</a></h2>
-<p>[1] B. Stellato, et al., "OSQP: an operator splitting solver for quadratic programs", Mathematical Programming Computation, 2020, <a href="https://link.springer.com/article/10.1007/s12532-020-00179-2">10.1007/s12532-020-00179-2</a>.</p>
-<p>[2] Y. Zhang, et al., "Toward a More Complete, Flexible, and Safer Speed Planning for Autonomous Driving via Convex Optimization", Sensors, vol. 18, no. 7, p. 2185, 2018, <a href="https://doi.org/10.3390/s18072185">10.3390/s18072185</a></p>
-<h2 id="optional-future-extensions-unimplemented-parts">(Optional) Future extensions / Unimplemented parts<a class="headerlink" href="#optional-future-extensions-unimplemented-parts" title="Permanent link">#</a></h2></div>
+<h4 id="createdebugmarkerarray-method"><code>createDebugMarkerArray</code> Method<a class="headerlink" href="#createdebugmarkerarray-method" title="Permanent link">#</a></h4>
+<ul>
+<li>This method, also defined in the <code>TemplateModule</code> class, is responsible for creating a visualization of debug markers and returning them as a <code>visualization_msgs::msg::MarkerArray</code>. In the provided code, it returns an empty <code>MarkerArray</code>.</li>
+<li>You should implement the logic to generate debug markers specific to your module's functionality.</li>
+</ul>
+<h4 id="createvirtualwalls-method"><code>createVirtualWalls</code> Method<a class="headerlink" href="#createvirtualwalls-method" title="Permanent link">#</a></h4>
+<ul>
+<li>The <code>createVirtualWalls</code> method creates virtual walls for the scene and returns them as <code>motion_utils::VirtualWalls</code>. In the provided code, it returns an empty <code>VirtualWalls</code> object.</li>
+<li>You should implement the logic to create virtual walls based on your module's requirements.</li>
+</ul>
+<h2 id="manager"><code>Manager</code><a class="headerlink" href="#manager" title="Permanent link">#</a></h2>
+<p>The managing of your modules is defined in manager.hpp and manager.cpp. The managing is handled by two classes:</p>
+<ul>
+<li>The <code>TemplateModuleManager</code> class defines the core logic for managing and launching the behavior_velocity_template scenes (defined in behavior_velocity_template_module/src/scene.cpp/hpp). It inherits essential manager attributes from its parent class <code>SceneModuleManagerInterface</code>.</li>
+<li>The <code>TemplateModulePlugin</code> class provides a way to integrate the <code>TemplateModuleManager</code> into the logic of the Behavior Velocity Planner.</li>
+</ul>
+<h3 id="templatemodulemanager-class"><code>TemplateModuleManager</code> Class<a class="headerlink" href="#templatemodulemanager-class" title="Permanent link">#</a></h3>
+<h4 id="constructor-templatemodulemanager">Constructor <code>TemplateModuleManager</code><a class="headerlink" href="#constructor-templatemodulemanager" title="Permanent link">#</a></h4>
+<ul>
+<li>This is the constructor of the <code>TemplateModuleManager</code> class, and it takes an <code>rclcpp::Node</code> reference as a parameter.</li>
+<li>It initializes a member variable <code>dummy_parameter_</code> to 0.0.</li>
+</ul>
+<h4 id="getmodulename-method"><code>getModuleName()</code> Method<a class="headerlink" href="#getmodulename-method" title="Permanent link">#</a></h4>
+<ul>
+<li>This method is an override of a virtual method from the <code>SceneModuleManagerInterface</code> class.</li>
+<li>It returns a pointer to a constant character string, which is the name of the module. In this case, it returns "template" as the module name.</li>
+</ul>
+<h4 id="launchnewmodules-method"><code>launchNewModules()</code> Method<a class="headerlink" href="#launchnewmodules-method" title="Permanent link">#</a></h4>
+<ul>
+<li>This is a private method that takes an argument of type <code>tier4_planning_msgs::msg::PathWithLaneId</code>.</li>
+<li>It is responsible for launching new modules based on the provided path information (PathWithLaneId). The implementation of this method involves initializing and configuring modules specific to your behavior velocity planner by using the <code>TemplateModule</code> class.</li>
+<li>In the provided source code, it initializes a <code>module_id</code> to 0 and checks if a module with the same ID is already registered. If not, it registers a new <code>TemplateModule</code> with the module ID. Note that each module managed by the <code>TemplateModuleManager</code> should have a unique ID. The template code registers a single module, so the <code>module_id</code> is set as 0 for simplicity.</li>
+</ul>
+<h4 id="getmoduleexpiredfunction-method"><code>getModuleExpiredFunction()</code> Method<a class="headerlink" href="#getmoduleexpiredfunction-method" title="Permanent link">#</a></h4>
+<ul>
+<li>This is a private method that takes an argument of type <code>tier4_planning_msgs::msg::PathWithLaneId</code>.</li>
+<li>It returns a <code>std::function&lt;bool(const std::shared_ptr&lt;SceneModuleInterface&gt;&amp;)&gt;</code>. This function is used by the behavior velocity planner to determine whether a particular module has expired or not based on the given path.</li>
+<li>The implementation of this method is expected to return a function that can be used to check the expiration status of modules.</li>
+</ul>
+<p>Please note that the specific functionality of the methods <code>launchNewModules()</code> and <code>getModuleExpiredFunction()</code> would depend on the details of your behavior velocity modules and how they are intended to be managed within the Autoware system. You would need to implement these methods according to your module's requirements.</p>
+<h3 id="templatemoduleplugin-class"><code>TemplateModulePlugin</code> Class<a class="headerlink" href="#templatemoduleplugin-class" title="Permanent link">#</a></h3>
+<h4 id="templatemoduleplugin-class_1"><code>TemplateModulePlugin</code> Class<a class="headerlink" href="#templatemoduleplugin-class_1" title="Permanent link">#</a></h4>
+<ul>
+<li>This class inherits from <code>PluginWrapper&lt;TemplateModuleManager&gt;</code>. It essentially wraps your <code>TemplateModuleManager</code> class within a plugin, which can be loaded and managed dynamically.</li>
+</ul>
+<h2 id="example-usage"><code>Example Usage</code><a class="headerlink" href="#example-usage" title="Permanent link">#</a></h2>
+<p>In the following example, we take each point of the path, and multiply it by 2. Essentially duplicating the speed. Note that the velocity smoother will further modify the path speed after all the behavior velocity modules are executed.</p>
+<div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="nf">TemplateModule::modifyPathVelocity</span><span class="p">(</span>
+<span class="w">  </span><span class="p">[[</span><span class="n">maybe_unused</span><span class="p">]]</span><span class="w"> </span><span class="n">PathWithLaneId</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="p">[[</span><span class="n">maybe_unused</span><span class="p">]]</span><span class="w"> </span><span class="n">StopReason</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">stop_reason</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">path</span><span class="o">-&gt;</span><span class="n">points</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">point</span><span class="p">.</span><span class="n">longitudinal_velocity_mps</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
 
 
 
@@ -13877,7 +13207,7 @@ Example:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Velocity Smoother" rel="prev">
+          <a href="../autoware_behavior_velocity_stop_line_module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Index" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13886,14 +13216,14 @@ Example:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Velocity Smoother
+                Index
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../behavior_velocity_planner/autoware_behavior_velocity_blind_spot_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Index" rel="next">
+          <a href="../autoware_behavior_velocity_traffic_light_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Index" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next

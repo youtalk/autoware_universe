@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_velocity_smoother/README.ja/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_velocity_planner/autoware_behavior_velocity_detection_area_module/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../autoware_behavior_velocity_crosswalk_module/">
       
       
-        <link rel="next" href="../../behavior_velocity_planner/autoware_behavior_velocity_blind_spot_module/">
+        <link rel="next" href="../autoware_behavior_velocity_intersection_module/">
       
       <link rel="icon" href="../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Velocity Smoother - Autoware Universe Documentation</title>
+        <title>Index - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#velocity-smoother" class="md-skip">
+        <a href="#detection-area" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Velocity Smoother
+              Index
             
           </span>
         </div>
@@ -9018,7 +9018,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../autoware_velocity_smoother" class="md-nav__link">
         About Velocity Smoother
       </a>
     </li>
@@ -9032,7 +9032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../../autoware_velocity_smoother/README.ja" class="md-nav__link">
         About Velocity Smoother (Japanese)
       </a>
     </li>
@@ -13010,8 +13010,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -13020,174 +13018,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose" class="md-nav__link">
-    Purpose
+  <a href="#detection-area" class="md-nav__link">
+    Detection Area
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
-  </a>
-  
-    <nav class="md-nav" aria-label="Inner-workings / Algorithms">
+    <nav class="md-nav" aria-label="Detection Area">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#flow-chart" class="md-nav__link">
-    Flow chart
+  <a href="#role" class="md-nav__link">
+    Role
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activation-timing" class="md-nav__link">
+    Activation Timing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-parameters" class="md-nav__link">
+    Module Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inner-workings-algorithm" class="md-nav__link">
+    Inner-workings / Algorithm
   </a>
   
 </li>
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inputs-outputs" class="md-nav__link">
-    Inputs / Outputs
-  </a>
-  
-    <nav class="md-nav" aria-label="Inputs / Outputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input" class="md-nav__link">
-    Input
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#output" class="md-nav__link">
-    Output
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    Parameters
-  </a>
-  
-    <nav class="md-nav" aria-label="Parameters">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#constraint-parameters" class="md-nav__link">
-    Constraint parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#external-velocity-limit-parameter" class="md-nav__link">
-    External velocity limit parameter
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#curve-parameters" class="md-nav__link">
-    Curve parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#engage-replan-parameters" class="md-nav__link">
-    Engage &amp; replan parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stopping-velocity-parameters" class="md-nav__link">
-    Stopping velocity parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#extraction-parameters" class="md-nav__link">
-    Extraction parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resampling-parameters" class="md-nav__link">
-    Resampling parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resampling-parameters-for-post-process" class="md-nav__link">
-    Resampling parameters for post process
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#weights-for-optimization" class="md-nav__link">
-    Weights for optimization
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#others" class="md-nav__link">
-    Others
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#assumptions-known-limits" class="md-nav__link">
-    Assumptions / Known limits
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-error-detection-and-handling" class="md-nav__link">
-    (Optional) Error detection and handling
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-performance-characterization" class="md-nav__link">
-    (Optional) Performance characterization
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-referencesexternal-links" class="md-nav__link">
-    (Optional) References/External links
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-future-extensions-unimplemented-parts" class="md-nav__link">
-    (Optional) Future extensions / Unimplemented parts
-  </a>
   
 </li>
       
@@ -13209,648 +13076,89 @@
   
 
 
-<div><h1 id="velocity-smoother">Velocity Smoother<a class="headerlink" href="#velocity-smoother" title="Permanent link">#</a></h1>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">#</a></h2>
-<p><code>autoware_velocity_smoother</code>は目標軌道上の各点における望ましい車速を計画して出力するモジュールである。
-このモジュールは、速度の最大化と乗り心地の良さを両立するために、事前に指定された制限速度、制限加速度および制限躍度の範囲で車速を計画する。
-加速度や躍度の制限を与えることは車速の変化を滑らかにすることに対応するため、このモジュールを<code>autoware_velocity_smoother</code>と呼んでいる。</p>
-<h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
-<h3 id="flow-chart">Flow chart<a class="headerlink" href="#flow-chart" title="Permanent link">#</a></h3>
-<p><img alt="motion_velocity_smoother_flow" src="../media/motion_velocity_smoother_flow.drawio.svg"></p>
-<h4 id="extract-trajectory">Extract trajectory<a class="headerlink" href="#extract-trajectory" title="Permanent link">#</a></h4>
-<p>自車後輪軸中心位置に最も近い参照経路上の点に対し、<code>extract_behind_dist</code>だけ戻った点から<code>extract_ahead_dist</code>だけ進んだ点までの参照経路を抜き出す。</p>
-<h4 id="apply-external-velocity-limit">Apply external velocity limit<a class="headerlink" href="#apply-external-velocity-limit" title="Permanent link">#</a></h4>
-<p>モジュール外部から指定された速度制限を適用する。
-ここで扱う外部の速度制限は<code>/planning/scenario_planning/max_velocity</code>の topic で渡されるもので、地図上で設定された速度制限など、参照経路にすでに設定されている制限速度とは別である。
-外部から指定される速度制限は、パラメータで指定されている減速度および躍度の制限の範囲で減速可能な位置から速度制限を適用する。</p>
-<h4 id="apply-stop-approaching-velocity">Apply stop approaching velocity<a class="headerlink" href="#apply-stop-approaching-velocity" title="Permanent link">#</a></h4>
-<p>停止点に近づいたときの速度を設定する。障害物近傍まで近づく場合や、正着精度向上などの目的に用いる。</p>
-<h4 id="apply-lateral-acceleration-limit">Apply lateral acceleration limit<a class="headerlink" href="#apply-lateral-acceleration-limit" title="Permanent link">#</a></h4>
-<p>経路の曲率に応じて、指定された最大横加速度<code>max_lateral_accel</code>を超えない速度を制限速度として設定する。ただし、制限速度は<code>min_curve_velocity</code>を下回らないように設定する。</p>
-<h4 id="resample-trajectory">Resample trajectory<a class="headerlink" href="#resample-trajectory" title="Permanent link">#</a></h4>
-<p>指定された時間間隔で経路の点を再サンプルする。ただし、経路全体の長さは<code>min_trajectory_length</code>から<code>max_trajectory_length</code>の間となるように再サンプルを行い、点の間隔は<code>min_trajectory_interval_distance</code>より小さくならないようにする。
-現在車速で<code>resample_time</code>の間進む距離までは密にサンプリングし、それ以降は疎にサンプリングする。
-この方法でサンプリングすることで、低速時は密に、高速時は疎にサンプルされるため、停止精度と計算負荷軽減の両立を図っている。</p>
-<h4 id="calculate-initial-state">Calculate initial state<a class="headerlink" href="#calculate-initial-state" title="Permanent link">#</a></h4>
-<p>速度計画のための初期値を計算する。初期値は状況に応じて下表のように計算する。</p>
+  <h1>Index</h1>
+
+<div><h2 id="detection-area">Detection Area<a class="headerlink" href="#detection-area" title="Permanent link">#</a></h2>
+<h3 id="role">Role<a class="headerlink" href="#role" title="Permanent link">#</a></h3>
+<p>If pointcloud is detected in a detection area defined on a map, the stop planning will be executed at the predetermined point.</p>
+<p><img alt="brief" src="docs/detection_area.svg"></p>
+<h3 id="activation-timing">Activation Timing<a class="headerlink" href="#activation-timing" title="Permanent link">#</a></h3>
+<p>This module is activated when there is a detection area on the target lane.</p>
+<h3 id="module-parameters">Module Parameters<a class="headerlink" href="#module-parameters" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
-<th>状況</th>
-<th>初期速度</th>
-<th>初期加速度</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>最初の計算時</td>
-<td>現在車速</td>
-<td>0.0</td>
-</tr>
-<tr>
-<td>発進時</td>
-<td><code>engage_velocity</code></td>
-<td><code>engage_acceleration</code></td>
-</tr>
-<tr>
-<td>現在車速と計画車速が乖離</td>
-<td>現在車速</td>
-<td>前回計画値</td>
-</tr>
-<tr>
-<td>通常時</td>
-<td>前回計画値</td>
-<td>前回計画値</td>
-</tr>
-</tbody>
-</table>
-<h4 id="smooth-velocity">Smooth velocity<a class="headerlink" href="#smooth-velocity" title="Permanent link">#</a></h4>
-<p>速度の計画を行う。速度計画のアルゴリズムは<code>JerkFiltered</code>, <code>L2</code>, <code>Linf</code>の 3 種類のうちからコンフィグで指定する。
-最適化のソルバは OSQP[1]を利用する。</p>
-<h5 id="jerkfiltered">JerkFiltered<a class="headerlink" href="#jerkfiltered" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗、制限ジャーク逸脱量の 2 乗、ジャークの 2 乗の総和を最小化する。</p>
-<h5 id="l2">L2<a class="headerlink" href="#l2" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗、疑似ジャーク[2]の 2 乗の総和を最小化する。</p>
-<h5 id="linf">Linf<a class="headerlink" href="#linf" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗の総和と疑似ジャーク[2]の絶対最大値の和の最小化する。</p>
-<h4 id="post-process">Post process<a class="headerlink" href="#post-process" title="Permanent link">#</a></h4>
-<p>計画された軌道の後処理を行う。</p>
-<ul>
-<li>停止点より先の速度を 0 に設定</li>
-<li>速度がパラメータで与えられる<code>max_velocity</code>以下となるように設定</li>
-<li>自車位置より手前の点における速度を設定</li>
-<li>Trajectory の仕様に合わせてリサンプリング(<code>post resampling</code>)</li>
-<li>デバッグデータの出力</li>
-</ul>
-<p>最適化の計算が終わったあと、次のノードに経路を渡す前に<code>post resampling</code>と呼ばれるリサンプリングを行う。ここで再度リサンプリングを行っている理由としては、最適化前で必要な経路間隔と後段のモジュールに渡す経路間隔が必ずしも一致していないからであり、その差を埋めるために再度サンプリングを行っている。そのため、<code>post resampling</code>では後段モジュールの経路仕様を確認してパラメータを決める必要がある。なお、最適化アルゴリズムの計算負荷が高く、最初のリサンプリングで経路間隔が後段モジュールの経路仕様より疎になっている場合、<code>post resampling</code>で経路を蜜にリサンプリングする。逆に最適化アルゴリズムの計算負荷が小さく、最初のリサンプリングで経路間隔が後段の経路仕様より蜜になっている場合は、<code>post resampling</code>で経路をその仕様に合わせて疎にリサンプリングする。</p>
-<h2 id="inputs-outputs">Inputs / Outputs<a class="headerlink" href="#inputs-outputs" title="Permanent link">#</a></h2>
-<h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
+<th>Parameter</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>~/input/trajectory</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Reference trajectory</td>
+<td><code>use_dead_line</code></td>
+<td>bool</td>
+<td>[-] weather to use dead line or not</td>
 </tr>
 <tr>
-<td><code>/planning/scenario_planning/max_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>External velocity limit [m/s]</td>
+<td><code>use_pass_judge_line</code></td>
+<td>bool</td>
+<td>[-] weather to use pass judge line or not</td>
 </tr>
 <tr>
-<td><code>/localization/kinematic_state</code></td>
-<td><code>nav_msgs/Odometry</code></td>
-<td>Current odometry</td>
+<td><code>state_clear_time</code></td>
+<td>double</td>
+<td>[s] when the vehicle is stopping for certain time without incoming obstacle, move to STOPPED state</td>
 </tr>
 <tr>
-<td><code>/tf</code></td>
-<td><code>tf2_msgs/TFMessage</code></td>
-<td>TF</td>
+<td><code>stop_margin</code></td>
+<td>double</td>
+<td>[m] a margin that the vehicle tries to stop before stop_line</td>
 </tr>
 <tr>
-<td><code>/tf_static</code></td>
-<td><code>tf2_msgs/TFMessage</code></td>
-<td>TF static</td>
-</tr>
-</tbody>
-</table>
-<h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>~/output/trajectory</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Modified trajectory</td>
+<td><code>dead_line_margin</code></td>
+<td>double</td>
+<td>[m] ignore threshold that vehicle behind is collide with ego vehicle or not</td>
 </tr>
 <tr>
-<td><code>/planning/scenario_planning/current_max_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Current external velocity limit [m/s]</td>
+<td><code>hold_stop_margin_distance</code></td>
+<td>double</td>
+<td>[m] parameter for restart prevention (See Algorithm section)</td>
 </tr>
 <tr>
-<td><code>~/closest_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned velocity closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/closest_acceleration</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned acceleration closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/closest_jerk</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned jerk closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_raw</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Extracted trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_external_velocity_limited</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>External velocity limited trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_lateral_acc_filtered</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Lateral acceleration limit filtered trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_time_resampled</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Time resampled trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/distance_to_stopline</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Distance to stop line from current ego pose (max 50 m) (for debug)</td>
-</tr>
-<tr>
-<td><code>~/stop_speed_exceeded</code></td>
-<td><code>std_msgs/Bool</code></td>
-<td>It publishes <code>true</code> if planned velocity on the point which the maximum velocity is zero is over threshold</td>
+<td><code>distance_to_judge_over_stop_line</code></td>
+<td>double</td>
+<td>[m] parameter for judging that the stop line has been crossed</td>
 </tr>
 </tbody>
 </table>
-<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h2>
-<h3 id="constraint-parameters">Constraint parameters<a class="headerlink" href="#constraint-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>max_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max velocity limit [m/s]</td>
-<td align="left">20.0</td>
-</tr>
-<tr>
-<td align="left"><code>max_accel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max acceleration limit [m/ss]</td>
-<td align="left">1.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_decel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min deceleration limit [m/ss]</td>
-<td align="left">-0.5</td>
-</tr>
-<tr>
-<td align="left"><code>stop_decel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Stop deceleration value at a stop point [m/ss]</td>
-<td align="left">0.0</td>
-</tr>
-<tr>
-<td align="left"><code>max_jerk</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max jerk limit [m/sss]</td>
-<td align="left">1.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_jerk</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min jerk limit [m/sss]</td>
-<td align="left">-0.5</td>
-</tr>
-</tbody>
-</table>
-<h3 id="external-velocity-limit-parameter">External velocity limit parameter<a class="headerlink" href="#external-velocity-limit-parameter" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>margin_to_insert_external_velocity_limit</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">margin distance to insert external velocity limit [m]</td>
-<td align="left">0.3</td>
-</tr>
-</tbody>
-</table>
-<h3 id="curve-parameters">Curve parameters<a class="headerlink" href="#curve-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>max_lateral_accel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max lateral acceleration limit [m/ss]</td>
-<td align="left">0.5</td>
-</tr>
-<tr>
-<td align="left"><code>min_curve_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min velocity at lateral acceleration limit [m/ss]</td>
-<td align="left">2.74</td>
-</tr>
-<tr>
-<td align="left"><code>decel_distance_before_curve</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Distance to slowdown before a curve for lateral acceleration limit [m]</td>
-<td align="left">3.5</td>
-</tr>
-<tr>
-<td align="left"><code>decel_distance_after_curve</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Distance to slowdown after a curve for lateral acceleration limit [m]</td>
-<td align="left">2.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="engage-replan-parameters">Engage &amp; replan parameters<a class="headerlink" href="#engage-replan-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>replan_vel_deviation</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Velocity deviation to replan initial velocity [m/s]</td>
-<td align="left">5.53</td>
-</tr>
-<tr>
-<td align="left"><code>engage_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Engage velocity threshold [m/s] (if the trajectory velocity is higher than this value, use this velocity for engage vehicle speed)</td>
-<td align="left">0.25</td>
-</tr>
-<tr>
-<td align="left"><code>engage_acceleration</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Engage acceleration [m/ss] (use this acceleration when engagement)</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>engage_exit_ratio</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Exit engage sequence to normal velocity planning when the velocity exceeds engage_exit_ratio x engage_velocity.</td>
-<td align="left">0.5</td>
-</tr>
-<tr>
-<td align="left"><code>stop_dist_to_prohibit_engage</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">If the stop point is in this distance, the speed is set to 0 not to move the vehicle [m]</td>
-<td align="left">0.5</td>
-</tr>
-</tbody>
-</table>
-<h3 id="stopping-velocity-parameters">Stopping velocity parameters<a class="headerlink" href="#stopping-velocity-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>stopping_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">change target velocity to this value before v=0 point [m/s]</td>
-<td align="left">2.778</td>
-</tr>
-<tr>
-<td align="left"><code>stopping_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">distance for the stopping_velocity [m]. 0 means the stopping velocity is not applied.</td>
-<td align="left">0.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="extraction-parameters">Extraction parameters<a class="headerlink" href="#extraction-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>extract_ahead_dist</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Forward trajectory distance used for planning [m]</td>
-<td align="left">200.0</td>
-</tr>
-<tr>
-<td align="left"><code>extract_behind_dist</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">backward trajectory distance used for planning [m]</td>
-<td align="left">5.0</td>
-</tr>
-<tr>
-<td align="left"><code>delta_yaw_threshold</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Allowed delta yaw between ego pose and trajectory pose [radian]</td>
-<td align="left">1.0472</td>
-</tr>
-</tbody>
-</table>
-<h3 id="resampling-parameters">Resampling parameters<a class="headerlink" href="#resampling-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>max_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max trajectory length for resampling [m]</td>
-<td align="left">200.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min trajectory length for resampling [m]</td>
-<td align="left">30.0</td>
-</tr>
-<tr>
-<td align="left"><code>resample_time</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Resample total time [s]</td>
-<td align="left">10.0</td>
-</tr>
-<tr>
-<td align="left"><code>dense_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for dense sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>dense_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for dense sampling [m]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>sparse_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for sparse sampling [s]</td>
-<td align="left">0.5</td>
-</tr>
-<tr>
-<td align="left"><code>sparse_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for sparse sampling [m]</td>
-<td align="left">4.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="resampling-parameters-for-post-process">Resampling parameters for post process<a class="headerlink" href="#resampling-parameters-for-post-process" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>post_max_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">max trajectory length for resampling [m]</td>
-<td align="left">300.0</td>
-</tr>
-<tr>
-<td align="left"><code>post_min_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">min trajectory length for resampling [m]</td>
-<td align="left">30.0</td>
-</tr>
-<tr>
-<td align="left"><code>post_resample_time</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample total time for dense sampling [s]</td>
-<td align="left">10.0</td>
-</tr>
-<tr>
-<td align="left"><code>post_dense_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for dense sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_dense_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for dense sampling [m]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_sparse_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for sparse sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_sparse_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for sparse sampling [m]</td>
-<td align="left">1.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="weights-for-optimization">Weights for optimization<a class="headerlink" href="#weights-for-optimization" title="Permanent link">#</a></h3>
-<h4 id="jerkfiltered_1">JerkFiltered<a class="headerlink" href="#jerkfiltered_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost for jerk</td>
-<td align="left">10.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">5000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_j_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over jerk limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h4 id="l2_1">L2<a class="headerlink" href="#l2_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>pseudo_jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost</td>
-<td align="left">100.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h4 id="linf_1">Linf<a class="headerlink" href="#linf_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>pseudo_jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost</td>
-<td align="left">100.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="others">Others<a class="headerlink" href="#others" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>over_stop_velocity_warn_thr</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Threshold to judge that the optimized velocity exceeds the input velocity on the stop point [m/s]</td>
-<td align="left">1.389</td>
-</tr>
-</tbody>
-</table>
-<!-- Write parameters of this package.
-
-Example:
-  ### Node Parameters
-
-  | Name                   | Type | Description                     |
-  | ---------------------- | ---- | ------------------------------- |
-  | `output_debug_markers` | bool | whether to output debug markers |
-
-  ### Core Parameters
-
-  | Name                 | Type     | Description                                                          |
-  | -------------------- | -------- | -------------------------------------------------------------------- |
-  | `min_object_size_m`  | `double` | minimum object size to be selected as avoidance target obstacles [m] |
-  | `avoidance_margin_m` | `double` | avoidance margin to obstacles [m]                                    |
--->
-
-<h2 id="assumptions-known-limits">Assumptions / Known limits<a class="headerlink" href="#assumptions-known-limits" title="Permanent link">#</a></h2>
-<ul>
-<li>参照経路上の点には制限速度（停止点）が正しく設定されていることを仮定</li>
-<li>参照経路に設定されている制限速度を指定した減速度やジャークで達成不可能な場合、可能な範囲で速度、加速度、ジャークの逸脱量を抑えながら減速</li>
-<li>各逸脱量の重視の度合いはパラメータにより指定</li>
-</ul>
-<h2 id="optional-error-detection-and-handling">(Optional) Error detection and handling<a class="headerlink" href="#optional-error-detection-and-handling" title="Permanent link">#</a></h2>
-<h2 id="optional-performance-characterization">(Optional) Performance characterization<a class="headerlink" href="#optional-performance-characterization" title="Permanent link">#</a></h2>
-<h2 id="optional-referencesexternal-links">(Optional) References/External links<a class="headerlink" href="#optional-referencesexternal-links" title="Permanent link">#</a></h2>
-<p>[1] B. Stellato, et al., "OSQP: an operator splitting solver for quadratic programs", Mathematical Programming Computation, 2020, <a href="https://link.springer.com/article/10.1007/s12532-020-00179-2">10.1007/s12532-020-00179-2</a>.</p>
-<p>[2] Y. Zhang, et al., "Toward a More Complete, Flexible, and Safer Speed Planning for Autonomous Driving via Convex Optimization", Sensors, vol. 18, no. 7, p. 2185, 2018, <a href="https://doi.org/10.3390/s18072185">10.3390/s18072185</a></p>
-<h2 id="optional-future-extensions-unimplemented-parts">(Optional) Future extensions / Unimplemented parts<a class="headerlink" href="#optional-future-extensions-unimplemented-parts" title="Permanent link">#</a></h2></div>
+<h3 id="inner-workings-algorithm">Inner-workings / Algorithm<a class="headerlink" href="#inner-workings-algorithm" title="Permanent link">#</a></h3>
+<ol>
+<li>Gets a detection area and stop line from map information and confirms if there is pointcloud in the detection area</li>
+<li>Inserts stop point l[m] in front of the stop line</li>
+<li>Inserts a pass judge point to a point where the vehicle can stop with a max deceleration</li>
+<li>Sets velocity as zero behind the stop line when the ego-vehicle is in front of the pass judge point</li>
+<li>If the ego vehicle has passed the pass judge point already, it doesn’t stop and pass through.</li>
+</ol>
+<h4 id="flowchart">Flowchart<a class="headerlink" href="#flowchart" title="Permanent link">#</a></h4>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBjb250ZW50U3R5bGVUeXBlPSJ0ZXh0L2NzcyIgaGVpZ2h0PSIxMzUzcHgiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHN0eWxlPSJ3aWR0aDo0NDZweDtoZWlnaHQ6MTM1M3B4O2JhY2tncm91bmQ6I0ZGRkZGRjsiIHZlcnNpb249IjEuMSIgdmlld0JveD0iMCAwIDQ0NiAxMzUzIiB3aWR0aD0iNDQ2cHgiIHpvb21BbmRQYW49Im1hZ25pZnkiPjxkZWZzLz48Zz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTUxIiB4PSIxNDYuMjUiIHk9IjMyLjk5NTEiPm1vZGlmeVBhdGhWZWxvY2l0eTwvdGV4dD48ZWxsaXBzZSBjeD0iMTkzIiBjeT0iNTcuMjk2OSIgZmlsbD0iIzIyMjIyMiIgcng9IjEwIiByeT0iMTAiIHN0eWxlPSJzdHJva2U6IzIyMjIyMjtzdHJva2Utd2lkdGg6MS4wOyIvPjxyZWN0IGZpbGw9IiNGMUYxRjEiIGhlaWdodD0iMzMuOTY4OCIgcng9IjEyLjUiIHJ5PSIxMi41IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHdpZHRoPSIyODUiIHg9IjUwLjUiIHk9Ijg3LjI5NjkiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIyNjUiIHg9IjYwLjUiIHk9IjEwOC40MzU1Ij5nZXQgb2JzdGFjbGUgcG9pbnQgY2xvdWQgaW4gZGV0ZWN0aW9uIGFyZWE8L3RleHQ+PHJlY3QgZmlsbD0iI0YxRjFGMSIgaGVpZ2h0PSIzMy45Njg4IiByeD0iMTIuNSIgcnk9IjEyLjUiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgd2lkdGg9IjE5NiIgeD0iOTUiIHk9IjE4OS42NjgiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIxNzYiIHg9IjEwNSIgeT0iMjEwLjgwNjYiPnNldCBsYXN0IHRpbWUgb2JzdGFjbGUgZm91bmQ8L3RleHQ+PHBvbHlnb24gZmlsbD0iI0YxRjFGMSIgcG9pbnRzPSI3NCwxNDEuMjY1NiwzMTIsMTQxLjI2NTYsMzI0LDE1My4yNjU2LDMxMiwxNjUuMjY1Niw3NCwxNjUuMjY1Niw2MiwxNTMuMjY1Niw3NCwxNDEuMjY1NiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTQiIHg9IjE5NyIgeT0iMTc1LjQ3NjEiPm5vPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciIHRleHRMZW5ndGg9IjIzOCIgeD0iNzQiIHk9IjE1Ny4wNzM3Ij5ubyBvYnN0YWNsZSBwb2ludCBjbG91ZCBpbiBkZXRlY3Rpb24gYXJlYT88L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMjAiIHg9IjMyNCIgeT0iMTUwLjY3MTQiPnllczwvdGV4dD48cG9seWdvbiBmaWxsPSIjRjFGMUYxIiBwb2ludHM9IjE5MywyNDMuNjM2NywyMDUsMjU1LjYzNjcsMTkzLDI2Ny42MzY3LDE4MSwyNTUuNjM2NywxOTMsMjQzLjYzNjciIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjxyZWN0IGZpbGw9IiNGMUYxRjEiIGhlaWdodD0iMzMuOTY4OCIgcng9IjEyLjUiIHJ5PSIxMi41IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHdpZHRoPSIyMDIiIHg9IjkyIiB5PSIyODcuNjM2NyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciIHRleHRMZW5ndGg9IjE4MiIgeD0iMTAyIiB5PSIzMDguNzc1NCI+Z2V0IGNsZWFyIHN0b3Agc3RhdGUgZHVyYXRpb248L3RleHQ+PHJlY3QgZmlsbD0iI0YxRjFGMSIgaGVpZ2h0PSIzMy45Njg4IiByeD0iMTIuNSIgcnk9IjEyLjUiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgd2lkdGg9IjE0OSIgeD0iMTE4LjUiIHk9IjM5MC4wMDc4Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTI5IiB4PSIxMjguNSIgeT0iNDExLjE0NjUiPnNldCBjdXJyZW50IHN0YXRlIEdPPC90ZXh0PjxyZWN0IGZpbGw9IiNGMUYxRjEiIGhlaWdodD0iMzMuOTY4OCIgcng9IjEyLjUiIHJ5PSIxMi41IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHdpZHRoPSIyMTQiIHg9Ijg2IiB5PSI0NDMuOTc2NiIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciIHRleHRMZW5ndGg9IjE5NCIgeD0iOTYiIHk9IjQ2NS4xMTUyIj5yZXNldCBjbGVhciBzdG9wIHN0YXRlIGR1cmF0aW9uPC90ZXh0PjxlbGxpcHNlIGN4PSIxOTMiIGN5PSI1MDguOTQ1MyIgZmlsbD0ibm9uZSIgcng9IjExIiByeT0iMTEiIHN0eWxlPSJzdHJva2U6IzIyMjIyMjtzdHJva2Utd2lkdGg6MS4wOyIvPjxlbGxpcHNlIGN4PSIxOTMiIGN5PSI1MDguOTQ1MyIgZmlsbD0iIzIyMjIyMiIgcng9IjYiIHJ5PSI2IiBzdHlsZT0ic3Ryb2tlOiMyMjIyMjI7c3Ryb2tlLXdpZHRoOjEuMDsiLz48cG9seWdvbiBmaWxsPSIjRjFGMUYxIiBwb2ludHM9IjMyLDM0MS42MDU1LDM1NCwzNDEuNjA1NSwzNjYsMzUzLjYwNTUsMzU0LDM2NS42MDU1LDMyLDM2NS42MDU1LDIwLDM1My42MDU1LDMyLDM0MS42MDU1IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIyMCIgeD0iMTk3IiB5PSIzNzUuODE1OSI+eWVzPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciIHRleHRMZW5ndGg9IjMyMiIgeD0iMzIiIHk9IjM1Ny40MTM2Ij5jbGVhciBzdG9wIHN0YXRlIGR1cmF0aW9uIGlzIG1vcmUgdGhhbiBzdGF0ZV9jbGVhcl90aW1lPzwvdGV4dD48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIxNCIgeD0iMzY2IiB5PSIzNTEuMDExMiI+bm88L3RleHQ+PHJlY3QgZmlsbD0iI0YxRjFGMSIgaGVpZ2h0PSIzMy45Njg4IiByeD0iMTIuNSIgcnk9IjEyLjUiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgd2lkdGg9IjE1OSIgeD0iMTEzLjUiIHk9IjYxMC4zNDc3Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTM5IiB4PSIxMjMuNSIgeT0iNjMxLjQ4NjMiPmNyZWF0ZSBkZWFkIGxpbmUgcG9pbnQ8L3RleHQ+PHBvbHlnb24gZmlsbD0iI0YxRjFGMSIgcG9pbnRzPSIxMjYuNSw3MTIuNzE4OCwyNTkuNSw3MTIuNzE4OCwyNzEuNSw3MjQuNzE4OCwyNTkuNSw3MzYuNzE4OCwxMjYuNSw3MzYuNzE4OCwxMTQuNSw3MjQuNzE4OCwxMjYuNSw3MTIuNzE4OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTMzIiB4PSIxMjYuNSIgeT0iNzI4LjUyNjkiPklzIG92ZXIgZGVhZCBsaW5lIHBvaW50PzwvdGV4dD48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIyMCIgeD0iMjcxLjUiIHk9IjcyMi4xMjQ1Ij55ZXM8L3RleHQ+PGVsbGlwc2UgY3g9IjMxMy41IiBjeT0iNzI0LjcxODgiIGZpbGw9Im5vbmUiIHJ4PSIxMSIgcnk9IjExIiBzdHlsZT0ic3Ryb2tlOiMyMjIyMjI7c3Ryb2tlLXdpZHRoOjEuMDsiLz48ZWxsaXBzZSBjeD0iMzEzLjUiIGN5PSI3MjQuNzE4OCIgZmlsbD0iIzIyMjIyMiIgcng9IjYiIHJ5PSI2IiBzdHlsZT0ic3Ryb2tlOiMyMjIyMjI7c3Ryb2tlLXdpZHRoOjEuMDsiLz48cG9seWdvbiBmaWxsPSIjRjFGMUYxIiBwb2ludHM9IjEyNCw2NjQuMzE2NCwyNjIsNjY0LjMxNjQsMjc0LDY3Ni4zMTY0LDI2Miw2ODguMzE2NCwxMjQsNjg4LjMxNjQsMTEyLDY3Ni4zMTY0LDEyNCw2NjQuMzE2NCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMjAiIHg9IjE5NyIgeT0iNjk4LjUyNjkiPnllczwvdGV4dD48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIxMzgiIHg9IjEyNCIgeT0iNjgwLjEyNDUiPklzIHRoZXJlIGRlYWQgbGluZSBwb2ludD88L3RleHQ+PHBvbHlnb24gZmlsbD0iI0YxRjFGMSIgcG9pbnRzPSIxOTMsNzY4LjcxODgsMjA1LDc4MC43MTg4LDE5Myw3OTIuNzE4OCwxODEsNzgwLjcxODgsMTkzLDc2OC43MTg4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48cG9seWdvbiBmaWxsPSIjRjFGMUYxIiBwb2ludHM9IjE1MS41LDU2MS45NDUzLDIzNC41LDU2MS45NDUzLDI0Ni41LDU3My45NDUzLDIzNC41LDU4NS45NDUzLDE1MS41LDU4NS45NDUzLDEzOS41LDU3My45NDUzLDE1MS41LDU2MS45NDUzIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIyMCIgeD0iMTk3IiB5PSI1OTYuMTU1OCI+eWVzPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciIHRleHRMZW5ndGg9IjgzIiB4PSIxNTEuNSIgeT0iNTc3Ljc1MzQiPnVzZSBkZWFkIGxpbmU/PC90ZXh0Pjxwb2x5Z29uIGZpbGw9IiNGMUYxRjEiIHBvaW50cz0iMTkzLDgxMi43MTg4LDIwNSw4MjQuNzE4OCwxOTMsODM2LjcxODgsMTgxLDgyNC43MTg4LDE5Myw4MTIuNzE4OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHJlY3QgZmlsbD0iI0YxRjFGMSIgaGVpZ2h0PSIzMy45Njg4IiByeD0iMTIuNSIgcnk9IjEyLjUiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgd2lkdGg9IjE0NSIgeD0iMTIwLjUiIHk9Ijg1Ni43MTg4Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTI1IiB4PSIxMzAuNSIgeT0iODc3Ljg1NzQiPmNhbGN1bGF0ZSBzdG9wIHBvaW50PC90ZXh0Pjxwb2x5Z29uIGZpbGw9IiNGMUYxRjEiIHBvaW50cz0iMTYxLjUsOTEwLjY4NzUsMjI0LjUsOTEwLjY4NzUsMjM2LjUsOTIyLjY4NzUsMjI0LjUsOTM0LjY4NzUsMTYxLjUsOTM0LjY4NzUsMTQ5LjUsOTIyLjY4NzUsMTYxLjUsOTEwLjY4NzUiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciIHRleHRMZW5ndGg9IjIwIiB4PSIxOTciIHk9Ijk0NC44OTc5Ij55ZXM8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iNjMiIHg9IjE2MS41IiB5PSI5MjYuNDk1NiI+c3RvcCBwb2ludD88L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTQiIHg9IjIzNi41IiB5PSI5MjAuMDkzMyI+bm88L3RleHQ+PGVsbGlwc2UgY3g9IjI3Mi41IiBjeT0iOTIyLjY4NzUiIGZpbGw9Im5vbmUiIHJ4PSIxMSIgcnk9IjExIiBzdHlsZT0ic3Ryb2tlOiMyMjIyMjI7c3Ryb2tlLXdpZHRoOjEuMDsiLz48ZWxsaXBzZSBjeD0iMjcyLjUiIGN5PSI5MjIuNjg3NSIgZmlsbD0iIzIyMjIyMiIgcng9IjYiIHJ5PSI2IiBzdHlsZT0ic3Ryb2tlOiMyMjIyMjI7c3Ryb2tlLXdpZHRoOjEuMDsiLz48cG9seWdvbiBmaWxsPSIjRjFGMUYxIiBwb2ludHM9IjcwLDk2Ni4zOTc5LDMxNiw5NjYuMzk3OSwzMjgsOTc4LjM5NzksMzE2LDk5MC4zOTc5LDcwLDk5MC4zOTc5LDU4LDk3OC4zOTc5LDcwLDk2Ni4zOTc5IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIyNDYiIHg9IjcwIiB5PSI5ODIuMjA2MSI+c3RhdGUgaXMgbm90IHN0b3AgYW5kIGVnbyB2ZWhpY2xlIG92ZXIgbGluZT88L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMjAiIHg9IjMyOCIgeT0iOTc1LjgwMzciPnllczwvdGV4dD48ZWxsaXBzZSBjeD0iMzcwIiBjeT0iOTc4LjM5NzkiIGZpbGw9Im5vbmUiIHJ4PSIxMSIgcnk9IjExIiBzdHlsZT0ic3Ryb2tlOiMyMjIyMjI7c3Ryb2tlLXdpZHRoOjEuMDsiLz48ZWxsaXBzZSBjeD0iMzcwIiBjeT0iOTc4LjM5NzkiIGZpbGw9IiMyMjIyMjIiIHJ4PSI2IiByeT0iNiIgc3R5bGU9InN0cm9rZTojMjIyMjIyO3N0cm9rZS13aWR0aDoxLjA7Ii8+PHBvbHlnb24gZmlsbD0iI0YxRjFGMSIgcG9pbnRzPSI0NC41LDEwNTguODAwMywzNDEuNSwxMDU4LjgwMDMsMzUzLjUsMTA3MC44MDAzLDM0MS41LDEwODIuODAwMyw0NC41LDEwODIuODAwMywzMi41LDEwNzAuODAwMyw0NC41LDEwNTguODAwMyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMjk3IiB4PSI0NC41IiB5PSIxMDc0LjYwODQiPnN0YXRlIGlzIG5vdCBTVE9QIGFuZCBub3QgZW5vdWdoIGJyYWtpbmcgZGlzdGFuY2U/PC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciIHRleHRMZW5ndGg9IjIwIiB4PSIzNTMuNSIgeT0iMTA2OC4yMDYxIj55ZXM8L3RleHQ+PGVsbGlwc2UgY3g9IjM5NS41IiBjeT0iMTA3MC44MDAzIiBmaWxsPSJub25lIiByeD0iMTEiIHJ5PSIxMSIgc3R5bGU9InN0cm9rZTojMjIyMjIyO3N0cm9rZS13aWR0aDoxLjA7Ii8+PGVsbGlwc2UgY3g9IjM5NS41IiBjeT0iMTA3MC44MDAzIiBmaWxsPSIjMjIyMjIyIiByeD0iNiIgcnk9IjYiIHN0eWxlPSJzdHJva2U6IzIyMjIyMjtzdHJva2Utd2lkdGg6MS4wOyIvPjxwb2x5Z29uIGZpbGw9IiNGMUYxRjEiIHBvaW50cz0iMTM0LDEwMTAuMzk3OSwyNTIsMTAxMC4zOTc5LDI2NCwxMDIyLjM5NzksMjUyLDEwMzQuMzk3OSwxMzQsMTAzNC4zOTc5LDEyMiwxMDIyLjM5NzksMTM0LDEwMTAuMzk3OSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMjAiIHg9IjE5NyIgeT0iMTA0NC42MDg0Ij55ZXM8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZyIgdGV4dExlbmd0aD0iMTE4IiB4PSIxMzQiIHk9IjEwMjYuMjA2MSI+dXNlIHBhc3MganVkZ2UgbGluZT88L3RleHQ+PHBvbHlnb24gZmlsbD0iI0YxRjFGMSIgcG9pbnRzPSIxOTMsMTExNC44MDAzLDIwNSwxMTI2LjgwMDMsMTkzLDExMzguODAwMywxODEsMTEyNi44MDAzLDE5MywxMTE0LjgwMDMiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjxyZWN0IGZpbGw9IiNGMUYxRjEiIGhlaWdodD0iMzMuOTY4OCIgcng9IjEyLjUiIHJ5PSIxMi41IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHdpZHRoPSIxMTMiIHg9IjEzNi41IiB5PSIxMTU4LjgwMDMiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSI5MyIgeD0iMTQ2LjUiIHk9IjExNzkuOTM5Ij5zZXQgc3RhdGUgU1RPUDwvdGV4dD48cmVjdCBmaWxsPSIjRjFGMUYxIiBoZWlnaHQ9IjMzLjk2ODgiIHJ4PSIxMi41IiByeT0iMTIuNSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiB3aWR0aD0iMTE5IiB4PSIxMzMuNSIgeT0iMTIxMi43NjkiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSI5OSIgeD0iMTQzLjUiIHk9IjEyMzMuOTA3NyI+aW5zZXQgc3RvcCBwb2ludDwvdGV4dD48cmVjdCBmaWxsPSIjRjFGMUYxIiBoZWlnaHQ9IjMzLjk2ODgiIHJ4PSIxMi41IiByeT0iMTIuNSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiB3aWR0aD0iMjQ5IiB4PSI2OC41IiB5PSIxMjY2LjczNzgiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nIiB0ZXh0TGVuZ3RoPSIyMjkiIHg9Ijc4LjUiIHk9IjEyODcuODc2NSI+YXBwZW5kIHN0b3AgcmVhc29uIGFuZCBzdG9wIGZhY3RvcjwvdGV4dD48ZWxsaXBzZSBjeD0iMTkzIiBjeT0iMTMzMS43MDY1IiBmaWxsPSJub25lIiByeD0iMTEiIHJ5PSIxMSIgc3R5bGU9InN0cm9rZTojMjIyMjIyO3N0cm9rZS13aWR0aDoxLjA7Ii8+PGVsbGlwc2UgY3g9IjE5MyIgY3k9IjEzMzEuNzA2NSIgZmlsbD0iIzIyMjIyMiIgcng9IjYiIHJ5PSI2IiBzdHlsZT0ic3Ryb2tlOiMyMjIyMjI7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSI2Ny4yOTY5IiB5Mj0iODcuMjk2OSIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDc3LjI5NjksMTkzLDg3LjI5NjksMTk3LDc3LjI5NjksMTkzLDgxLjI5NjkiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjE2NS4yNjU2IiB5Mj0iMTg5LjY2OCIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDE3OS42NjgsMTkzLDE4OS42NjgsMTk3LDE3OS42NjgsMTkzLDE4My42NjgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjMyNCIgeDI9IjMzNiIgeTE9IjE1My4yNjU2IiB5Mj0iMTUzLjI2NTYiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjMzMiwxOTYuNjUyMywzMzYsMjA2LjY1MjMsMzQwLDE5Ni42NTIzLDMzNiwyMDAuNjUyMyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMzM2IiB4Mj0iMzM2IiB5MT0iMTUzLjI2NTYiIHkyPSIyNTUuNjM2NyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjMzNiIgeDI9IjIwNSIgeTE9IjI1NS42MzY3IiB5Mj0iMjU1LjYzNjciLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjIxNSwyNTEuNjM2NywyMDUsMjU1LjYzNjcsMjE1LDI1OS42MzY3LDIxMSwyNTUuNjM2NyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iMjIzLjYzNjciIHkyPSIyNDMuNjM2NyIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDIzMy42MzY3LDE5MywyNDMuNjM2NywxOTcsMjMzLjYzNjcsMTkzLDIzNy42MzY3IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSIxMjEuMjY1NiIgeTI9IjE0MS4yNjU2Ii8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIxODksMTMxLjI2NTYsMTkzLDE0MS4yNjU2LDE5NywxMzEuMjY1NiwxOTMsMTM1LjI2NTYiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjI2Ny42MzY3IiB5Mj0iMjg3LjYzNjciLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSwyNzcuNjM2NywxOTMsMjg3LjYzNjcsMTk3LDI3Ny42MzY3LDE5MywyODEuNjM2NyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iNDIzLjk3NjYiIHkyPSI0NDMuOTc2NiIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDQzMy45NzY2LDE5Myw0NDMuOTc2NiwxOTcsNDMzLjk3NjYsMTkzLDQzNy45NzY2IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSI0NzcuOTQ1MyIgeTI9IjQ5Ny45NDUzIi8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIxODksNDg3Ljk0NTMsMTkzLDQ5Ny45NDUzLDE5Nyw0ODcuOTQ1MywxOTMsNDkxLjk0NTMiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjM2NS42MDU1IiB5Mj0iMzkwLjAwNzgiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSwzODAuMDA3OCwxOTMsMzkwLjAwNzgsMTk3LDM4MC4wMDc4LDE5MywzODQuMDA3OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMzY2IiB4Mj0iMzc4IiB5MT0iMzUzLjYwNTUiIHkyPSIzNTMuNjA1NSIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMzc0LDQ0MS45NzY2LDM3OCw0NTEuOTc2NiwzODIsNDQxLjk3NjYsMzc4LDQ0NS45NzY2IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIzNzgiIHgyPSIzNzgiIHkxPSIzNTMuNjA1NSIgeTI9IjU0MS45NDUzIi8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMzc4IiB4Mj0iMTkzIiB5MT0iNTQxLjk0NTMiIHkyPSI1NDEuOTQ1MyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjU0MS45NDUzIiB5Mj0iNTYxLjk0NTMiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSw1NTEuOTQ1MywxOTMsNTYxLjk0NTMsMTk3LDU1MS45NDUzLDE5Myw1NTUuOTQ1MyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iMzIxLjYwNTUiIHkyPSIzNDEuNjA1NSIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDMzMS42MDU1LDE5MywzNDEuNjA1NSwxOTcsMzMxLjYwNTUsMTkzLDMzNS42MDU1IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSI3MzYuNzE4OCIgeTI9Ijc2OC43MTg4Ii8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIxODksNzU4LjcxODgsMTkzLDc2OC43MTg4LDE5Nyw3NTguNzE4OCwxOTMsNzYyLjcxODgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjI3MS41IiB4Mj0iMzAyLjUiIHkxPSI3MjQuNzE4OCIgeTI9IjcyNC43MTg4Ii8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIyOTIuNSw3MjAuNzE4OCwzMDIuNSw3MjQuNzE4OCwyOTIuNSw3MjguNzE4OCwyOTYuNSw3MjQuNzE4OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iNjg4LjMxNjQiIHkyPSI3MTIuNzE4OCIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDcwMi43MTg4LDE5Myw3MTIuNzE4OCwxOTcsNzAyLjcxODgsMTkzLDcwNi43MTg4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIyNzQiIHgyPSIzNDYuNSIgeTE9IjY3Ni4zMTY0IiB5Mj0iNjc2LjMxNjQiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjM0Mi41LDczOC43MTg4LDM0Ni41LDc0OC43MTg4LDM1MC41LDczOC43MTg4LDM0Ni41LDc0Mi43MTg4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIzNDYuNSIgeDI9IjM0Ni41IiB5MT0iNjc2LjMxNjQiIHkyPSI3ODAuNzE4OCIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjM0Ni41IiB4Mj0iMjA1IiB5MT0iNzgwLjcxODgiIHkyPSI3ODAuNzE4OCIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMjE1LDc3Ni43MTg4LDIwNSw3ODAuNzE4OCwyMTUsNzg0LjcxODgsMjExLDc4MC43MTg4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSI2NDQuMzE2NCIgeTI9IjY2NC4zMTY0Ii8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIxODksNjU0LjMxNjQsMTkzLDY2NC4zMTY0LDE5Nyw2NTQuMzE2NCwxOTMsNjU4LjMxNjQiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjU4NS45NDUzIiB5Mj0iNjEwLjM0NzciLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSw2MDAuMzQ3NywxOTMsNjEwLjM0NzcsMTk3LDYwMC4zNDc3LDE5Myw2MDQuMzQ3NyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMjQ2LjUiIHgyPSIzNjguNSIgeTE9IjU3My45NDUzIiB5Mj0iNTczLjk0NTMiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjM2NC41LDcwNC4yMzQ0LDM2OC41LDcxNC4yMzQ0LDM3Mi41LDcwNC4yMzQ0LDM2OC41LDcwOC4yMzQ0IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIzNjguNSIgeDI9IjM2OC41IiB5MT0iNTczLjk0NTMiIHkyPSI4MjQuNzE4OCIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjM2OC41IiB4Mj0iMjA1IiB5MT0iODI0LjcxODgiIHkyPSI4MjQuNzE4OCIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMjE1LDgyMC43MTg4LDIwNSw4MjQuNzE4OCwyMTUsODI4LjcxODgsMjExLDgyNC43MTg4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSI3OTIuNzE4OCIgeTI9IjgxMi43MTg4Ii8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIxODksODAyLjcxODgsMTkzLDgxMi43MTg4LDE5Nyw4MDIuNzE4OCwxOTMsODA2LjcxODgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjgzNi43MTg4IiB5Mj0iODU2LjcxODgiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSw4NDYuNzE4OCwxOTMsODU2LjcxODgsMTk3LDg0Ni43MTg4LDE5Myw4NTAuNzE4OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iOTM0LjY4NzUiIHkyPSI5NjYuMzk3OSIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDk1Ni4zOTc5LDE5Myw5NjYuMzk3OSwxOTcsOTU2LjM5NzksMTkzLDk2MC4zOTc5IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIyMzYuNSIgeDI9IjI2MS41IiB5MT0iOTIyLjY4NzUiIHkyPSI5MjIuNjg3NSIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMjUxLjUsOTE4LjY4NzUsMjYxLjUsOTIyLjY4NzUsMjUxLjUsOTI2LjY4NzUsMjU1LjUsOTIyLjY4NzUiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9Ijg5MC42ODc1IiB5Mj0iOTEwLjY4NzUiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSw5MDAuNjg3NSwxOTMsOTEwLjY4NzUsMTk3LDkwMC42ODc1LDE5Myw5MDQuNjg3NSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iOTkwLjM5NzkiIHkyPSIxMDEwLjM5NzkiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSwxMDAwLjM5NzksMTkzLDEwMTAuMzk3OSwxOTcsMTAwMC4zOTc5LDE5MywxMDA0LjM5NzkiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjMyOCIgeDI9IjM1OSIgeTE9Ijk3OC4zOTc5IiB5Mj0iOTc4LjM5NzkiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjM0OSw5NzQuMzk3OSwzNTksOTc4LjM5NzksMzQ5LDk4Mi4zOTc5LDM1Myw5NzguMzk3OSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iMTA4Mi44MDAzIiB5Mj0iMTExNC44MDAzIi8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIxODksMTEwNC44MDAzLDE5MywxMTE0LjgwMDMsMTk3LDExMDQuODAwMywxOTMsMTEwOC44MDAzIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIzNTMuNSIgeDI9IjM4NC41IiB5MT0iMTA3MC44MDAzIiB5Mj0iMTA3MC44MDAzIi8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIzNzQuNSwxMDY2LjgwMDMsMzg0LjUsMTA3MC44MDAzLDM3NC41LDEwNzQuODAwMywzNzguNSwxMDcwLjgwMDMiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjEwMzQuMzk3OSIgeTI9IjEwNTguODAwMyIvPjxwb2x5Z29uIGZpbGw9IiMxODE4MTgiIHBvaW50cz0iMTg5LDEwNDguODAwMywxOTMsMTA1OC44MDAzLDE5NywxMDQ4LjgwMDMsMTkzLDEwNTIuODAwMyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMjY0IiB4Mj0iNDIwLjUiIHkxPSIxMDIyLjM5NzkiIHkyPSIxMDIyLjM5NzkiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjQxNi41LDEwODQuODAwMyw0MjAuNSwxMDk0LjgwMDMsNDI0LjUsMTA4NC44MDAzLDQyMC41LDEwODguODAwMyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iNDIwLjUiIHgyPSI0MjAuNSIgeTE9IjEwMjIuMzk3OSIgeTI9IjExMjYuODAwMyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjQyMC41IiB4Mj0iMjA1IiB5MT0iMTEyNi44MDAzIiB5Mj0iMTEyNi44MDAzIi8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIyMTUsMTEyMi44MDAzLDIwNSwxMTI2LjgwMDMsMjE1LDExMzAuODAwMywyMTEsMTEyNi44MDAzIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSIxMTM4LjgwMDMiIHkyPSIxMTU4LjgwMDMiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSwxMTQ4LjgwMDMsMTkzLDExNTguODAwMywxOTcsMTE0OC44MDAzLDE5MywxMTUyLjgwMDMiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIgeDE9IjE5MyIgeDI9IjE5MyIgeTE9IjExOTIuNzY5IiB5Mj0iMTIxMi43NjkiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSwxMjAyLjc2OSwxOTMsMTIxMi43NjksMTk3LDEyMDIuNzY5LDE5MywxMjA2Ljc2OSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxLjA7IiB4MT0iMTkzIiB4Mj0iMTkzIiB5MT0iMTI0Ni43Mzc4IiB5Mj0iMTI2Ni43Mzc4Ii8+PHBvbHlnb24gZmlsbD0iIzE4MTgxOCIgcG9pbnRzPSIxODksMTI1Ni43Mzc4LDE5MywxMjY2LjczNzgsMTk3LDEyNTYuNzM3OCwxOTMsMTI2MC43Mzc4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjEuMDsiIHgxPSIxOTMiIHgyPSIxOTMiIHkxPSIxMzAwLjcwNjUiIHkyPSIxMzIwLjcwNjUiLz48cG9seWdvbiBmaWxsPSIjMTgxODE4IiBwb2ludHM9IjE4OSwxMzEwLjcwNjUsMTkzLDEzMjAuNzA2NSwxOTcsMTMxMC43MDY1LDE5MywxMzE0LjcwNjUiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MS4wOyIvPjwhLS1TUkM9W1pMOTFSV0NYM0JwcDJYLUpCc21FRkxPejlMQWhOWWk3bEJrcTE1UFc4a050RFIxSERhc0p6ZTlhVXBtVVpzN0JaazBHWkVyRkUtSm5kTHBHYmF5Z0NLUE1nWGs4OFVtYnFlQVJXbEtDc2VMaW03ZW1uQUpQMVd5TzJKVEFzSHZNRmxtSl94RzY3aWQzd2FIZmhTV2JBaXJocklLUHdKMG5pM3RHWFFtRnNQa0Q4WXpRUHM2SW5XWTltb0dGQ2U3OTRTazBNU2xURWpXYUlxU0kxVVhSeFFFMkZ5aENRc0xMWnl1bmFrcElROXd0NnpMNUlleWJiRUhZaHJidXFQS2JQbVdERUVqX0pqRFkzSV9BcFNIRHhOajkxSGZsZ2pTS0NwOFNBSnU2RGU1THJsOEwzVVhxVGFMNk5Nbk1LOGFsWU5sdE14MlVNbWdKRUV1M0RxQnExY1c4U0FKSGJqRE1nUlRVQjlkRWphc080ZG5jQ3owbDNKVkpOai1za3BnajFFSDM3YVJPSF9vb1ZXMVoxVWVyX1U1OWt0elpCTkpZR3NUem9vc3l3TjJRZkE0YnZPSWZfRjlwdEFGYzQwTExlY3kwXS0tPjwvZz48L3N2Zz4=" class="uml" alt="uml diagram" title=""></p>
+<h4 id="restart-prevention">Restart prevention<a class="headerlink" href="#restart-prevention" title="Permanent link">#</a></h4>
+<p>If it needs X meters (e.g. 0.5 meters) to stop once the vehicle starts moving due to the poor vehicle control performance, the vehicle goes over the stopping position that should be strictly observed when the vehicle starts to moving in order to approach the near stop point (e.g. 0.3 meters away).</p>
+<p>This module has parameter <code>hold_stop_margin_distance</code> in order to prevent from these redundant restart. If the vehicle is stopped within <code>hold_stop_margin_distance</code> meters from stop point of the module (_front_to_stop_line &lt; hold_stop_margin_distance), the module judges that the vehicle has already stopped for the module's stop point and plans to keep stopping current position even if the vehicle is stopped due to other factors.</p>
+<figure>
+<p><img alt="example" src="restart_prevention.svg" width="1000">
+  </p>
+<figcaption>parameters</figcaption>
+</figure>
+<figure>
+<p><img alt="example" src="restart.svg" width="1000">
+  </p>
+<figcaption>outside the hold_stop_margin_distance</figcaption>
+</figure>
+<figure>
+<p><img alt="example" src="keep_stopping.svg" width="1000">
+  </p>
+<figcaption>inside the hold_stop_margin_distance</figcaption>
+</figure></div>
 
 
 
@@ -13877,7 +13185,7 @@ Example:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Velocity Smoother" rel="prev">
+          <a href="../autoware_behavior_velocity_crosswalk_module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Crosswalk" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13886,20 +13194,20 @@ Example:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Velocity Smoother
+                Crosswalk
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../behavior_velocity_planner/autoware_behavior_velocity_blind_spot_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Index" rel="next">
+          <a href="../autoware_behavior_velocity_intersection_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Intersection" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Index
+                Intersection
               </div>
             </div>
             <div class="md-footer__button md-icon">

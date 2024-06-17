@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_velocity_smoother/README.ja/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_velocity_planner/autoware_behavior_velocity_crosswalk_module/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../autoware_behavior_velocity_blind_spot_module/">
       
       
-        <link rel="next" href="../../behavior_velocity_planner/autoware_behavior_velocity_blind_spot_module/">
+        <link rel="next" href="../autoware_behavior_velocity_detection_area_module/">
       
       <link rel="icon" href="../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Velocity Smoother - Autoware Universe Documentation</title>
+        <title>Crosswalk - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#velocity-smoother" class="md-skip">
+        <a href="#crosswalk" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Velocity Smoother
+              Crosswalk
             
           </span>
         </div>
@@ -9018,7 +9018,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../autoware_velocity_smoother" class="md-nav__link">
         About Velocity Smoother
       </a>
     </li>
@@ -9032,7 +9032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="." class="md-nav__link">
+      <a href="../../autoware_velocity_smoother/README.ja" class="md-nav__link">
         About Velocity Smoother (Japanese)
       </a>
     </li>
@@ -13020,126 +13020,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose" class="md-nav__link">
-    Purpose
+  <a href="#role" class="md-nav__link">
+    Role
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
+  <a href="#features" class="md-nav__link">
+    Features
   </a>
   
-    <nav class="md-nav" aria-label="Inner-workings / Algorithms">
+    <nav class="md-nav" aria-label="Features">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#flow-chart" class="md-nav__link">
-    Flow chart
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inputs-outputs" class="md-nav__link">
-    Inputs / Outputs
-  </a>
-  
-    <nav class="md-nav" aria-label="Inputs / Outputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input" class="md-nav__link">
-    Input
+  <a href="#yield-the-way-to-the-pedestrians" class="md-nav__link">
+    Yield the Way to the Pedestrians
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#output" class="md-nav__link">
-    Output
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    Parameters
-  </a>
-  
-    <nav class="md-nav" aria-label="Parameters">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#constraint-parameters" class="md-nav__link">
-    Constraint parameters
+  <a href="#stuck-prevention-on-the-crosswalk" class="md-nav__link">
+    Stuck Prevention on the Crosswalk
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#external-velocity-limit-parameter" class="md-nav__link">
-    External velocity limit parameter
+  <a href="#safety-slow-down-behavior" class="md-nav__link">
+    Safety Slow Down Behavior
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#curve-parameters" class="md-nav__link">
-    Curve parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#engage-replan-parameters" class="md-nav__link">
-    Engage &amp; replan parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stopping-velocity-parameters" class="md-nav__link">
-    Stopping velocity parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#extraction-parameters" class="md-nav__link">
-    Extraction parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resampling-parameters" class="md-nav__link">
-    Resampling parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resampling-parameters-for-post-process" class="md-nav__link">
-    Resampling parameters for post process
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#weights-for-optimization" class="md-nav__link">
-    Weights for optimization
+  <a href="#occlusion" class="md-nav__link">
+    Occlusion
   </a>
   
 </li>
@@ -13157,36 +13075,69 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#assumptions-known-limits" class="md-nav__link">
-    Assumptions / Known limits
+  <a href="#known-issues" class="md-nav__link">
+    Known Issues
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-error-detection-and-handling" class="md-nav__link">
-    (Optional) Error detection and handling
+  <a href="#debugging" class="md-nav__link">
+    Debugging
   </a>
+  
+    <nav class="md-nav" aria-label="Debugging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visualization-of-debug-markers" class="md-nav__link">
+    Visualization of debug markers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-of-time-to-collision" class="md-nav__link">
+    Visualization of Time-To-Collision
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-performance-characterization" class="md-nav__link">
-    (Optional) Performance characterization
+  <a href="#trouble-shooting" class="md-nav__link">
+    Trouble Shooting
   </a>
+  
+    <nav class="md-nav" aria-label="Trouble Shooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#behavior" class="md-nav__link">
+    Behavior
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-tuning" class="md-nav__link">
+    Parameter Tuning
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-referencesexternal-links" class="md-nav__link">
-    (Optional) References/External links
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-future-extensions-unimplemented-parts" class="md-nav__link">
-    (Optional) Future extensions / Unimplemented parts
+  <a href="#referencesexternal-links" class="md-nav__link">
+    References/External links
   </a>
   
 </li>
@@ -13209,648 +13160,611 @@
   
 
 
-<div><h1 id="velocity-smoother">Velocity Smoother<a class="headerlink" href="#velocity-smoother" title="Permanent link">#</a></h1>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">#</a></h2>
-<p><code>autoware_velocity_smoother</code>は目標軌道上の各点における望ましい車速を計画して出力するモジュールである。
-このモジュールは、速度の最大化と乗り心地の良さを両立するために、事前に指定された制限速度、制限加速度および制限躍度の範囲で車速を計画する。
-加速度や躍度の制限を与えることは車速の変化を滑らかにすることに対応するため、このモジュールを<code>autoware_velocity_smoother</code>と呼んでいる。</p>
-<h2 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h2>
-<h3 id="flow-chart">Flow chart<a class="headerlink" href="#flow-chart" title="Permanent link">#</a></h3>
-<p><img alt="motion_velocity_smoother_flow" src="../media/motion_velocity_smoother_flow.drawio.svg"></p>
-<h4 id="extract-trajectory">Extract trajectory<a class="headerlink" href="#extract-trajectory" title="Permanent link">#</a></h4>
-<p>自車後輪軸中心位置に最も近い参照経路上の点に対し、<code>extract_behind_dist</code>だけ戻った点から<code>extract_ahead_dist</code>だけ進んだ点までの参照経路を抜き出す。</p>
-<h4 id="apply-external-velocity-limit">Apply external velocity limit<a class="headerlink" href="#apply-external-velocity-limit" title="Permanent link">#</a></h4>
-<p>モジュール外部から指定された速度制限を適用する。
-ここで扱う外部の速度制限は<code>/planning/scenario_planning/max_velocity</code>の topic で渡されるもので、地図上で設定された速度制限など、参照経路にすでに設定されている制限速度とは別である。
-外部から指定される速度制限は、パラメータで指定されている減速度および躍度の制限の範囲で減速可能な位置から速度制限を適用する。</p>
-<h4 id="apply-stop-approaching-velocity">Apply stop approaching velocity<a class="headerlink" href="#apply-stop-approaching-velocity" title="Permanent link">#</a></h4>
-<p>停止点に近づいたときの速度を設定する。障害物近傍まで近づく場合や、正着精度向上などの目的に用いる。</p>
-<h4 id="apply-lateral-acceleration-limit">Apply lateral acceleration limit<a class="headerlink" href="#apply-lateral-acceleration-limit" title="Permanent link">#</a></h4>
-<p>経路の曲率に応じて、指定された最大横加速度<code>max_lateral_accel</code>を超えない速度を制限速度として設定する。ただし、制限速度は<code>min_curve_velocity</code>を下回らないように設定する。</p>
-<h4 id="resample-trajectory">Resample trajectory<a class="headerlink" href="#resample-trajectory" title="Permanent link">#</a></h4>
-<p>指定された時間間隔で経路の点を再サンプルする。ただし、経路全体の長さは<code>min_trajectory_length</code>から<code>max_trajectory_length</code>の間となるように再サンプルを行い、点の間隔は<code>min_trajectory_interval_distance</code>より小さくならないようにする。
-現在車速で<code>resample_time</code>の間進む距離までは密にサンプリングし、それ以降は疎にサンプリングする。
-この方法でサンプリングすることで、低速時は密に、高速時は疎にサンプルされるため、停止精度と計算負荷軽減の両立を図っている。</p>
-<h4 id="calculate-initial-state">Calculate initial state<a class="headerlink" href="#calculate-initial-state" title="Permanent link">#</a></h4>
-<p>速度計画のための初期値を計算する。初期値は状況に応じて下表のように計算する。</p>
+<div><h1 id="crosswalk">Crosswalk<a class="headerlink" href="#crosswalk" title="Permanent link">#</a></h1>
+<h2 id="role">Role<a class="headerlink" href="#role" title="Permanent link">#</a></h2>
+<p>This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage for crosswalk users, such as pedestrians and bicycles, based on the objects' behavior and surround traffic.</p>
+<figure>
+<p><img alt="crosswalk_module" src="docs/crosswalk_module.svg" width="1100"></p>
+</figure>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">#</a></h2>
+<h3 id="yield-the-way-to-the-pedestrians">Yield the Way to the Pedestrians<a class="headerlink" href="#yield-the-way-to-the-pedestrians" title="Permanent link">#</a></h3>
+<h4 id="target-object">Target Object<a class="headerlink" href="#target-object" title="Permanent link">#</a></h4>
+<p>The crosswalk module handles objects of the types defined by the following parameters in the <code>object_filtering.target_object</code> namespace.</p>
 <table>
 <thead>
 <tr>
-<th>状況</th>
-<th>初期速度</th>
-<th>初期加速度</th>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>最初の計算時</td>
-<td>現在車速</td>
-<td>0.0</td>
+<td><code>unknown</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to look and stop by UNKNOWN objects</td>
 </tr>
 <tr>
-<td>発進時</td>
-<td><code>engage_velocity</code></td>
-<td><code>engage_acceleration</code></td>
+<td><code>pedestrian</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to look and stop by PEDESTRIAN objects</td>
 </tr>
 <tr>
-<td>現在車速と計画車速が乖離</td>
-<td>現在車速</td>
-<td>前回計画値</td>
+<td><code>bicycle</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to look and stop by BICYCLE objects</td>
 </tr>
 <tr>
-<td>通常時</td>
-<td>前回計画値</td>
-<td>前回計画値</td>
+<td><code>motorcycle</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to look and stop by MOTORCYCLE objects</td>
 </tr>
 </tbody>
 </table>
-<h4 id="smooth-velocity">Smooth velocity<a class="headerlink" href="#smooth-velocity" title="Permanent link">#</a></h4>
-<p>速度の計画を行う。速度計画のアルゴリズムは<code>JerkFiltered</code>, <code>L2</code>, <code>Linf</code>の 3 種類のうちからコンフィグで指定する。
-最適化のソルバは OSQP[1]を利用する。</p>
-<h5 id="jerkfiltered">JerkFiltered<a class="headerlink" href="#jerkfiltered" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗、制限ジャーク逸脱量の 2 乗、ジャークの 2 乗の総和を最小化する。</p>
-<h5 id="l2">L2<a class="headerlink" href="#l2" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗、疑似ジャーク[2]の 2 乗の総和を最小化する。</p>
-<h5 id="linf">Linf<a class="headerlink" href="#linf" title="Permanent link">#</a></h5>
-<p>速度の 2 乗（最小化で表すため負値で表現）、制限速度逸脱量の 2 乗、制限加度逸脱量の 2 乗の総和と疑似ジャーク[2]の絶対最大値の和の最小化する。</p>
-<h4 id="post-process">Post process<a class="headerlink" href="#post-process" title="Permanent link">#</a></h4>
-<p>計画された軌道の後処理を行う。</p>
+<p>In order to handle the crosswalk users crossing the neighborhood but outside the crosswalk, the crosswalk module creates an attention area around the crosswalk, shown as the yellow polygon in the figure. If the object's predicted path collides with the attention area, the object will be targeted for yield.</p>
+<figure>
+<p><img alt="crosswalk_attention_range" src="docs/crosswalk_attention_range.svg" width="600"></p>
+</figure>
+<p>The neighborhood is defined by the following parameter in the <code>object_filtering.target_object</code> namespace.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crosswalk_attention_range</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>the detection area is defined as -X meters before the crosswalk to +X meters behind the crosswalk</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stop-position">Stop Position<a class="headerlink" href="#stop-position" title="Permanent link">#</a></h4>
+<p>First of all, <code>stop_distance_from_object [m]</code> is always kept at least between the ego and the target object for safety.</p>
+<p>When the stop line exists in the lanelet map, the stop position is calculated based on the line.
+When the stop line does <strong>NOT</strong> exist in the lanelet map, the stop position is calculated by keeping <code>stop_distance_from_crosswalk [m]</code> between the ego and the crosswalk.</p>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/explicit_stop_line.svg" width="600"></td>
+            <td><img src="./docs/virtual_stop_line.svg" width="600"></td>
+        </tr>
+    </table>
+</div>
+
+<p>As an exceptional case, if a pedestrian (or bicycle) is crossing <strong>wide</strong> crosswalks seen in scramble intersections, and the pedestrian position is more than <code>far_object_threshold</code> meters away from the stop line, the actual stop position is determined by <code>stop_distance_from_object</code> and pedestrian position, not at the stop line.</p>
+<figure>
+<p><img alt="far_object_threshold" src="docs/far_object_threshold.drawio.svg" width="700"></p>
+</figure>
+<p>In the <code>stop_position</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stop_position_threshold</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>If the ego vehicle has stopped near the stop line than this value, this module assumes itself to have achieved yielding.</td>
+</tr>
+<tr>
+<td><code>stop_distance_from_crosswalk</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>make stop line away from crosswalk for the Lanelet2 map with no explicit stop lines</td>
+</tr>
+<tr>
+<td><code>far_object_threshold</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>If objects cross X meters behind the stop line, the stop position is determined according to the object position (stop_distance_from_object meters before the object) for the case where the crosswalk width is very wide</td>
+</tr>
+<tr>
+<td><code>stop_distance_from_object</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>the vehicle decelerates to be able to stop in front of object with margin</td>
+</tr>
+</tbody>
+</table>
+<h4 id="yield-decision">Yield decision<a class="headerlink" href="#yield-decision" title="Permanent link">#</a></h4>
+<p>The module makes a decision to yield only when the pedestrian traffic light is <strong>GREEN</strong> or <strong>UNKNOWN</strong>.
+The decision is based on the following variables, along with the calculation of the collision point.</p>
 <ul>
-<li>停止点より先の速度を 0 に設定</li>
-<li>速度がパラメータで与えられる<code>max_velocity</code>以下となるように設定</li>
-<li>自車位置より手前の点における速度を設定</li>
-<li>Trajectory の仕様に合わせてリサンプリング(<code>post resampling</code>)</li>
-<li>デバッグデータの出力</li>
+<li>Time-To-Collision (TTC): The time for the <strong>ego</strong> to reach the virtual collision point.</li>
+<li>Time-To-Vehicle (TTV): The time for the <strong>object</strong> to reach the virtual collision point.</li>
 </ul>
-<p>最適化の計算が終わったあと、次のノードに経路を渡す前に<code>post resampling</code>と呼ばれるリサンプリングを行う。ここで再度リサンプリングを行っている理由としては、最適化前で必要な経路間隔と後段のモジュールに渡す経路間隔が必ずしも一致していないからであり、その差を埋めるために再度サンプリングを行っている。そのため、<code>post resampling</code>では後段モジュールの経路仕様を確認してパラメータを決める必要がある。なお、最適化アルゴリズムの計算負荷が高く、最初のリサンプリングで経路間隔が後段モジュールの経路仕様より疎になっている場合、<code>post resampling</code>で経路を蜜にリサンプリングする。逆に最適化アルゴリズムの計算負荷が小さく、最初のリサンプリングで経路間隔が後段の経路仕様より蜜になっている場合は、<code>post resampling</code>で経路をその仕様に合わせて疎にリサンプリングする。</p>
-<h2 id="inputs-outputs">Inputs / Outputs<a class="headerlink" href="#inputs-outputs" title="Permanent link">#</a></h2>
-<h3 id="input">Input<a class="headerlink" href="#input" title="Permanent link">#</a></h3>
+<p>We classify ego behavior at crosswalks into three categories according to the relative relationship between TTC and TTV [1].</p>
+<ul>
+<li>A. <strong>TTC &gt;&gt; TTV</strong>: The object has enough time to cross before the ego.<ul>
+<li>No stop planning.</li>
+</ul>
+</li>
+<li>B. <strong>TTC ≒ TTV</strong>: There is a risk of collision.<ul>
+<li><strong>Stop point is inserted in the ego's path</strong>.</li>
+</ul>
+</li>
+<li>C. <strong>TTC &lt;&lt; TTV</strong>: Ego has enough time to cross before the object.<ul>
+<li>No stop planning.</li>
+</ul>
+</li>
+</ul>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/virtual_collision_point.svg" width="600"></td>
+            <td><img src="./docs/ttc_vs_ttv.drawio.svg" width="350"></td>
+        </tr>
+    </table>
+</div>
+
+<p>The boundary of A and B is interpolated from <code>ego_pass_later_margin_x</code> and <code>ego_pass_later_margin_y</code>.
+In the case of the upper figure, <code>ego_pass_later_margin_x</code> is <code>{0, 1, 2}</code> and <code>ego_pass_later_margin_y</code> is <code>{1, 4, 6}</code>.
+In the same way, the boundary of B and C is calculated from <code>ego_pass_first_margin_x</code> and <code>ego_pass_first_margin_y</code>.
+In the case of the upper figure, <code>ego_pass_first_margin_x</code> is <code>{3, 5}</code> and <code>ego_pass_first_margin_y</code> is <code>{0, 1}</code>.</p>
+<p>If the red signal is indicating to the corresponding crosswalk, the ego do not yield against the pedestrians.</p>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/without_traffic_light.svg" width="600"></td>
+            <td><img src="./docs/with_traffic_light.svg" width="600"></td>
+        </tr>
+    </table>
+</div>
+
+<p>In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
+<th>Parameter</th>
+<th></th>
 <th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>~/input/trajectory</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Reference trajectory</td>
+<td><code>ego_pass_first_margin_x</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to collision margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN &lt; TTV condition)</td>
 </tr>
 <tr>
-<td><code>/planning/scenario_planning/max_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>External velocity limit [m/s]</td>
+<td><code>ego_pass_first_margin_y</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to vehicle margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN &lt; TTV condition)</td>
 </tr>
 <tr>
-<td><code>/localization/kinematic_state</code></td>
-<td><code>nav_msgs/Odometry</code></td>
-<td>Current odometry</td>
+<td><code>ego_pass_first_additional_margin</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>additional time margin for ego pass first situation to suppress chattering</td>
 </tr>
 <tr>
-<td><code>/tf</code></td>
-<td><code>tf2_msgs/TFMessage</code></td>
-<td>TF</td>
+<td><code>ego_pass_later_margin_x</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to vehicle margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN &lt; TTC condition)</td>
 </tr>
 <tr>
-<td><code>/tf_static</code></td>
-<td><code>tf2_msgs/TFMessage</code></td>
-<td>TF static</td>
+<td><code>ego_pass_later_margin_y</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to collision margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN &lt; TTC condition)</td>
+</tr>
+<tr>
+<td><code>ego_pass_later_additional_margin</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>additional time margin for object pass first situation to suppress chattering</td>
 </tr>
 </tbody>
 </table>
-<h3 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h3>
+<h4 id="smooth-yield-decision">Smooth Yield Decision<a class="headerlink" href="#smooth-yield-decision" title="Permanent link">#</a></h4>
+<p>If the object is stopped near the crosswalk but has no intention of walking, a situation can arise in which the ego continues to yield the right-of-way to the object.
+To prevent such a deadlock situation, the ego will cancel yielding depending on the situation.</p>
+<p>For the object stopped around the crosswalk but has no intention to walk (*1), after the ego has keep stopping to yield for a specific time (*2), the ego cancels the yield and starts driving.</p>
+<p>*1:
+The time is calculated by the interpolation of distance between the object and crosswalk with <code>distance_set_for_no_intention_to_walk</code> and <code>timeout_set_for_no_intention_to_walk</code>.</p>
+<p>In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
+<th>Parameter</th>
+<th></th>
 <th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>~/output/trajectory</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Modified trajectory</td>
+<td><code>distance_set_for_no_intention_to_walk</code></td>
+<td>[[m]]</td>
+<td>double</td>
+<td>key sets to calculate the timeout for no intention to walk with interpolation</td>
 </tr>
 <tr>
-<td><code>/planning/scenario_planning/current_max_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Current external velocity limit [m/s]</td>
-</tr>
-<tr>
-<td><code>~/closest_velocity</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned velocity closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/closest_acceleration</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned acceleration closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/closest_jerk</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Planned jerk closest to ego base_link (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_raw</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Extracted trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_external_velocity_limited</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>External velocity limited trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_lateral_acc_filtered</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Lateral acceleration limit filtered trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/debug/trajectory_time_resampled</code></td>
-<td><code>autoware_planning_msgs/Trajectory</code></td>
-<td>Time resampled trajectory (for debug)</td>
-</tr>
-<tr>
-<td><code>~/distance_to_stopline</code></td>
-<td><code>std_msgs/Float32</code></td>
-<td>Distance to stop line from current ego pose (max 50 m) (for debug)</td>
-</tr>
-<tr>
-<td><code>~/stop_speed_exceeded</code></td>
-<td><code>std_msgs/Bool</code></td>
-<td>It publishes <code>true</code> if planned velocity on the point which the maximum velocity is zero is over threshold</td>
+<td><code>timeout_set_for_no_intention_to_walk</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>value sets to calculate the timeout for no intention to walk with interpolation</td>
 </tr>
 </tbody>
 </table>
-<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h2>
-<h3 id="constraint-parameters">Constraint parameters<a class="headerlink" href="#constraint-parameters" title="Permanent link">#</a></h3>
+<p>*2:
+In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
 <table>
 <thead>
 <tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>max_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max velocity limit [m/s]</td>
-<td align="left">20.0</td>
-</tr>
-<tr>
-<td align="left"><code>max_accel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max acceleration limit [m/ss]</td>
-<td align="left">1.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_decel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min deceleration limit [m/ss]</td>
-<td align="left">-0.5</td>
-</tr>
-<tr>
-<td align="left"><code>stop_decel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Stop deceleration value at a stop point [m/ss]</td>
-<td align="left">0.0</td>
-</tr>
-<tr>
-<td align="left"><code>max_jerk</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max jerk limit [m/sss]</td>
-<td align="left">1.0</td>
-</tr>
-<tr>
-<td align="left"><code>min_jerk</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min jerk limit [m/sss]</td>
-<td align="left">-0.5</td>
+<td><code>timeout_ego_stop_for_yield</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>If the ego maintains the stop for this amount of time, then the ego proceeds, assuming it has stopped long time enough.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="external-velocity-limit-parameter">External velocity limit parameter<a class="headerlink" href="#external-velocity-limit-parameter" title="Permanent link">#</a></h3>
+<h4 id="new-object-handling">New Object Handling<a class="headerlink" href="#new-object-handling" title="Permanent link">#</a></h4>
+<p>Due to the perception's limited performance where the tree or poll is recognized as a pedestrian or the tracking failure in the crowd or occlusion, even if the surrounding environment does not change, the new pedestrian (= the new ID's pedestrian) may suddenly appear unexpectedly.
+If this happens while the ego is going to pass the crosswalk, the ego will stop suddenly.</p>
+<p>To deal with this issue, the option <code>disable_yield_for_new_stopped_object</code> is prepared.
+If true is set, the yield decisions around the crosswalk with a traffic light will ignore the new stopped object.</p>
+<p>In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
 <table>
 <thead>
 <tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>margin_to_insert_external_velocity_limit</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">margin distance to insert external velocity limit [m]</td>
-<td align="left">0.3</td>
+<td><code>disable_yield_for_new_stopped_object</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>If set to true, the new stopped object will be ignored around the crosswalk with a traffic light</td>
 </tr>
 </tbody>
 </table>
-<h3 id="curve-parameters">Curve parameters<a class="headerlink" href="#curve-parameters" title="Permanent link">#</a></h3>
+<h3 id="stuck-prevention-on-the-crosswalk">Stuck Prevention on the Crosswalk<a class="headerlink" href="#stuck-prevention-on-the-crosswalk" title="Permanent link">#</a></h3>
+<p>The feature will make the ego not to stop on the crosswalk.
+When there is a low-speed or stopped vehicle ahead of the crosswalk, and there is not enough space between the crosswalk and the vehicle, the crosswalk module plans to stop before the crosswalk even if there are no pedestrians or bicycles.</p>
+<p><code>min_acc</code>, <code>min_jerk</code>, and <code>max_jerk</code> are met. If the ego cannot stop before the crosswalk with these parameters, the stop position will move forward.</p>
+<figure>
+<p><img alt="stuck_vehicle_attention_range" src="docs/stuck_vehicle_detection.svg" width="600"></p>
+</figure>
+<p>In the <code>stuck_vehicle</code> namespace, the following parameters are defined.</p>
 <table>
 <thead>
 <tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>max_lateral_accel</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max lateral acceleration limit [m/ss]</td>
-<td align="left">0.5</td>
+<td><code>stuck_vehicle_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>maximum velocity threshold whether the target vehicle is stopped or not</td>
 </tr>
 <tr>
-<td align="left"><code>min_curve_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min velocity at lateral acceleration limit [m/ss]</td>
-<td align="left">2.74</td>
+<td><code>max_stuck_vehicle_lateral_offset</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>maximum lateral offset of the target vehicle position</td>
 </tr>
 <tr>
-<td align="left"><code>decel_distance_before_curve</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Distance to slowdown before a curve for lateral acceleration limit [m]</td>
-<td align="left">3.5</td>
+<td><code>required_clearance</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>clearance to be secured between the ego and the ahead vehicle</td>
 </tr>
 <tr>
-<td align="left"><code>decel_distance_after_curve</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Distance to slowdown after a curve for lateral acceleration limit [m]</td>
-<td align="left">2.0</td>
+<td><code>min_acc</code></td>
+<td>[m/ss]</td>
+<td>double</td>
+<td>minimum acceleration to stop</td>
+</tr>
+<tr>
+<td><code>min_jerk</code></td>
+<td>[m/sss]</td>
+<td>double</td>
+<td>minimum jerk to stop</td>
+</tr>
+<tr>
+<td><code>max_jerk</code></td>
+<td>[m/sss]</td>
+<td>double</td>
+<td>maximum jerk to stop</td>
 </tr>
 </tbody>
 </table>
-<h3 id="engage-replan-parameters">Engage &amp; replan parameters<a class="headerlink" href="#engage-replan-parameters" title="Permanent link">#</a></h3>
+<h3 id="safety-slow-down-behavior">Safety Slow Down Behavior<a class="headerlink" href="#safety-slow-down-behavior" title="Permanent link">#</a></h3>
+<p>In the current autoware implementation, if no target object is detected around a crosswalk, the ego vehicle will not slow down for the crosswalk.
+However, it may be desirable to slow down in situations, for example, where there are blind spots.
+Such a situation can be handled by setting some tags to the related crosswalk as instructed in the <a href="https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md">lanelet2_format_extension.md</a>
+document.</p>
 <table>
 <thead>
 <tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>replan_vel_deviation</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Velocity deviation to replan initial velocity [m/s]</td>
-<td align="left">5.53</td>
+<td><code>slow_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>target vehicle velocity when module receive slow down command from FOA</td>
 </tr>
 <tr>
-<td align="left"><code>engage_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Engage velocity threshold [m/s] (if the trajectory velocity is higher than this value, use this velocity for engage vehicle speed)</td>
-<td align="left">0.25</td>
+<td><code>max_slow_down_jerk</code></td>
+<td>[m/sss]</td>
+<td>double</td>
+<td>minimum jerk deceleration for safe brake</td>
 </tr>
 <tr>
-<td align="left"><code>engage_acceleration</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Engage acceleration [m/ss] (use this acceleration when engagement)</td>
-<td align="left">0.1</td>
+<td><code>max_slow_down_accel</code></td>
+<td>[m/ss]</td>
+<td>double</td>
+<td>minimum accel deceleration for safe brake</td>
 </tr>
 <tr>
-<td align="left"><code>engage_exit_ratio</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Exit engage sequence to normal velocity planning when the velocity exceeds engage_exit_ratio x engage_velocity.</td>
-<td align="left">0.5</td>
-</tr>
-<tr>
-<td align="left"><code>stop_dist_to_prohibit_engage</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">If the stop point is in this distance, the speed is set to 0 not to move the vehicle [m]</td>
-<td align="left">0.5</td>
+<td><code>no_relax_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="stopping-velocity-parameters">Stopping velocity parameters<a class="headerlink" href="#stopping-velocity-parameters" title="Permanent link">#</a></h3>
+<h3 id="occlusion">Occlusion<a class="headerlink" href="#occlusion" title="Permanent link">#</a></h3>
+<p>This feature makes ego slow down for a crosswalk that is occluded.</p>
+<p>Occlusion of the crosswalk is determined using the occupancy grid.
+An occlusion is a square of size <code>min_size</code> of occluded cells
+(i.e., their values are between <code>free_space_max</code> and <code>occupied_min</code>)
+of size <code>min_size</code>.
+If an occlusion is found within range of the crosswalk,
+then the velocity limit at the crosswalk is set to <code>slow_down_velocity</code> (or more to not break limits set by <code>max_slow_down_jerk</code> and <code>max_slow_down_accel</code>).
+The range is calculated from the intersection between the ego path and the crosswalk and is equal to the time taken by ego to reach the crosswalk times the <code>occluded_object_velocity</code>.
+This range is meant to be large when ego is far from the crosswalk and small when ego is close.</p>
+<p>In order to avoid flickering decisions, a time buffer can be used such that the decision to add (or remove) the slow down is only taken
+after an occlusion is detected (or not detected) for a consecutive time defined by the <code>time_buffer</code> parameter.</p>
+<p>To ignore occlusions when the crosswalk has a traffic light, <code>ignore_with_traffic_light</code> should be set to true.</p>
+<p>To ignore temporary occlusions caused by moving objects,
+<code>ignore_behind_predicted_objects</code> should be set to true.
+By default, occlusions behind an object with velocity higher than <code>ignore_velocity_thresholds.default</code> are ignored.
+This velocity threshold can be specified depending on the object type by specifying the object class label and velocity threshold in the parameter lists <code>ignore_velocity_thresholds.custom_labels</code> and <code>ignore_velocity_thresholds.custom_thresholds</code>.
+To inflate the masking behind objects, their footprint can be made bigger using <code>extra_predicted_objects_size</code>.</p>
+<figure>
+<p><img alt="stuck_vehicle_attention_range" src="docs/with_occlusion.svg" width="600"></p>
+</figure>
 <table>
 <thead>
 <tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>stopping_velocity</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">change target velocity to this value before v=0 point [m/s]</td>
-<td align="left">2.778</td>
+<td><code>enable</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, ego will slow down around crosswalks that are occluded</td>
 </tr>
 <tr>
-<td align="left"><code>stopping_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">distance for the stopping_velocity [m]. 0 means the stopping velocity is not applied.</td>
-<td align="left">0.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="extraction-parameters">Extraction parameters<a class="headerlink" href="#extraction-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>extract_ahead_dist</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Forward trajectory distance used for planning [m]</td>
-<td align="left">200.0</td>
+<td><code>occluded_object_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>assumed velocity of objects that may come out of the occluded space</td>
 </tr>
 <tr>
-<td align="left"><code>extract_behind_dist</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">backward trajectory distance used for planning [m]</td>
-<td align="left">5.0</td>
+<td><code>slow_down_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>slow down velocity</td>
 </tr>
 <tr>
-<td align="left"><code>delta_yaw_threshold</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Allowed delta yaw between ego pose and trajectory pose [radian]</td>
-<td align="left">1.0472</td>
-</tr>
-</tbody>
-</table>
-<h3 id="resampling-parameters">Resampling parameters<a class="headerlink" href="#resampling-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>max_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Max trajectory length for resampling [m]</td>
-<td align="left">200.0</td>
+<td><code>time_buffer</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>consecutive time with/without an occlusion to add/remove the slowdown</td>
 </tr>
 <tr>
-<td align="left"><code>min_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Min trajectory length for resampling [m]</td>
-<td align="left">30.0</td>
+<td><code>min_size</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>minimum size of an occlusion (square side size)</td>
 </tr>
 <tr>
-<td align="left"><code>resample_time</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Resample total time [s]</td>
-<td align="left">10.0</td>
+<td><code>free_space_max</code></td>
+<td>[-]</td>
+<td>double</td>
+<td>maximum value of a free space cell in the occupancy grid</td>
 </tr>
 <tr>
-<td align="left"><code>dense_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for dense sampling [s]</td>
-<td align="left">0.1</td>
+<td><code>occupied_min</code></td>
+<td>[-]</td>
+<td>double</td>
+<td>minimum value of an occupied cell in the occupancy grid</td>
 </tr>
 <tr>
-<td align="left"><code>dense_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for dense sampling [m]</td>
-<td align="left">0.1</td>
+<td><code>ignore_with_traffic_light</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, occlusions at crosswalks with traffic lights are ignored</td>
 </tr>
 <tr>
-<td align="left"><code>sparse_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for sparse sampling [s]</td>
-<td align="left">0.5</td>
+<td><code>ignore_behind_predicted_objects</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, occlusions behind predicted objects are ignored</td>
 </tr>
 <tr>
-<td align="left"><code>sparse_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for sparse sampling [m]</td>
-<td align="left">4.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="resampling-parameters-for-post-process">Resampling parameters for post process<a class="headerlink" href="#resampling-parameters-for-post-process" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>post_max_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">max trajectory length for resampling [m]</td>
-<td align="left">300.0</td>
+<td><code>ignore_velocity_thresholds.default</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>occlusions are only ignored behind objects with a higher or equal velocity</td>
 </tr>
 <tr>
-<td align="left"><code>post_min_trajectory_length</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">min trajectory length for resampling [m]</td>
-<td align="left">30.0</td>
+<td><code>ignore_velocity_thresholds.custom_labels</code></td>
+<td>[-]</td>
+<td>string list</td>
+<td>labels for which to define a non-default velocity threshold (see <code>autoware_perception_msgs::msg::ObjectClassification</code> for all the labels)</td>
 </tr>
 <tr>
-<td align="left"><code>post_resample_time</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample total time for dense sampling [s]</td>
-<td align="left">10.0</td>
+<td><code>ignore_velocity_thresholds.custom_thresholds</code></td>
+<td>[-]</td>
+<td>double list</td>
+<td>velocities of the custom labels</td>
 </tr>
 <tr>
-<td align="left"><code>post_dense_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for dense sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_dense_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for dense sampling [m]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_sparse_resample_dt</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">resample time interval for sparse sampling [s]</td>
-<td align="left">0.1</td>
-</tr>
-<tr>
-<td align="left"><code>post_sparse_min_interval_distance</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">minimum points-interval length for sparse sampling [m]</td>
-<td align="left">1.0</td>
-</tr>
-</tbody>
-</table>
-<h3 id="weights-for-optimization">Weights for optimization<a class="headerlink" href="#weights-for-optimization" title="Permanent link">#</a></h3>
-<h4 id="jerkfiltered_1">JerkFiltered<a class="headerlink" href="#jerkfiltered_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost for jerk</td>
-<td align="left">10.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">5000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_j_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over jerk limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h4 id="l2_1">L2<a class="headerlink" href="#l2_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>pseudo_jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost</td>
-<td align="left">100.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">1000.0</td>
-</tr>
-</tbody>
-</table>
-<h4 id="linf_1">Linf<a class="headerlink" href="#linf_1" title="Permanent link">#</a></h4>
-<table>
-<thead>
-<tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><code>pseudo_jerk_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "smoothness" cost</td>
-<td align="left">100.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_v_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over speed limit" cost</td>
-<td align="left">100000.0</td>
-</tr>
-<tr>
-<td align="left"><code>over_a_weight</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Weight for "over accel limit" cost</td>
-<td align="left">1000.0</td>
+<td><code>extra_predicted_objects_size</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>extra size added to the objects for masking the occlusions</td>
 </tr>
 </tbody>
 </table>
 <h3 id="others">Others<a class="headerlink" href="#others" title="Permanent link">#</a></h3>
+<p>In the <code>common</code> namespace, the following parameters are defined.</p>
 <table>
 <thead>
 <tr>
-<th align="left">Name</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-<th align="left">Default value</th>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>over_stop_velocity_warn_thr</code></td>
-<td align="left"><code>double</code></td>
-<td align="left">Threshold to judge that the optimized velocity exceeds the input velocity on the stop point [m/s]</td>
-<td align="left">1.389</td>
+<td><code>show_processing_time</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to show processing time</td>
+</tr>
+<tr>
+<td><code>traffic_light_state_timeout</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>timeout threshold for traffic light signal</td>
+</tr>
+<tr>
+<td><code>enable_rtc</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, the scene modules should be approved by (request to cooperate)rtc function. if false, the module can be run without approval from rtc.</td>
 </tr>
 </tbody>
 </table>
-<!-- Write parameters of this package.
-
-Example:
-  ### Node Parameters
-
-  | Name                   | Type | Description                     |
-  | ---------------------- | ---- | ------------------------------- |
-  | `output_debug_markers` | bool | whether to output debug markers |
-
-  ### Core Parameters
-
-  | Name                 | Type     | Description                                                          |
-  | -------------------- | -------- | -------------------------------------------------------------------- |
-  | `min_object_size_m`  | `double` | minimum object size to be selected as avoidance target obstacles [m] |
-  | `avoidance_margin_m` | `double` | avoidance margin to obstacles [m]                                    |
--->
-
-<h2 id="assumptions-known-limits">Assumptions / Known limits<a class="headerlink" href="#assumptions-known-limits" title="Permanent link">#</a></h2>
+<h2 id="known-issues">Known Issues<a class="headerlink" href="#known-issues" title="Permanent link">#</a></h2>
 <ul>
-<li>参照経路上の点には制限速度（停止点）が正しく設定されていることを仮定</li>
-<li>参照経路に設定されている制限速度を指定した減速度やジャークで達成不可能な場合、可能な範囲で速度、加速度、ジャークの逸脱量を抑えながら減速</li>
-<li>各逸脱量の重視の度合いはパラメータにより指定</li>
+<li>The yield decision may be sometimes aggressive or conservative depending on the case.<ul>
+<li>The main reason is that the crosswalk module does not know the ego's position in the future. The detailed ego's position will be determined after the whole planning.</li>
+<li>Currently the module assumes that the ego will move with a constant velocity.</li>
 </ul>
-<h2 id="optional-error-detection-and-handling">(Optional) Error detection and handling<a class="headerlink" href="#optional-error-detection-and-handling" title="Permanent link">#</a></h2>
-<h2 id="optional-performance-characterization">(Optional) Performance characterization<a class="headerlink" href="#optional-performance-characterization" title="Permanent link">#</a></h2>
-<h2 id="optional-referencesexternal-links">(Optional) References/External links<a class="headerlink" href="#optional-referencesexternal-links" title="Permanent link">#</a></h2>
-<p>[1] B. Stellato, et al., "OSQP: an operator splitting solver for quadratic programs", Mathematical Programming Computation, 2020, <a href="https://link.springer.com/article/10.1007/s12532-020-00179-2">10.1007/s12532-020-00179-2</a>.</p>
-<p>[2] Y. Zhang, et al., "Toward a More Complete, Flexible, and Safer Speed Planning for Autonomous Driving via Convex Optimization", Sensors, vol. 18, no. 7, p. 2185, 2018, <a href="https://doi.org/10.3390/s18072185">10.3390/s18072185</a></p>
-<h2 id="optional-future-extensions-unimplemented-parts">(Optional) Future extensions / Unimplemented parts<a class="headerlink" href="#optional-future-extensions-unimplemented-parts" title="Permanent link">#</a></h2></div>
+</li>
+</ul>
+<h2 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">#</a></h2>
+<h3 id="visualization-of-debug-markers">Visualization of debug markers<a class="headerlink" href="#visualization-of-debug-markers" title="Permanent link">#</a></h3>
+<p><code>/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk</code> shows the following markers.</p>
+<figure>
+<p><img alt="limitation" src="docs/debug_markers.png" width="1000"></p>
+</figure>
+<ul>
+<li>Yellow polygons<ul>
+<li>Ego footprints' polygon to calculate the collision check.</li>
+</ul>
+</li>
+<li>Pink polygons<ul>
+<li>Object footprints' polygon to calculate the collision check.</li>
+</ul>
+</li>
+<li>The color of crosswalks<ul>
+<li>Considering the traffic light's color, red means the target crosswalk, and white means the ignored crosswalk.</li>
+</ul>
+</li>
+<li>Texts<ul>
+<li>It shows the module ID, TTC, TTV, and the module state.</li>
+</ul>
+</li>
+</ul>
+<h3 id="visualization-of-time-to-collision">Visualization of Time-To-Collision<a class="headerlink" href="#visualization-of-time-to-collision" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code>ros2<span class="w"> </span>run<span class="w"> </span>autoware_behavior_velocity_crosswalk_module<span class="w"> </span>time_to_collision_plotter.py
+</code></pre></div>
+<p>enables you to visualize the following figure of the ego and pedestrian's time to collision.
+The label of each plot is <code>&lt;crosswalk module id&gt;-&lt;pedestrian uuid&gt;</code>.</p>
+<figure>
+<p><img alt="limitation" src="docs/time_to_collision_plot.png" width="1000"></p>
+</figure>
+<h2 id="trouble-shooting">Trouble Shooting<a class="headerlink" href="#trouble-shooting" title="Permanent link">#</a></h2>
+<h3 id="behavior">Behavior<a class="headerlink" href="#behavior" title="Permanent link">#</a></h3>
+<ul>
+<li>Q. The ego stopped around the crosswalk even though there were no crosswalk user objects.<ul>
+<li>A. See <a href="https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/autoware_behavior_velocity_crosswalk_module/#stuck-vehicle-detection">Stuck Vehicle Detection</a>.</li>
+</ul>
+</li>
+<li>Q. The crosswalk virtual wall suddenly appeared resulting in the sudden stop.<ul>
+<li>A. There may be a crosswalk user started moving when the ego was close to the crosswalk.</li>
+</ul>
+</li>
+<li>Q. The crosswalk module decides to stop even when the pedestrian traffic light is red.<ul>
+<li>A. The lanelet map may be incorrect. The pedestrian traffic light and the crosswalk have to be related.</li>
+</ul>
+</li>
+<li>Q. In the planning simulation, the crosswalk module does the yield decision to stop on all the crosswalks.<ul>
+<li>A. This is because the pedestrian traffic light is unknown by default. In this case, the crosswalk does the yield decision for safety.</li>
+</ul>
+</li>
+</ul>
+<h3 id="parameter-tuning">Parameter Tuning<a class="headerlink" href="#parameter-tuning" title="Permanent link">#</a></h3>
+<ul>
+<li>Q. The ego's yield behavior is too conservative.<ul>
+<li>A. Tune <code>ego_pass_later_margin</code> described in <a href="https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/autoware_behavior_velocity_crosswalk_module/#stuck-vehicle-detection">Yield Decision</a></li>
+</ul>
+</li>
+<li>Q. The ego's yield behavior is too aggressive.<ul>
+<li>A. Tune <code>ego_pass_later_margin</code> described in <a href="https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/autoware_behavior_velocity_crosswalk_module/#stuck-vehicle-detection">Yield Decision</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="referencesexternal-links">References/External links<a class="headerlink" href="#referencesexternal-links" title="Permanent link">#</a></h2>
+<p>[1] 佐藤 みなみ, 早坂 祥一, 清水 政行, 村野 隆彦, 横断歩行者に対するドライバのリスク回避行動のモデル化, 自動車技術会論文集, 2013, 44 巻, 3 号, p. 931-936.</p></div>
 
 
 
@@ -13877,7 +13791,7 @@ Example:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Velocity Smoother" rel="prev">
+          <a href="../autoware_behavior_velocity_blind_spot_module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Index" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13886,14 +13800,14 @@ Example:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Velocity Smoother
+                Index
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../behavior_velocity_planner/autoware_behavior_velocity_blind_spot_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Index" rel="next">
+          <a href="../autoware_behavior_velocity_detection_area_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Index" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next

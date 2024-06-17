@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/motion_velocity_planner/autoware_motion_velocity_dynamic_obstacle_stop_module/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/behavior_velocity_planner/autoware_behavior_velocity_crosswalk_module/">
       
       
-        <link rel="prev" href="../../behavior_velocity_planner/behavior_velocity_speed_bump_module/">
+        <link rel="prev" href="../autoware_behavior_velocity_blind_spot_module/">
       
       
-        <link rel="next" href="../autoware_motion_velocity_obstacle_velocity_limiter_module/">
+        <link rel="next" href="../autoware_behavior_velocity_detection_area_module/">
       
       <link rel="icon" href="../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Index - Autoware Universe Documentation</title>
+        <title>Crosswalk - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dynamic-obstacle-stop" class="md-skip">
+        <a href="#crosswalk" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Index
+              Crosswalk
             
           </span>
         </div>
@@ -8876,7 +8876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_planner_node/" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_planner_node/" class="md-nav__link">
         About Motion Velocity Planner
       </a>
     </li>
@@ -8927,7 +8927,7 @@
   
   
     <li class="md-nav__item">
-      <a href="./" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_dynamic_obstacle_stop_module/" class="md-nav__link">
         Dynamic Obstacle Stop
       </a>
     </li>
@@ -8941,7 +8941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_planner_out_of_lane_module/" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_planner_out_of_lane_module/" class="md-nav__link">
         Out of Lane
       </a>
     </li>
@@ -8955,7 +8955,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_obstacle_velocity_limiter_module/" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/" class="md-nav__link">
         Obstacle Velocity Limiter
       </a>
     </li>
@@ -13010,6 +13010,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -13018,43 +13020,125 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dynamic-obstacle-stop" class="md-nav__link">
-    Dynamic Obstacle Stop
-  </a>
-  
-    <nav class="md-nav" aria-label="Dynamic Obstacle Stop">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#role" class="md-nav__link">
     Role
   </a>
   
 </li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    Features
+  </a>
+  
+    <nav class="md-nav" aria-label="Features">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#activation-timing" class="md-nav__link">
-    Activation Timing
+  <a href="#yield-the-way-to-the-pedestrians" class="md-nav__link">
+    Yield the Way to the Pedestrians
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
+  <a href="#stuck-prevention-on-the-crosswalk" class="md-nav__link">
+    Stuck Prevention on the Crosswalk
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#module-parameters" class="md-nav__link">
-    Module Parameters
+  <a href="#safety-slow-down-behavior" class="md-nav__link">
+    Safety Slow Down Behavior
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#occlusion" class="md-nav__link">
+    Occlusion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#others" class="md-nav__link">
+    Others
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-issues" class="md-nav__link">
+    Known Issues
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging" class="md-nav__link">
+    Debugging
+  </a>
+  
+    <nav class="md-nav" aria-label="Debugging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visualization-of-debug-markers" class="md-nav__link">
+    Visualization of debug markers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-of-time-to-collision" class="md-nav__link">
+    Visualization of Time-To-Collision
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trouble-shooting" class="md-nav__link">
+    Trouble Shooting
+  </a>
+  
+    <nav class="md-nav" aria-label="Trouble Shooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#behavior" class="md-nav__link">
+    Behavior
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-tuning" class="md-nav__link">
+    Parameter Tuning
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencesexternal-links" class="md-nav__link">
+    References/External links
+  </a>
   
 </li>
       
@@ -13076,123 +13160,611 @@
   
 
 
-  <h1>Index</h1>
-
-<div><h2 id="dynamic-obstacle-stop">Dynamic Obstacle Stop<a class="headerlink" href="#dynamic-obstacle-stop" title="Permanent link">#</a></h2>
-<h3 id="role">Role<a class="headerlink" href="#role" title="Permanent link">#</a></h3>
-<p><code>dynamic_obstacle_stop</code> is a module that stops the ego vehicle from entering the <em>immediate</em> path of a dynamic object.</p>
-<p>The <em>immediate</em> path of an object is the area that the object would traverse during a given time horizon, assuming constant velocity and heading.</p>
-<p><img alt="rviz example" src="docs/dynamic_obstacle_stop_rviz.png"></p>
-<h3 id="activation-timing">Activation Timing<a class="headerlink" href="#activation-timing" title="Permanent link">#</a></h3>
-<p>This module is activated if the launch parameter <code>launch_dynamic_obstacle_stop_module</code> is set to true in the motion planning launch file.</p>
-<h3 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h3>
-<p>The module insert a stop point where the ego trajectory collides with the immediate path of an object.
-The overall module flow can be summarized with the following 4 steps.</p>
-<ol>
-<li>Filter dynamic objects.</li>
-<li>Calculate immediate path rectangles of the dynamic objects.</li>
-<li>Find earliest collision where ego collides with an immediate path rectangle.</li>
-<li>Insert stop point before the collision.</li>
-</ol>
-<p>In addition to these 4 steps, 2 mechanisms are in place to make the stop point of this module more stable: an hysteresis and a decision duration buffer.</p>
-<p>The <code>hysteresis</code> parameter is used when a stop point was already being inserted in the previous iteration
-and it increases the range where dynamic objects are considered close enough to the ego trajectory to be used by the module.</p>
-<h4 id="filter-dynamic-objects">Filter dynamic objects<a class="headerlink" href="#filter-dynamic-objects" title="Permanent link">#</a></h4>
-<p><img alt="filtering example" src="docs/DynamicObstacleStop-Filtering.drawio.svg"></p>
-<p>An object is considered by the module only if it meets all of the following conditions:</p>
-<ul>
-<li>it is a vehicle (pedestrians are ignored);</li>
-<li>it is moving at a velocity higher than defined by the <code>minimum_object_velocity</code> parameter;</li>
-<li>it is not too close to the current position of the ego vehicle;</li>
-<li>it is not unavoidable (only if parameter <code>ignore_unavoidable_collisions</code> is set to <code>true</code>);</li>
-<li>it is close to the ego trajectory.</li>
-</ul>
-<p>An object is considered unavoidable if it is heading towards the ego vehicle such that even if ego stops, a collision would still occur (assuming the object keeps driving in a straight line).</p>
-<p>For the last condition,
-the object is considered close enough if its lateral distance from the ego trajectory is less than the threshold parameter <code>minimum_object_distance_from_ego_trajectory</code> plus half the width of ego and of the object (including the <code>extra_object_width</code> parameter).
-In addition, the value of the <code>hysteresis</code> parameter is added to the minimum distance if a stop point was inserted in the previous iteration.</p>
-<h4 id="calculate-immediate-path-rectangles">Calculate immediate path rectangles<a class="headerlink" href="#calculate-immediate-path-rectangles" title="Permanent link">#</a></h4>
-<p><img alt="Immediate paths example" src="docs/DynamicObstacleStop-ImmediatePaths.drawio.svg"></p>
-<p>For each considered object, a rectangle is created representing its <em>immediate</em> path.
-The rectangle has the width of the object plus the <code>extra_object_width</code> parameter
-and its length is the current speed of the object multiplied by the <code>time_horizon</code>.</p>
-<h4 id="find-earliest-collision">Find earliest collision<a class="headerlink" href="#find-earliest-collision" title="Permanent link">#</a></h4>
-<p><img alt="Earliest collision example" src="docs/DynamicObstacleStop-Collision.drawio.svg"></p>
-<p>We build the ego trajectory footprints as the set of ego footprint polygons projected on each trajectory point.
-We then calculate the intersections between these ego trajectory footprints and the previously calculated immediate path rectangles.
-An intersection is ignored if the object is not driving toward ego, i.e., the absolute angle between the object and the trajectory point is larger than <span class="arithmatex">\(\frac{3 \pi}{4}\)</span>.</p>
-<p>The collision point with the lowest arc length when projected on the ego trajectory will be used to calculate the final stop point.</p>
-<h4 id="insert-stop-point">Insert stop point<a class="headerlink" href="#insert-stop-point" title="Permanent link">#</a></h4>
-<p><img alt="Stop point example" src="docs/DynamicObstacleStop-StopPoint.drawio.svg"></p>
-<p>Before inserting a stop point, we calculate the range of trajectory arc lengths where it can be inserted.
-The minimum is calculated to satisfy the acceleration and jerk constraints of the vehicle.
-If a stop point was inserted in the previous iteration of the module, its arc length is used as the maximum.
-Finally,
-the stop point arc length is calculated to be the arc length of the previously found collision point minus the <code>stop_distance_buffer</code> and the ego vehicle longitudinal offset, clamped between the minimum and maximum values.</p>
-<h4 id="duration-buffer">Duration buffer<a class="headerlink" href="#duration-buffer" title="Permanent link">#</a></h4>
-<p>To prevent chatter caused by noisy perception, two duration parameters are used.</p>
-<ul>
-<li><code>add_stop_duration_buffer</code> represents the duration of consecutive collision detection with an object for the corresponding stop point to be added.</li>
-<li><code>remove_stop_duration_buffer</code> represents the duration of consecutive non-detection of collision with an object for the corresponding stop point to be removed.</li>
-</ul>
-<p>Timers and collision points are tracked for each dynamic object independently.</p>
-<h3 id="module-parameters">Module Parameters<a class="headerlink" href="#module-parameters" title="Permanent link">#</a></h3>
+<div><h1 id="crosswalk">Crosswalk<a class="headerlink" href="#crosswalk" title="Permanent link">#</a></h1>
+<h2 id="role">Role<a class="headerlink" href="#role" title="Permanent link">#</a></h2>
+<p>This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage for crosswalk users, such as pedestrians and bicycles, based on the objects' behavior and surround traffic.</p>
+<figure>
+<p><img alt="crosswalk_module" src="docs/crosswalk_module.svg" width="1100"></p>
+</figure>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">#</a></h2>
+<h3 id="yield-the-way-to-the-pedestrians">Yield the Way to the Pedestrians<a class="headerlink" href="#yield-the-way-to-the-pedestrians" title="Permanent link">#</a></h3>
+<h4 id="target-object">Target Object<a class="headerlink" href="#target-object" title="Permanent link">#</a></h4>
+<p>The crosswalk module handles objects of the types defined by the following parameters in the <code>object_filtering.target_object</code> namespace.</p>
 <table>
 <thead>
 <tr>
 <th>Parameter</th>
+<th>Unit</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>extra_object_width</code></td>
-<td>double</td>
-<td>[m] extra width around detected objects</td>
-</tr>
-<tr>
-<td><code>minimum_object_velocity</code></td>
-<td>double</td>
-<td>[m/s] objects with a velocity bellow this value are ignored</td>
-</tr>
-<tr>
-<td><code>stop_distance_buffer</code></td>
-<td>double</td>
-<td>[m] extra distance to add between the stop point and the collision point</td>
-</tr>
-<tr>
-<td><code>time_horizon</code></td>
-<td>double</td>
-<td>[s] time horizon used for collision checks</td>
-</tr>
-<tr>
-<td><code>hysteresis</code></td>
-<td>double</td>
-<td>[m] once a collision has been detected, this hysteresis is used on the collision detection</td>
-</tr>
-<tr>
-<td><code>add_stop_duration_buffer</code></td>
-<td>double</td>
-<td>[s] duration where a collision must be continuously detected before a stop decision is added</td>
-</tr>
-<tr>
-<td><code>remove_stop_duration_buffer</code></td>
-<td>double</td>
-<td>[s] duration between no collision being detected and the stop decision being remove</td>
-</tr>
-<tr>
-<td><code>minimum_object_distance_from_ego_trajectory</code></td>
-<td>double</td>
-<td>[m] minimum distance between the footprints of ego and an object to consider for collision</td>
-</tr>
-<tr>
-<td><code>ignore_unavoidable_collisions</code></td>
+<td><code>unknown</code></td>
+<td>[-]</td>
 <td>bool</td>
-<td>[-] if true, ignore collisions that cannot be avoided by stopping (assuming the obstacle continues going straight)</td>
+<td>whether to look and stop by UNKNOWN objects</td>
+</tr>
+<tr>
+<td><code>pedestrian</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to look and stop by PEDESTRIAN objects</td>
+</tr>
+<tr>
+<td><code>bicycle</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to look and stop by BICYCLE objects</td>
+</tr>
+<tr>
+<td><code>motorcycle</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to look and stop by MOTORCYCLE objects</td>
 </tr>
 </tbody>
-</table></div>
+</table>
+<p>In order to handle the crosswalk users crossing the neighborhood but outside the crosswalk, the crosswalk module creates an attention area around the crosswalk, shown as the yellow polygon in the figure. If the object's predicted path collides with the attention area, the object will be targeted for yield.</p>
+<figure>
+<p><img alt="crosswalk_attention_range" src="docs/crosswalk_attention_range.svg" width="600"></p>
+</figure>
+<p>The neighborhood is defined by the following parameter in the <code>object_filtering.target_object</code> namespace.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crosswalk_attention_range</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>the detection area is defined as -X meters before the crosswalk to +X meters behind the crosswalk</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stop-position">Stop Position<a class="headerlink" href="#stop-position" title="Permanent link">#</a></h4>
+<p>First of all, <code>stop_distance_from_object [m]</code> is always kept at least between the ego and the target object for safety.</p>
+<p>When the stop line exists in the lanelet map, the stop position is calculated based on the line.
+When the stop line does <strong>NOT</strong> exist in the lanelet map, the stop position is calculated by keeping <code>stop_distance_from_crosswalk [m]</code> between the ego and the crosswalk.</p>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/explicit_stop_line.svg" width="600"></td>
+            <td><img src="./docs/virtual_stop_line.svg" width="600"></td>
+        </tr>
+    </table>
+</div>
+
+<p>As an exceptional case, if a pedestrian (or bicycle) is crossing <strong>wide</strong> crosswalks seen in scramble intersections, and the pedestrian position is more than <code>far_object_threshold</code> meters away from the stop line, the actual stop position is determined by <code>stop_distance_from_object</code> and pedestrian position, not at the stop line.</p>
+<figure>
+<p><img alt="far_object_threshold" src="docs/far_object_threshold.drawio.svg" width="700"></p>
+</figure>
+<p>In the <code>stop_position</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stop_position_threshold</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>If the ego vehicle has stopped near the stop line than this value, this module assumes itself to have achieved yielding.</td>
+</tr>
+<tr>
+<td><code>stop_distance_from_crosswalk</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>make stop line away from crosswalk for the Lanelet2 map with no explicit stop lines</td>
+</tr>
+<tr>
+<td><code>far_object_threshold</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>If objects cross X meters behind the stop line, the stop position is determined according to the object position (stop_distance_from_object meters before the object) for the case where the crosswalk width is very wide</td>
+</tr>
+<tr>
+<td><code>stop_distance_from_object</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>the vehicle decelerates to be able to stop in front of object with margin</td>
+</tr>
+</tbody>
+</table>
+<h4 id="yield-decision">Yield decision<a class="headerlink" href="#yield-decision" title="Permanent link">#</a></h4>
+<p>The module makes a decision to yield only when the pedestrian traffic light is <strong>GREEN</strong> or <strong>UNKNOWN</strong>.
+The decision is based on the following variables, along with the calculation of the collision point.</p>
+<ul>
+<li>Time-To-Collision (TTC): The time for the <strong>ego</strong> to reach the virtual collision point.</li>
+<li>Time-To-Vehicle (TTV): The time for the <strong>object</strong> to reach the virtual collision point.</li>
+</ul>
+<p>We classify ego behavior at crosswalks into three categories according to the relative relationship between TTC and TTV [1].</p>
+<ul>
+<li>A. <strong>TTC &gt;&gt; TTV</strong>: The object has enough time to cross before the ego.<ul>
+<li>No stop planning.</li>
+</ul>
+</li>
+<li>B. <strong>TTC ≒ TTV</strong>: There is a risk of collision.<ul>
+<li><strong>Stop point is inserted in the ego's path</strong>.</li>
+</ul>
+</li>
+<li>C. <strong>TTC &lt;&lt; TTV</strong>: Ego has enough time to cross before the object.<ul>
+<li>No stop planning.</li>
+</ul>
+</li>
+</ul>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/virtual_collision_point.svg" width="600"></td>
+            <td><img src="./docs/ttc_vs_ttv.drawio.svg" width="350"></td>
+        </tr>
+    </table>
+</div>
+
+<p>The boundary of A and B is interpolated from <code>ego_pass_later_margin_x</code> and <code>ego_pass_later_margin_y</code>.
+In the case of the upper figure, <code>ego_pass_later_margin_x</code> is <code>{0, 1, 2}</code> and <code>ego_pass_later_margin_y</code> is <code>{1, 4, 6}</code>.
+In the same way, the boundary of B and C is calculated from <code>ego_pass_first_margin_x</code> and <code>ego_pass_first_margin_y</code>.
+In the case of the upper figure, <code>ego_pass_first_margin_x</code> is <code>{3, 5}</code> and <code>ego_pass_first_margin_y</code> is <code>{0, 1}</code>.</p>
+<p>If the red signal is indicating to the corresponding crosswalk, the ego do not yield against the pedestrians.</p>
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/without_traffic_light.svg" width="600"></td>
+            <td><img src="./docs/with_traffic_light.svg" width="600"></td>
+        </tr>
+    </table>
+</div>
+
+<p>In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ego_pass_first_margin_x</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to collision margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN &lt; TTV condition)</td>
+</tr>
+<tr>
+<td><code>ego_pass_first_margin_y</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to vehicle margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN &lt; TTV condition)</td>
+</tr>
+<tr>
+<td><code>ego_pass_first_additional_margin</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>additional time margin for ego pass first situation to suppress chattering</td>
+</tr>
+<tr>
+<td><code>ego_pass_later_margin_x</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to vehicle margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN &lt; TTC condition)</td>
+</tr>
+<tr>
+<td><code>ego_pass_later_margin_y</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>time to collision margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN &lt; TTC condition)</td>
+</tr>
+<tr>
+<td><code>ego_pass_later_additional_margin</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>additional time margin for object pass first situation to suppress chattering</td>
+</tr>
+</tbody>
+</table>
+<h4 id="smooth-yield-decision">Smooth Yield Decision<a class="headerlink" href="#smooth-yield-decision" title="Permanent link">#</a></h4>
+<p>If the object is stopped near the crosswalk but has no intention of walking, a situation can arise in which the ego continues to yield the right-of-way to the object.
+To prevent such a deadlock situation, the ego will cancel yielding depending on the situation.</p>
+<p>For the object stopped around the crosswalk but has no intention to walk (*1), after the ego has keep stopping to yield for a specific time (*2), the ego cancels the yield and starts driving.</p>
+<p>*1:
+The time is calculated by the interpolation of distance between the object and crosswalk with <code>distance_set_for_no_intention_to_walk</code> and <code>timeout_set_for_no_intention_to_walk</code>.</p>
+<p>In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>distance_set_for_no_intention_to_walk</code></td>
+<td>[[m]]</td>
+<td>double</td>
+<td>key sets to calculate the timeout for no intention to walk with interpolation</td>
+</tr>
+<tr>
+<td><code>timeout_set_for_no_intention_to_walk</code></td>
+<td>[[s]]</td>
+<td>double</td>
+<td>value sets to calculate the timeout for no intention to walk with interpolation</td>
+</tr>
+</tbody>
+</table>
+<p>*2:
+In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timeout_ego_stop_for_yield</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>If the ego maintains the stop for this amount of time, then the ego proceeds, assuming it has stopped long time enough.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="new-object-handling">New Object Handling<a class="headerlink" href="#new-object-handling" title="Permanent link">#</a></h4>
+<p>Due to the perception's limited performance where the tree or poll is recognized as a pedestrian or the tracking failure in the crowd or occlusion, even if the surrounding environment does not change, the new pedestrian (= the new ID's pedestrian) may suddenly appear unexpectedly.
+If this happens while the ego is going to pass the crosswalk, the ego will stop suddenly.</p>
+<p>To deal with this issue, the option <code>disable_yield_for_new_stopped_object</code> is prepared.
+If true is set, the yield decisions around the crosswalk with a traffic light will ignore the new stopped object.</p>
+<p>In the <code>pass_judge</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>disable_yield_for_new_stopped_object</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>If set to true, the new stopped object will be ignored around the crosswalk with a traffic light</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stuck-prevention-on-the-crosswalk">Stuck Prevention on the Crosswalk<a class="headerlink" href="#stuck-prevention-on-the-crosswalk" title="Permanent link">#</a></h3>
+<p>The feature will make the ego not to stop on the crosswalk.
+When there is a low-speed or stopped vehicle ahead of the crosswalk, and there is not enough space between the crosswalk and the vehicle, the crosswalk module plans to stop before the crosswalk even if there are no pedestrians or bicycles.</p>
+<p><code>min_acc</code>, <code>min_jerk</code>, and <code>max_jerk</code> are met. If the ego cannot stop before the crosswalk with these parameters, the stop position will move forward.</p>
+<figure>
+<p><img alt="stuck_vehicle_attention_range" src="docs/stuck_vehicle_detection.svg" width="600"></p>
+</figure>
+<p>In the <code>stuck_vehicle</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stuck_vehicle_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>maximum velocity threshold whether the target vehicle is stopped or not</td>
+</tr>
+<tr>
+<td><code>max_stuck_vehicle_lateral_offset</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>maximum lateral offset of the target vehicle position</td>
+</tr>
+<tr>
+<td><code>required_clearance</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>clearance to be secured between the ego and the ahead vehicle</td>
+</tr>
+<tr>
+<td><code>min_acc</code></td>
+<td>[m/ss]</td>
+<td>double</td>
+<td>minimum acceleration to stop</td>
+</tr>
+<tr>
+<td><code>min_jerk</code></td>
+<td>[m/sss]</td>
+<td>double</td>
+<td>minimum jerk to stop</td>
+</tr>
+<tr>
+<td><code>max_jerk</code></td>
+<td>[m/sss]</td>
+<td>double</td>
+<td>maximum jerk to stop</td>
+</tr>
+</tbody>
+</table>
+<h3 id="safety-slow-down-behavior">Safety Slow Down Behavior<a class="headerlink" href="#safety-slow-down-behavior" title="Permanent link">#</a></h3>
+<p>In the current autoware implementation, if no target object is detected around a crosswalk, the ego vehicle will not slow down for the crosswalk.
+However, it may be desirable to slow down in situations, for example, where there are blind spots.
+Such a situation can be handled by setting some tags to the related crosswalk as instructed in the <a href="https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md">lanelet2_format_extension.md</a>
+document.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slow_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>target vehicle velocity when module receive slow down command from FOA</td>
+</tr>
+<tr>
+<td><code>max_slow_down_jerk</code></td>
+<td>[m/sss]</td>
+<td>double</td>
+<td>minimum jerk deceleration for safe brake</td>
+</tr>
+<tr>
+<td><code>max_slow_down_accel</code></td>
+<td>[m/ss]</td>
+<td>double</td>
+<td>minimum accel deceleration for safe brake</td>
+</tr>
+<tr>
+<td><code>no_relax_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="occlusion">Occlusion<a class="headerlink" href="#occlusion" title="Permanent link">#</a></h3>
+<p>This feature makes ego slow down for a crosswalk that is occluded.</p>
+<p>Occlusion of the crosswalk is determined using the occupancy grid.
+An occlusion is a square of size <code>min_size</code> of occluded cells
+(i.e., their values are between <code>free_space_max</code> and <code>occupied_min</code>)
+of size <code>min_size</code>.
+If an occlusion is found within range of the crosswalk,
+then the velocity limit at the crosswalk is set to <code>slow_down_velocity</code> (or more to not break limits set by <code>max_slow_down_jerk</code> and <code>max_slow_down_accel</code>).
+The range is calculated from the intersection between the ego path and the crosswalk and is equal to the time taken by ego to reach the crosswalk times the <code>occluded_object_velocity</code>.
+This range is meant to be large when ego is far from the crosswalk and small when ego is close.</p>
+<p>In order to avoid flickering decisions, a time buffer can be used such that the decision to add (or remove) the slow down is only taken
+after an occlusion is detected (or not detected) for a consecutive time defined by the <code>time_buffer</code> parameter.</p>
+<p>To ignore occlusions when the crosswalk has a traffic light, <code>ignore_with_traffic_light</code> should be set to true.</p>
+<p>To ignore temporary occlusions caused by moving objects,
+<code>ignore_behind_predicted_objects</code> should be set to true.
+By default, occlusions behind an object with velocity higher than <code>ignore_velocity_thresholds.default</code> are ignored.
+This velocity threshold can be specified depending on the object type by specifying the object class label and velocity threshold in the parameter lists <code>ignore_velocity_thresholds.custom_labels</code> and <code>ignore_velocity_thresholds.custom_thresholds</code>.
+To inflate the masking behind objects, their footprint can be made bigger using <code>extra_predicted_objects_size</code>.</p>
+<figure>
+<p><img alt="stuck_vehicle_attention_range" src="docs/with_occlusion.svg" width="600"></p>
+</figure>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enable</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, ego will slow down around crosswalks that are occluded</td>
+</tr>
+<tr>
+<td><code>occluded_object_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>assumed velocity of objects that may come out of the occluded space</td>
+</tr>
+<tr>
+<td><code>slow_down_velocity</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>slow down velocity</td>
+</tr>
+<tr>
+<td><code>time_buffer</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>consecutive time with/without an occlusion to add/remove the slowdown</td>
+</tr>
+<tr>
+<td><code>min_size</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>minimum size of an occlusion (square side size)</td>
+</tr>
+<tr>
+<td><code>free_space_max</code></td>
+<td>[-]</td>
+<td>double</td>
+<td>maximum value of a free space cell in the occupancy grid</td>
+</tr>
+<tr>
+<td><code>occupied_min</code></td>
+<td>[-]</td>
+<td>double</td>
+<td>minimum value of an occupied cell in the occupancy grid</td>
+</tr>
+<tr>
+<td><code>ignore_with_traffic_light</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, occlusions at crosswalks with traffic lights are ignored</td>
+</tr>
+<tr>
+<td><code>ignore_behind_predicted_objects</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, occlusions behind predicted objects are ignored</td>
+</tr>
+<tr>
+<td><code>ignore_velocity_thresholds.default</code></td>
+<td>[m/s]</td>
+<td>double</td>
+<td>occlusions are only ignored behind objects with a higher or equal velocity</td>
+</tr>
+<tr>
+<td><code>ignore_velocity_thresholds.custom_labels</code></td>
+<td>[-]</td>
+<td>string list</td>
+<td>labels for which to define a non-default velocity threshold (see <code>autoware_perception_msgs::msg::ObjectClassification</code> for all the labels)</td>
+</tr>
+<tr>
+<td><code>ignore_velocity_thresholds.custom_thresholds</code></td>
+<td>[-]</td>
+<td>double list</td>
+<td>velocities of the custom labels</td>
+</tr>
+<tr>
+<td><code>extra_predicted_objects_size</code></td>
+<td>[m]</td>
+<td>double</td>
+<td>extra size added to the objects for masking the occlusions</td>
+</tr>
+</tbody>
+</table>
+<h3 id="others">Others<a class="headerlink" href="#others" title="Permanent link">#</a></h3>
+<p>In the <code>common</code> namespace, the following parameters are defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Unit</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>show_processing_time</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>whether to show processing time</td>
+</tr>
+<tr>
+<td><code>traffic_light_state_timeout</code></td>
+<td>[s]</td>
+<td>double</td>
+<td>timeout threshold for traffic light signal</td>
+</tr>
+<tr>
+<td><code>enable_rtc</code></td>
+<td>[-]</td>
+<td>bool</td>
+<td>if true, the scene modules should be approved by (request to cooperate)rtc function. if false, the module can be run without approval from rtc.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-issues">Known Issues<a class="headerlink" href="#known-issues" title="Permanent link">#</a></h2>
+<ul>
+<li>The yield decision may be sometimes aggressive or conservative depending on the case.<ul>
+<li>The main reason is that the crosswalk module does not know the ego's position in the future. The detailed ego's position will be determined after the whole planning.</li>
+<li>Currently the module assumes that the ego will move with a constant velocity.</li>
+</ul>
+</li>
+</ul>
+<h2 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">#</a></h2>
+<h3 id="visualization-of-debug-markers">Visualization of debug markers<a class="headerlink" href="#visualization-of-debug-markers" title="Permanent link">#</a></h3>
+<p><code>/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk</code> shows the following markers.</p>
+<figure>
+<p><img alt="limitation" src="docs/debug_markers.png" width="1000"></p>
+</figure>
+<ul>
+<li>Yellow polygons<ul>
+<li>Ego footprints' polygon to calculate the collision check.</li>
+</ul>
+</li>
+<li>Pink polygons<ul>
+<li>Object footprints' polygon to calculate the collision check.</li>
+</ul>
+</li>
+<li>The color of crosswalks<ul>
+<li>Considering the traffic light's color, red means the target crosswalk, and white means the ignored crosswalk.</li>
+</ul>
+</li>
+<li>Texts<ul>
+<li>It shows the module ID, TTC, TTV, and the module state.</li>
+</ul>
+</li>
+</ul>
+<h3 id="visualization-of-time-to-collision">Visualization of Time-To-Collision<a class="headerlink" href="#visualization-of-time-to-collision" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code>ros2<span class="w"> </span>run<span class="w"> </span>autoware_behavior_velocity_crosswalk_module<span class="w"> </span>time_to_collision_plotter.py
+</code></pre></div>
+<p>enables you to visualize the following figure of the ego and pedestrian's time to collision.
+The label of each plot is <code>&lt;crosswalk module id&gt;-&lt;pedestrian uuid&gt;</code>.</p>
+<figure>
+<p><img alt="limitation" src="docs/time_to_collision_plot.png" width="1000"></p>
+</figure>
+<h2 id="trouble-shooting">Trouble Shooting<a class="headerlink" href="#trouble-shooting" title="Permanent link">#</a></h2>
+<h3 id="behavior">Behavior<a class="headerlink" href="#behavior" title="Permanent link">#</a></h3>
+<ul>
+<li>Q. The ego stopped around the crosswalk even though there were no crosswalk user objects.<ul>
+<li>A. See <a href="https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/autoware_behavior_velocity_crosswalk_module/#stuck-vehicle-detection">Stuck Vehicle Detection</a>.</li>
+</ul>
+</li>
+<li>Q. The crosswalk virtual wall suddenly appeared resulting in the sudden stop.<ul>
+<li>A. There may be a crosswalk user started moving when the ego was close to the crosswalk.</li>
+</ul>
+</li>
+<li>Q. The crosswalk module decides to stop even when the pedestrian traffic light is red.<ul>
+<li>A. The lanelet map may be incorrect. The pedestrian traffic light and the crosswalk have to be related.</li>
+</ul>
+</li>
+<li>Q. In the planning simulation, the crosswalk module does the yield decision to stop on all the crosswalks.<ul>
+<li>A. This is because the pedestrian traffic light is unknown by default. In this case, the crosswalk does the yield decision for safety.</li>
+</ul>
+</li>
+</ul>
+<h3 id="parameter-tuning">Parameter Tuning<a class="headerlink" href="#parameter-tuning" title="Permanent link">#</a></h3>
+<ul>
+<li>Q. The ego's yield behavior is too conservative.<ul>
+<li>A. Tune <code>ego_pass_later_margin</code> described in <a href="https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/autoware_behavior_velocity_crosswalk_module/#stuck-vehicle-detection">Yield Decision</a></li>
+</ul>
+</li>
+<li>Q. The ego's yield behavior is too aggressive.<ul>
+<li>A. Tune <code>ego_pass_later_margin</code> described in <a href="https://autowarefoundation.github.io/autoware.universe/pr-5583/planning/autoware_behavior_velocity_crosswalk_module/#stuck-vehicle-detection">Yield Decision</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="referencesexternal-links">References/External links<a class="headerlink" href="#referencesexternal-links" title="Permanent link">#</a></h2>
+<p>[1] 佐藤 みなみ, 早坂 祥一, 清水 政行, 村野 隆彦, 横断歩行者に対するドライバのリスク回避行動のモデル化, 自動車技術会論文集, 2013, 44 巻, 3 号, p. 931-936.</p></div>
 
 
 
@@ -13219,7 +13791,7 @@ the stop point arc length is calculated to be the arc length of the previously f
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../behavior_velocity_planner/behavior_velocity_speed_bump_module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Index" rel="prev">
+          <a href="../autoware_behavior_velocity_blind_spot_module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Index" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13235,13 +13807,13 @@ the stop point arc length is calculated to be the arc length of the previously f
         
         
           
-          <a href="../autoware_motion_velocity_obstacle_velocity_limiter_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Obstacle Velocity Limiter" rel="next">
+          <a href="../autoware_behavior_velocity_detection_area_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Index" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Obstacle Velocity Limiter
+                Index
               </div>
             </div>
             <div class="md-footer__button md-icon">

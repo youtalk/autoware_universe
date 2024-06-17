@@ -8,20 +8,20 @@
       
       
       
-        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/motion_velocity_planner/autoware_motion_velocity_dynamic_obstacle_stop_module/">
+        <link rel="canonical" href="https://autowarefoundation.github.io/autoware.universe/latest/planning/behavior_velocity_planner/autoware_behavior_velocity_planner_common/">
       
       
-        <link rel="prev" href="../../behavior_velocity_planner/behavior_velocity_speed_bump_module/">
+        <link rel="prev" href="../autoware_behavior_velocity_planner/">
       
       
-        <link rel="next" href="../autoware_motion_velocity_obstacle_velocity_limiter_module/">
+        <link rel="next" href="../autoware_behavior_velocity_run_out_module/">
       
       <link rel="icon" href="../../../docs/assets/images/autoware-foundation.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.20">
     
     
       
-        <title>Index - Autoware Universe Documentation</title>
+        <title>Behavior Velocity Planner Common - Autoware Universe Documentation</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dynamic-obstacle-stop" class="md-skip">
+        <a href="#behavior-velocity-planner-common" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Index
+              Behavior Velocity Planner Common
             
           </span>
         </div>
@@ -8876,7 +8876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_planner_node/" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_planner_node/" class="md-nav__link">
         About Motion Velocity Planner
       </a>
     </li>
@@ -8927,7 +8927,7 @@
   
   
     <li class="md-nav__item">
-      <a href="./" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_dynamic_obstacle_stop_module/" class="md-nav__link">
         Dynamic Obstacle Stop
       </a>
     </li>
@@ -8941,7 +8941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_planner_out_of_lane_module/" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_planner_out_of_lane_module/" class="md-nav__link">
         Out of Lane
       </a>
     </li>
@@ -8955,7 +8955,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autoware_motion_velocity_obstacle_velocity_limiter_module/" class="md-nav__link">
+      <a href="../../motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/" class="md-nav__link">
         Obstacle Velocity Limiter
       </a>
     </li>
@@ -13010,55 +13010,8 @@
   
   
   
+    
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#dynamic-obstacle-stop" class="md-nav__link">
-    Dynamic Obstacle Stop
-  </a>
-  
-    <nav class="md-nav" aria-label="Dynamic Obstacle Stop">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#role" class="md-nav__link">
-    Role
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#activation-timing" class="md-nav__link">
-    Activation Timing
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inner-workings-algorithms" class="md-nav__link">
-    Inner-workings / Algorithms
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#module-parameters" class="md-nav__link">
-    Module Parameters
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -13076,123 +13029,8 @@
   
 
 
-  <h1>Index</h1>
-
-<div><h2 id="dynamic-obstacle-stop">Dynamic Obstacle Stop<a class="headerlink" href="#dynamic-obstacle-stop" title="Permanent link">#</a></h2>
-<h3 id="role">Role<a class="headerlink" href="#role" title="Permanent link">#</a></h3>
-<p><code>dynamic_obstacle_stop</code> is a module that stops the ego vehicle from entering the <em>immediate</em> path of a dynamic object.</p>
-<p>The <em>immediate</em> path of an object is the area that the object would traverse during a given time horizon, assuming constant velocity and heading.</p>
-<p><img alt="rviz example" src="docs/dynamic_obstacle_stop_rviz.png"></p>
-<h3 id="activation-timing">Activation Timing<a class="headerlink" href="#activation-timing" title="Permanent link">#</a></h3>
-<p>This module is activated if the launch parameter <code>launch_dynamic_obstacle_stop_module</code> is set to true in the motion planning launch file.</p>
-<h3 id="inner-workings-algorithms">Inner-workings / Algorithms<a class="headerlink" href="#inner-workings-algorithms" title="Permanent link">#</a></h3>
-<p>The module insert a stop point where the ego trajectory collides with the immediate path of an object.
-The overall module flow can be summarized with the following 4 steps.</p>
-<ol>
-<li>Filter dynamic objects.</li>
-<li>Calculate immediate path rectangles of the dynamic objects.</li>
-<li>Find earliest collision where ego collides with an immediate path rectangle.</li>
-<li>Insert stop point before the collision.</li>
-</ol>
-<p>In addition to these 4 steps, 2 mechanisms are in place to make the stop point of this module more stable: an hysteresis and a decision duration buffer.</p>
-<p>The <code>hysteresis</code> parameter is used when a stop point was already being inserted in the previous iteration
-and it increases the range where dynamic objects are considered close enough to the ego trajectory to be used by the module.</p>
-<h4 id="filter-dynamic-objects">Filter dynamic objects<a class="headerlink" href="#filter-dynamic-objects" title="Permanent link">#</a></h4>
-<p><img alt="filtering example" src="docs/DynamicObstacleStop-Filtering.drawio.svg"></p>
-<p>An object is considered by the module only if it meets all of the following conditions:</p>
-<ul>
-<li>it is a vehicle (pedestrians are ignored);</li>
-<li>it is moving at a velocity higher than defined by the <code>minimum_object_velocity</code> parameter;</li>
-<li>it is not too close to the current position of the ego vehicle;</li>
-<li>it is not unavoidable (only if parameter <code>ignore_unavoidable_collisions</code> is set to <code>true</code>);</li>
-<li>it is close to the ego trajectory.</li>
-</ul>
-<p>An object is considered unavoidable if it is heading towards the ego vehicle such that even if ego stops, a collision would still occur (assuming the object keeps driving in a straight line).</p>
-<p>For the last condition,
-the object is considered close enough if its lateral distance from the ego trajectory is less than the threshold parameter <code>minimum_object_distance_from_ego_trajectory</code> plus half the width of ego and of the object (including the <code>extra_object_width</code> parameter).
-In addition, the value of the <code>hysteresis</code> parameter is added to the minimum distance if a stop point was inserted in the previous iteration.</p>
-<h4 id="calculate-immediate-path-rectangles">Calculate immediate path rectangles<a class="headerlink" href="#calculate-immediate-path-rectangles" title="Permanent link">#</a></h4>
-<p><img alt="Immediate paths example" src="docs/DynamicObstacleStop-ImmediatePaths.drawio.svg"></p>
-<p>For each considered object, a rectangle is created representing its <em>immediate</em> path.
-The rectangle has the width of the object plus the <code>extra_object_width</code> parameter
-and its length is the current speed of the object multiplied by the <code>time_horizon</code>.</p>
-<h4 id="find-earliest-collision">Find earliest collision<a class="headerlink" href="#find-earliest-collision" title="Permanent link">#</a></h4>
-<p><img alt="Earliest collision example" src="docs/DynamicObstacleStop-Collision.drawio.svg"></p>
-<p>We build the ego trajectory footprints as the set of ego footprint polygons projected on each trajectory point.
-We then calculate the intersections between these ego trajectory footprints and the previously calculated immediate path rectangles.
-An intersection is ignored if the object is not driving toward ego, i.e., the absolute angle between the object and the trajectory point is larger than <span class="arithmatex">\(\frac{3 \pi}{4}\)</span>.</p>
-<p>The collision point with the lowest arc length when projected on the ego trajectory will be used to calculate the final stop point.</p>
-<h4 id="insert-stop-point">Insert stop point<a class="headerlink" href="#insert-stop-point" title="Permanent link">#</a></h4>
-<p><img alt="Stop point example" src="docs/DynamicObstacleStop-StopPoint.drawio.svg"></p>
-<p>Before inserting a stop point, we calculate the range of trajectory arc lengths where it can be inserted.
-The minimum is calculated to satisfy the acceleration and jerk constraints of the vehicle.
-If a stop point was inserted in the previous iteration of the module, its arc length is used as the maximum.
-Finally,
-the stop point arc length is calculated to be the arc length of the previously found collision point minus the <code>stop_distance_buffer</code> and the ego vehicle longitudinal offset, clamped between the minimum and maximum values.</p>
-<h4 id="duration-buffer">Duration buffer<a class="headerlink" href="#duration-buffer" title="Permanent link">#</a></h4>
-<p>To prevent chatter caused by noisy perception, two duration parameters are used.</p>
-<ul>
-<li><code>add_stop_duration_buffer</code> represents the duration of consecutive collision detection with an object for the corresponding stop point to be added.</li>
-<li><code>remove_stop_duration_buffer</code> represents the duration of consecutive non-detection of collision with an object for the corresponding stop point to be removed.</li>
-</ul>
-<p>Timers and collision points are tracked for each dynamic object independently.</p>
-<h3 id="module-parameters">Module Parameters<a class="headerlink" href="#module-parameters" title="Permanent link">#</a></h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>extra_object_width</code></td>
-<td>double</td>
-<td>[m] extra width around detected objects</td>
-</tr>
-<tr>
-<td><code>minimum_object_velocity</code></td>
-<td>double</td>
-<td>[m/s] objects with a velocity bellow this value are ignored</td>
-</tr>
-<tr>
-<td><code>stop_distance_buffer</code></td>
-<td>double</td>
-<td>[m] extra distance to add between the stop point and the collision point</td>
-</tr>
-<tr>
-<td><code>time_horizon</code></td>
-<td>double</td>
-<td>[s] time horizon used for collision checks</td>
-</tr>
-<tr>
-<td><code>hysteresis</code></td>
-<td>double</td>
-<td>[m] once a collision has been detected, this hysteresis is used on the collision detection</td>
-</tr>
-<tr>
-<td><code>add_stop_duration_buffer</code></td>
-<td>double</td>
-<td>[s] duration where a collision must be continuously detected before a stop decision is added</td>
-</tr>
-<tr>
-<td><code>remove_stop_duration_buffer</code></td>
-<td>double</td>
-<td>[s] duration between no collision being detected and the stop decision being remove</td>
-</tr>
-<tr>
-<td><code>minimum_object_distance_from_ego_trajectory</code></td>
-<td>double</td>
-<td>[m] minimum distance between the footprints of ego and an object to consider for collision</td>
-</tr>
-<tr>
-<td><code>ignore_unavoidable_collisions</code></td>
-<td>bool</td>
-<td>[-] if true, ignore collisions that cannot be avoided by stopping (assuming the obstacle continues going straight)</td>
-</tr>
-</tbody>
-</table></div>
+<div><h1 id="behavior-velocity-planner-common">Behavior Velocity Planner Common<a class="headerlink" href="#behavior-velocity-planner-common" title="Permanent link">#</a></h1>
+<p>This package provides common functions as a library, which are used in the <code>behavior_velocity_planner</code> node and modules.</p></div>
 
 
 
@@ -13219,7 +13057,7 @@ the stop point arc length is calculated to be the arc length of the previously f
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../behavior_velocity_planner/behavior_velocity_speed_bump_module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Index" rel="prev">
+          <a href="../autoware_behavior_velocity_planner/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Behavior Velocity Planner" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -13228,20 +13066,20 @@ the stop point arc length is calculated to be the arc length of the previously f
                 Previous
               </span>
               <div class="md-ellipsis">
-                Index
+                Behavior Velocity Planner
               </div>
             </div>
           </a>
         
         
           
-          <a href="../autoware_motion_velocity_obstacle_velocity_limiter_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Obstacle Velocity Limiter" rel="next">
+          <a href="../autoware_behavior_velocity_run_out_module/" class="md-footer__link md-footer__link--next" aria-label="Next: Index" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Obstacle Velocity Limiter
+                Index
               </div>
             </div>
             <div class="md-footer__button md-icon">

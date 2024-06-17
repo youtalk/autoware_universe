@@ -366,12 +366,12 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/evaluator/autoware_planning_evaluator/</loc>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/evaluator/autoware_control_evaluator/</loc>
          <lastmod>2024-06-17</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/main/evaluator/control_evaluator/</loc>
+         <loc>https://autowarefoundation.github.io/autoware.universe/main/evaluator/autoware_planning_evaluator/</loc>
          <lastmod>2024-06-17</lastmod>
          <changefreq>daily</changefreq>
     </url>

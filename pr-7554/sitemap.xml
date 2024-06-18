@@ -41,6 +41,16 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/autoware_motion_utils/</loc>
+         <lastmod>2024-06-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/autoware_motion_utils/docs/vehicle/vehicle/</loc>
+         <lastmod>2024-06-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin/</loc>
          <lastmod>2024-06-18</lastmod>
          <changefreq>daily</changefreq>
@@ -67,6 +77,11 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/autoware_testing/design/autoware_testing-design/</loc>
+         <lastmod>2024-06-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/autoware_universe_utils/</loc>
          <lastmod>2024-06-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -131,16 +146,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/motion_utils/</loc>
-         <lastmod>2024-06-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/motion_utils/docs/vehicle/vehicle/</loc>
-         <lastmod>2024-06-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/object_recognition_utils/</loc>
          <lastmod>2024-06-18</lastmod>
          <changefreq>daily</changefreq>
@@ -192,11 +197,6 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/tier4_api_utils/</loc>
-         <lastmod>2024-06-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware.universe/pr-7554/common/tier4_autoware_utils/</loc>
          <lastmod>2024-06-18</lastmod>
          <changefreq>daily</changefreq>
     </url>

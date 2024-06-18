@@ -934,7 +934,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../common/motion_utils" class="md-nav__link">
+      <a href="../../common/autoware_motion_utils" class="md-nav__link">
         Motion Utils
       </a>
     </li>
@@ -948,7 +948,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../common/motion_utils/docs/vehicle/vehicle" class="md-nav__link">
+      <a href="../../common/autoware_motion_utils/docs/vehicle/vehicle" class="md-nav__link">
         Vehicle Utils
       </a>
     </li>
@@ -1102,8 +1102,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../common/tier4_autoware_utils" class="md-nav__link">
-        tier4_autoware_utils
+      <a href="../../common/autoware_universe_utils" class="md-nav__link">
+        autoware_universe_utils
       </a>
     </li>
   
@@ -13199,13 +13199,13 @@ If these parameter is larger, more objects are merged to one clustered object.</
 <div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="nf">RadarObjectClusteringNode::isSameObject</span><span class="p">(</span>
 <span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">DetectedObject</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">object_1</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">DetectedObject</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">object_2</span><span class="p">)</span>
 <span class="p">{</span>
-<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">angle_diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">tier4_autoware_utils</span><span class="o">::</span><span class="n">normalizeRadian</span><span class="p">(</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">angle_diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">autoware_universe_utils</span><span class="o">::</span><span class="n">normalizeRadian</span><span class="p">(</span>
 <span class="w">    </span><span class="n">tf2</span><span class="o">::</span><span class="n">getYaw</span><span class="p">(</span><span class="n">object_1</span><span class="p">.</span><span class="n">kinematics</span><span class="p">.</span><span class="n">pose_with_covariance</span><span class="p">.</span><span class="n">pose</span><span class="p">.</span><span class="n">orientation</span><span class="p">)</span><span class="w"> </span><span class="o">-</span>
 <span class="w">    </span><span class="n">tf2</span><span class="o">::</span><span class="n">getYaw</span><span class="p">(</span><span class="n">object_2</span><span class="p">.</span><span class="n">kinematics</span><span class="p">.</span><span class="n">pose_with_covariance</span><span class="p">.</span><span class="n">pose</span><span class="p">.</span><span class="n">orientation</span><span class="p">)));</span>
 <span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">velocity_diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span>
 <span class="w">    </span><span class="n">object_1</span><span class="p">.</span><span class="n">kinematics</span><span class="p">.</span><span class="n">twist_with_covariance</span><span class="p">.</span><span class="n">twist</span><span class="p">.</span><span class="n">linear</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">-</span>
 <span class="w">    </span><span class="n">object_2</span><span class="p">.</span><span class="n">kinematics</span><span class="p">.</span><span class="n">twist_with_covariance</span><span class="p">.</span><span class="n">twist</span><span class="p">.</span><span class="n">linear</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
-<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tier4_autoware_utils</span><span class="o">::</span><span class="n">calcDistance2d</span><span class="p">(</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">autoware_universe_utils</span><span class="o">::</span><span class="n">calcDistance2d</span><span class="p">(</span>
 <span class="w">    </span><span class="n">object_1</span><span class="p">.</span><span class="n">kinematics</span><span class="p">.</span><span class="n">pose_with_covariance</span><span class="p">.</span><span class="n">pose</span><span class="p">.</span><span class="n">position</span><span class="p">,</span>
 <span class="w">    </span><span class="n">object_2</span><span class="p">.</span><span class="n">kinematics</span><span class="p">.</span><span class="n">pose_with_covariance</span><span class="p">.</span><span class="n">pose</span><span class="p">.</span><span class="n">position</span><span class="p">);</span>
 

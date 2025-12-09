@@ -239,46 +239,56 @@ graph TB
 
 ### 2.2 pointcloud_container Components
 
+#### 2.2.1 Core Components (sensor_kit)
+
+```mermaid
+graph LR
+    SYNC[PointCloudData<br/>Synchronizer] --> CONCAT[PointCloud<br/>Concatenation]
+    CONCAT --> CROP[CropBox<br/>Filter]
+    CROP --> DISTORT[Distortion<br/>Corrector]
+    DISTORT --> RING[RingOutlier<br/>Filter]
+```
+
+#### 2.2.2 Localization Preprocessing (util.launch.xml)
+
+```mermaid
+graph LR
+    CROP[CropBoxFilter<br/>measurement_range] --> VOXEL[VoxelGridDownsample<br/>Filter]
+    VOXEL --> RANDOM[RandomDownsample<br/>Filter]
+```
+
+#### 2.2.3 LiDAR Marker Localizer (lidar_marker_localizer.launch.xml)
+
+```mermaid
+graph LR
+    CROP[CropBoxFilter<br/>measurement_range] --> PASS[PassThroughFilter<br/>ring_filter]
+```
+
+#### 2.2.4 Ground Segmentation (ground_segmentation.launch.py)
+
+```mermaid
+graph LR
+    CROP[CropBoxFilter] --> SCAN[ScanGround<br/>Filter]
+    CONCAT[PointCloudConcatenate<br/>DataSynchronizer] --> SCAN
+```
+
+#### 2.2.5 Container Loading Overview
+
 ```mermaid
 graph TB
-    subgraph pointcloud_container["pointcloud_container (sensing)"]
-        direction TB
+    PC[("pointcloud_container<br/>(sensing)")]
 
-        subgraph core["Core Components (sensor_kit)"]
-            SYNC[PointCloudDataSynchronizerComponent]
-            CONCAT[PointCloudConcatenationComponent]
-            CROP_CORE[CropBoxFilterComponent]
-            DISTORT[DistortionCorrectorComponent]
-            RING[RingOutlierFilterComponent]
-        end
-
-        subgraph localization_util["Loaded by: localization/util.launch.xml"]
-            CROP_MEAS[CropBoxFilterComponent<br/>crop_box_filter_measurement_range]
-            VOXEL[VoxelGridDownsampleFilterComponent<br/>voxel_grid_downsample_filter]
-            RANDOM[RandomDownsampleFilterComponent<br/>random_downsample_filter]
-        end
-
-        subgraph lidar_marker["Loaded by: lidar_marker_localizer.launch.xml"]
-            CROP_MARKER[CropBoxFilterComponent<br/>crop_box_filter_measurement_range]
-            PASS[PassThroughFilterUInt16Component<br/>ring_filter]
-        end
-
-        subgraph ground_seg["Loaded by: ground_segmentation.launch.py"]
-            SCAN_GND[ScanGroundFilterComponent]
-            CROP_GND[CropBoxFilterComponent]
-            CONCAT_GND[PointCloudConcatenateDataSynchronizerComponent]
-        end
+    subgraph loaders["LoadComposableNodes Sources"]
+        L1[sensor_kit]
+        L2[localization/util]
+        L3[lidar_marker_localizer]
+        L4[ground_segmentation]
     end
 
-    SYNC --> CONCAT
-    CONCAT --> CROP_CORE
-    CROP_CORE --> DISTORT
-    DISTORT --> RING
-
-    CROP_MEAS --> VOXEL
-    VOXEL --> RANDOM
-
-    CROP_MARKER --> PASS
+    L1 -->|"Core: Sync, Concat,<br/>Crop, Distort, Ring"| PC
+    L2 -->|"Crop, Voxel, Random"| PC
+    L3 -->|"Crop, PassThrough"| PC
+    L4 -->|"Crop, ScanGround, Concat"| PC
 ```
 
 ### 2.3 traffic_light_node_container Components

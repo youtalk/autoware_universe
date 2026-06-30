@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for the Obstacle Grid Extractor",
+  "type": "object",
+  "definitions": {
+    "obstacle_grid_extractor": {
+      "type": "object",
+      "properties": {
+        "roi": {
+          "type": "object",
+          "properties": {
+            "length_x": {
+              "type": "number",
+              "default": 60.0,
+              "exclusiveMinimum": 0.0,
+              "description": "Forward extent of the rectangular ROI [m]."
+            },
+            "length_y": {
+              "type": "number",
+              "default": 40.0,
+              "exclusiveMinimum": 0.0,
+              "description": "Lateral extent of the rectangular ROI [m]."
+            },
+            "offset_x": {
+              "type": "number",
+              "default": 20.0,
+              "description": "Grid-center +x offset from base_link [m] (forward bias)."
+            }
+          },
+          "required": ["length_x", "length_y", "offset_x"],
+          "additionalProperties": false
+        },
+        "resolution": {
+          "type": "number",
+          "default": 0.2,
+          "exclusiveMinimum": 0.0,
+          "description": "Uniform cell size [m]."
+        },
+        "crop": {
+          "type": "object",
+          "properties": {
+            "z_min": {
+              "type": "number",
+              "default": -1.0,
+              "description": "Lower bound of the union z-band [m]; points below are dropped."
+            },
+            "z_max": {
+              "type": "number",
+              "default": 3.0,
+              "description": "Upper bound of the union z-band [m]; points above are dropped."
+            }
+          },
+          "required": ["z_min", "z_max"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["roi", "resolution", "crop"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/obstacle_grid_extractor"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

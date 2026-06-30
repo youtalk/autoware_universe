@@ -17,6 +17,8 @@
 #include "autoware/autonomous_emergency_braking/node.hpp"
 #include "autoware_utils/geometry/geometry.hpp"
 
+#include <grid_map_core/GridMap.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/time.hpp>
 #include <tf2/LinearMath/Transform.hpp>
@@ -77,6 +79,29 @@ VelocityReport make_velocity_report_msg(
   return velocity_msg;
 }
 
+// Build a base_link obstacle grid (grid_map_msgs/GridMap) with one occupied block
+// [x0,x1] x [y0,y1] at the production ROI/resolution; cells carry the given count + z band.
+grid_map_msgs::msg::GridMap make_obstacle_grid_msg(
+  double x0, double x1, double y0, double y1, float zmin, float zmax, float count)
+{
+  grid_map::GridMap g({"max_height", "min_height", "point_count"});
+  g.setFrameId("base_link");
+  g.setGeometry(grid_map::Length(60.0, 40.0), 0.2, grid_map::Position(20.0, 0.0));
+  g["point_count"].setConstant(std::numeric_limits<float>::quiet_NaN());
+  g["max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
+  g["min_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
+  for (double x = x0; x <= x1 + 1e-9; x += 0.2) {
+    for (double y = y0; y <= y1 + 1e-9; y += 0.2) {
+      grid_map::Index idx;
+      if (!g.getIndex(grid_map::Position(x, y), idx)) continue;
+      g.at("point_count", idx) = count;
+      g.at("max_height", idx) = zmax;
+      g.at("min_height", idx) = zmin;
+    }
+  }
+  return *grid_map::GridMapRosConverter::toMessage(g);
+}
+
 std::shared_ptr<AEB> generateNode()
 {
   auto node_options = rclcpp::NodeOptions{};
@@ -106,7 +131,7 @@ PubSubNode::PubSubNode(const rclcpp::NodeOptions & node_options)
   qos.transient_local();
 
   pub_imu_ = create_publisher<Imu>("~/input/imu", qos);
-  pub_point_cloud_ = create_publisher<PointCloud2>("~/input/pointcloud", qos);
+  pub_obstacle_grid_ = create_publisher<grid_map_msgs::msg::GridMap>("~/input/obstacle_grid", qos);
   pub_velocity_ = create_publisher<VelocityReport>("~/input/velocity", qos);
   pub_predicted_traj_ = create_publisher<Trajectory>("~/input/predicted_trajectory", qos);
   pub_predicted_objects_ = create_publisher<PredictedObjects>("~/input/objects", qos);
@@ -215,26 +240,11 @@ TEST_F(TestAEB, checkImuPathGeneration)
   ASSERT_TRUE(footprint.size() == imu_path.size() - 1);
 
   const auto stamp = rclcpp::Time();
-  pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_points_ptr =
-    pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  {
-    const double x_start{0.5};
-    const double y_start{0.0};
-
-    for (size_t i = 0; i < 15; ++i) {
-      pcl::PointXYZ p1(
-        x_start + static_cast<double>(i / 100.0), y_start - static_cast<double>(i / 100.0), 0.5);
-      pcl::PointXYZ p2(
-        x_start + static_cast<double>((i + 10) / 100.0), y_start - static_cast<double>(i / 100.0),
-        0.5);
-      obstacle_points_ptr->push_back(p1);
-      obstacle_points_ptr->push_back(p2);
-    }
-  }
+  // dense occupied block on the ego path -> survives the per-cell + window gate, and the surviving
+  // cell centers are found on the imu path.
+  const auto grid_msg = make_obstacle_grid_msg(0.5, 1.5, -0.5, 0.5, 0.5f, 0.5f, 5.0f);
   PointCloud::Ptr points_belonging_to_cluster_hulls = pcl::make_shared<PointCloud>();
-  MarkerArray debug_markers;
-  aeb_node_->getPointsBelongingToClusterHulls(
-    obstacle_points_ptr, points_belonging_to_cluster_hulls, debug_markers);
+  aeb_node_->getCellsFromObstacleGrid(grid_msg, points_belonging_to_cluster_hulls);
   ASSERT_FALSE(points_belonging_to_cluster_hulls->empty());
   std::vector<ObjectData> objects;
   aeb_node_->getClosestObjectsOnPath(imu_path, stamp, points_belonging_to_cluster_hulls, objects);
@@ -385,41 +395,64 @@ TEST_F(TestAEB, CollisionDataKeeper)
   ASSERT_TRUE(collision_data_keeper_.checkCollisionExpired());
 }
 
-TEST_F(TestAEB, TestCropPointCloud)
+TEST_F(TestAEB, getCellsFromObstacleGridGating)
 {
-  constexpr double longitudinal_velocity = 3.0;
-  constexpr double yaw_rate = 0.05;
-  const auto imu_path = aeb_node_->generateEgoPath(longitudinal_velocity, yaw_rate);
-  ASSERT_FALSE(imu_path.empty());
+  const float floor = static_cast<float>(aeb_node_->cluster_minimum_height_);  // 0.1 m
+  const double z_band_top =
+    aeb_node_->vehicle_info_.vehicle_height_m + aeb_node_->detection_range_max_height_margin_;
+  auto cells_of = [&](const grid_map_msgs::msg::GridMap & g) {
+    PointCloud::Ptr cells = pcl::make_shared<PointCloud>();
+    aeb_node_->getCellsFromObstacleGrid(g, cells);
+    return cells;
+  };
 
-  constexpr size_t n_points{15};
-  // Create n_points inside the path and 1 point outside.
-  pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_points_ptr =
-    pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  // (a) dense block spanning a real z range -> survives; emitted cell z must be max_height (not
+  //     min_height): independent oracle zmax=0.9, distinct from zmin=0.2.
   {
-    constexpr double x_start{0.0};
-    constexpr double y_start{0.0};
-
-    for (size_t i = 0; i < n_points; ++i) {
-      const double offset_1 = static_cast<double>(i / 100.0);
-      const double offset_2 = static_cast<double>((i + 10) / 100.0);
-      pcl::PointXYZ p1(x_start + offset_1, y_start - offset_1, 0.5);
-      pcl::PointXYZ p2(x_start + offset_2, y_start - offset_1, 0.5);
-      obstacle_points_ptr->push_back(p1);
-      obstacle_points_ptr->push_back(p2);
+    const auto cells = cells_of(make_obstacle_grid_msg(5.0, 6.0, -0.4, 0.4, 0.2f, 0.9f, 5.0f));
+    ASSERT_FALSE(cells->empty());
+    for (const auto & p : *cells) {
+      EXPECT_GE(p.z, floor);
+      EXPECT_FLOAT_EQ(p.z, 0.9f);  // emitted z == max_height of the cell
     }
-    pcl::PointXYZ p_out(x_start + 100.0, y_start + 100, 0.5);
-    obstacle_points_ptr->push_back(p_out);
   }
-  aeb_node_->obstacle_ros_pointcloud_ptr_ = std::make_shared<PointCloud2>();
-  pcl::toROSMsg(*obstacle_points_ptr, *aeb_node_->obstacle_ros_pointcloud_ptr_);
-  const auto footprint = aeb_node_->generatePathFootprint(imu_path, 0.0);
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects =
-    pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  aeb_node_->cropPointCloudWithEgoFootprintPath(footprint, filtered_objects);
-  // Check if the point outside the path was excluded
-  ASSERT_TRUE(filtered_objects->points.size() == 2 * n_points);
+  // (b) a block whose max_height is just below cluster_minimum_height -> rejected by the height
+  // gate.
+  //     Derive the height from the param so it stays a genuine just-below-floor reject.
+  {
+    const auto cells =
+      cells_of(make_obstacle_grid_msg(5.0, 6.0, -0.4, 0.4, 0.0f, floor - 0.05f, 5.0f));
+    EXPECT_TRUE(cells->empty());
+  }
+  // (c) an overhead-only obstacle whose lowest return is above the z-band top (e.g. a gantry) ->
+  //     rejected by the upper z-band gate (min_height <= vehicle_height + margin). Independent
+  //     oracle from the node's own vehicle_info/margin, not the SUT formula.
+  {
+    const float zmin = static_cast<float>(z_band_top) + 0.5f;
+    const auto cells =
+      cells_of(make_obstacle_grid_msg(5.0, 6.0, -0.4, 0.4, zmin, zmin + 0.3f, 5.0f));
+    EXPECT_TRUE(cells->empty());
+  }
+  // (d) a single sparse cell -> below the window min-occupied-cells threshold -> rejected.
+  {
+    const auto cells = cells_of(make_obstacle_grid_msg(5.0, 5.0, 0.0, 0.0, 0.5f, 0.5f, 5.0f));
+    EXPECT_TRUE(cells->empty());
+  }
+  // (e) window min-occupied-cells boundary (assumes the package default minimum_cluster_size=10,
+  //     window_size=2; pinned below so a default change fails loudly instead of silently). Uses
+  //     cell-CENTER coordinates (odd multiples of 0.1 for offset 20 / res 0.2) so each point lands
+  //     in a distinct, contiguous cell (boundary-aligned coords map ambiguously).
+  ASSERT_EQ(aeb_node_->minimum_cluster_size_, 10);
+  ASSERT_EQ(aeb_node_->window_size_, 2);
+  {
+    // a compact 3x3 block = 9 qualifying cells: the best-connected cell sees 9 < 10 -> all
+    // rejected.
+    const auto cells = cells_of(make_obstacle_grid_msg(5.1, 5.5, -0.1, 0.3, 0.5f, 0.5f, 5.0f));
+    EXPECT_TRUE(cells->empty());
+    // a 4x3 block = 12 qualifying cells: an interior cell sees 12 >= 10 -> survives.
+    const auto cells2 = cells_of(make_obstacle_grid_msg(5.1, 5.7, -0.1, 0.3, 0.5f, 0.5f, 5.0f));
+    EXPECT_FALSE(cells2->empty());
+  }
 }
 
 }  // namespace autoware::motion::control::autonomous_emergency_braking::test

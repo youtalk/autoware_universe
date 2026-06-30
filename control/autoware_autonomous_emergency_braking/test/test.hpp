@@ -34,9 +34,7 @@ namespace autoware::motion::control::autonomous_emergency_braking::test
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_system_msgs::msg::AutowareState;
 using autoware_vehicle_msgs::msg::VelocityReport;
-using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::Imu;
-using sensor_msgs::msg::PointCloud2;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_utils::Polygon2d;
@@ -64,7 +62,7 @@ public:
   explicit PubSubNode(const rclcpp::NodeOptions & node_options);
   // publisher
   rclcpp::Publisher<Imu>::SharedPtr pub_imu_;
-  rclcpp::Publisher<PointCloud2>::SharedPtr pub_point_cloud_;
+  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr pub_obstacle_grid_;
   rclcpp::Publisher<VelocityReport>::SharedPtr pub_velocity_;
   rclcpp::Publisher<Trajectory>::SharedPtr pub_predicted_traj_;
   rclcpp::Publisher<PredictedObjects>::SharedPtr pub_predicted_objects_;

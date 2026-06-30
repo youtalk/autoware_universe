@@ -27,7 +27,6 @@
 #include <autoware_utils/ros/polling_subscriber.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
-#include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -35,22 +34,16 @@
 #include <autoware_system_msgs/msg/autoware_state.hpp>
 #include <autoware_vehicle_msgs/msg/velocity_report.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
-#include <nav_msgs/msg/odometry.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <sensor_msgs/msg/imu.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
 #include <tier4_metric_msgs/msg/metric.hpp>
 #include <tier4_metric_msgs/msg/metric_array.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <boost/optional.hpp>
-
-#include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/surface/convex_hull.h>
-#include <pcl_conversions/pcl_conversions.h>
 
 #include <deque>
 #include <limits>
@@ -66,13 +59,10 @@ namespace autoware::motion::control::autonomous_emergency_braking
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_system_msgs::msg::AutowareState;
 using autoware_vehicle_msgs::msg::VelocityReport;
-using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::Imu;
-using sensor_msgs::msg::PointCloud2;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_utils::Polygon2d;
-using autoware_utils::Polygon3d;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using Updater = autoware::agnocast_wrapper::diagnostic_updater::Updater;
 using visualization_msgs::msg::Marker;
@@ -334,9 +324,11 @@ public:
   explicit AEB(const rclcpp::NodeOptions & node_options);
 
   // subscriber
-  autoware::agnocast_wrapper::polling::PollingSubscriber<PointCloud2>::SharedPtr sub_point_cloud_ =
-    autoware::agnocast_wrapper::polling::create_polling_subscriber<PointCloud2>(
-      this, "~/input/pointcloud", autoware_utils::single_depth_sensor_qos());
+  // Versioned obstacle-grid intake (RELIABLE KEEP_LAST(1)); replaces the raw no-ground point cloud.
+  autoware::agnocast_wrapper::polling::PollingSubscriber<grid_map_msgs::msg::GridMap>::SharedPtr
+    sub_obstacle_grid_ =
+      autoware::agnocast_wrapper::polling::create_polling_subscriber<grid_map_msgs::msg::GridMap>(
+        this, "~/input/obstacle_grid");
   autoware::agnocast_wrapper::polling::PollingSubscriber<VelocityReport>::SharedPtr sub_velocity_ =
     autoware::agnocast_wrapper::polling::create_polling_subscriber<VelocityReport>(
       this, "~/input/velocity");
@@ -355,7 +347,6 @@ public:
       autoware::agnocast_wrapper::polling::create_polling_subscriber<AutowareState>(
         this, "/autoware/state");
   // publisher
-  AUTOWARE_PUBLISHER_PTR(sensor_msgs::msg::PointCloud2) pub_obstacle_pointcloud_;
   AUTOWARE_PUBLISHER_PTR(MarkerArray) debug_marker_publisher_;
   AUTOWARE_PUBLISHER_PTR(MarkerArray) virtual_wall_publisher_;
   AUTOWARE_PUBLISHER_PTR(autoware_utils::ProcessingTimeDetail) debug_processing_time_detail_pub_;
@@ -366,12 +357,6 @@ public:
   mutable std::shared_ptr<autoware_utils::TimeKeeper> time_keeper_{nullptr};
 
   // callback
-  /**
-   * @brief Callback for point cloud messages
-   * @param input_msg Shared pointer to the point cloud message
-   */
-  void onPointCloud(const std::shared_ptr<const PointCloud2> & input_msg);
-
   /**
    * @brief Callback for IMU messages
    * @param input_msg Shared pointer to the IMU message
@@ -466,14 +451,15 @@ public:
     const PointCloud::Ptr points_belonging_to_cluster_hulls, std::vector<ObjectData> & objects);
 
   /**
-   * @brief Create object data using point cloud clusters
-   * @param obstacle_points_ptr Pointer to the point cloud of obstacles
-   * @param points_belonging_to_cluster_hulls output: pointer to the point cloud of points belonging
-   * to cluster hulls
+   * @brief Extract obstacle cell centers from the obstacle grid (pointcloud branch).
+   * Applies the per-cell gate (point_count + height band) and a window min-occupied-cells filter
+   * approximating the former minimum_cluster_size, emitting surviving cell centers in base_link.
+   * @param msg The obstacle grid (grid_map_msgs/GridMap, base_link)
+   * @param points_belonging_to_cluster_hulls output: surviving occupied-cell centers (base_link)
    */
-  void getPointsBelongingToClusterHulls(
-    const PointCloud::Ptr obstacle_points_ptr,
-    const PointCloud::Ptr points_belonging_to_cluster_hulls, MarkerArray & debug_markers);
+  void getCellsFromObstacleGrid(
+    const grid_map_msgs::msg::GridMap & msg,
+    const PointCloud::Ptr points_belonging_to_cluster_hulls);
 
   /**
    * @brief Create object data using predicted objects
@@ -484,14 +470,6 @@ public:
   void createObjectDataUsingPredictedObjects(
     const Path & ego_path, const std::vector<Polygon2d> & ego_polys,
     std::vector<ObjectData> & objects);
-
-  /**
-   * @brief Crop the point cloud with the ego vehicle footprint path
-   * @param ego_polys Polygons representing the ego vehicle footprint
-   * @param filtered_objects Pointer to the filtered point cloud of obstacles
-   */
-  void cropPointCloudWithEgoFootprintPath(
-    const std::vector<Polygon2d> & ego_polys, pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects);
 
   /**
    * @brief Add a marker for debugging
@@ -507,18 +485,6 @@ public:
   void addMarker(
     const rclcpp::Time & current_time, const Path & path, const std::vector<Polygon2d> & polygons,
     const std::vector<ObjectData> & objects, const std::optional<ObjectData> & closest_object,
-    const colorTuple & debug_colors, const std::string & ns, MarkerArray & debug_markers);
-
-  /**
-   * @brief Add a marker of convex hulls for debugging
-   * @param current_time Current time
-   * @param hulls vector of polygons of the convex hulls
-   * @param debug_colors Tuple of RGBA colors
-   * @param ns Namespace for the marker
-   * @param debug_markers Marker array for debugging
-   */
-  void addClusterHullMarkers(
-    const rclcpp::Time & current_time, const std::vector<Polygon3d> & hulls,
     const colorTuple & debug_colors, const std::string & ns, MarkerArray & debug_markers);
 
   /**
@@ -545,7 +511,7 @@ public:
     const ObjectData & closest_object, const Path & path, const double current_ego_speed);
 
   // Member variables
-  PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_{nullptr};
+  std::shared_ptr<const grid_map_msgs::msg::GridMap> obstacle_grid_ptr_{};
   std::shared_ptr<const VelocityReport> current_velocity_ptr_{};
   Vector3::SharedPtr angular_velocity_ptr_{nullptr};
   std::shared_ptr<const Trajectory> predicted_traj_ptr_{};
@@ -562,7 +528,6 @@ public:
   Updater updater_{this};
 
   // Member variables
-  bool publish_debug_pointcloud_;
   bool publish_debug_markers_;
   bool use_predicted_trajectory_;
   bool use_imu_path_;
@@ -573,13 +538,8 @@ public:
   bool use_object_velocity_calculation_;
   bool check_autoware_state_;
   double imu_path_lat_dev_threshold_;
-  double path_footprint_extra_margin_;
   double speed_calculation_expansion_margin_;
-  double detection_range_min_height_;
   double detection_range_max_height_margin_;
-  double voxel_grid_x_;
-  double voxel_grid_y_;
-  double voxel_grid_z_;
   double min_generated_imu_path_length_;
   double max_generated_imu_path_length_;
   double expand_width_;
@@ -587,10 +547,9 @@ public:
   double t_response_;
   double a_ego_min_;
   double a_obj_min_;
-  double cluster_tolerance_;
-  double cluster_minimum_height_;
-  int minimum_cluster_size_;
-  int maximum_cluster_size_;
+  double cluster_minimum_height_;  // per-cell max_height floor [m] (grid gate min_height)
+  int minimum_cluster_size_;       // window min-occupied-cells threshold (approx. cluster size)
+  int window_size_;                // half-window k of the (2k+1)^2 occupied-cell neighborhood
   double imu_prediction_time_horizon_;
   double imu_prediction_time_interval_;
   double mpc_prediction_time_horizon_;

@@ -16,13 +16,14 @@
 #include <autoware/autonomous_emergency_braking/utils.hpp>
 #include <autoware/motion_utils/marker/marker_helper.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/obstacle_grid_utils/obstacle_grid_utils.hpp>
 #include <autoware_utils/autoware_utils.hpp>
 #include <autoware_utils/geometry/boost_geometry.hpp>
 #include <autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware_utils/geometry/geometry.hpp>
 #include <autoware_utils/ros/marker_helper.hpp>
 #include <autoware_utils/ros/update_param.hpp>
-#include <pcl_ros/transforms.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <rclcpp/node.hpp>
 #include <tf2/utils.hpp>
 
@@ -38,18 +39,9 @@
 #include <boost/geometry/strategies/agnostic/hull_graham_andrew.hpp>
 #endif
 
-#include <tf2_eigen/tf2_eigen.hpp>
-
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include <pcl/PCLPointCloud2.h>
-#include <pcl/filters/crop_hull.h>
-#include <pcl/filters/extract_indices.h>
-#include <pcl/filters/passthrough.h>
-#include <pcl/filters/voxel_grid.h>
 #include <pcl/point_types.h>
-#include <pcl/registration/gicp.h>
-#include <pcl/segmentation/extract_clusters.h>
 
 #include <algorithm>
 #include <cmath>
@@ -75,7 +67,6 @@ namespace autoware::motion::control::autonomous_emergency_braking
 {
 using autoware::motion::control::autonomous_emergency_braking::utils::convertObjToPolygon;
 using autoware_utils::Point2d;
-using autoware_utils::Point3d;
 using diagnostic_msgs::msg::DiagnosticStatus;
 namespace bg = boost::geometry;
 
@@ -84,16 +75,6 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
   Point2d point;
   point.x() = geom_point.x;
   point.y() = geom_point.y;
-
-  bg::append(polygon.outer(), point);
-}
-
-void appendPointToPolygon(Polygon3d & polygon, const geometry_msgs::msg::Point & geom_point)
-{
-  Point3d point;
-  point.x() = geom_point.x;
-  point.y() = geom_point.y;
-  point.z() = geom_point.z;
 
   bg::append(polygon.outer(), point);
 }
@@ -144,8 +125,6 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
 {
   // Publisher
   {
-    pub_obstacle_pointcloud_ =
-      this->create_publisher<sensor_msgs::msg::PointCloud2>("~/debug/obstacle_pointcloud", 1);
     debug_marker_publisher_ = this->create_publisher<MarkerArray>("~/debug/markers", 1);
     virtual_wall_publisher_ = this->create_publisher<MarkerArray>("~/virtual_wall", 1);
     debug_rss_distance_publisher_ =
@@ -158,7 +137,6 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
     updater_.add("aeb_emergency_stop", this, &AEB::onCheckCollision);
   }
   // parameter
-  publish_debug_pointcloud_ = declare_parameter<bool>("publish_debug_pointcloud");
   publish_debug_markers_ = declare_parameter<bool>("publish_debug_markers");
   use_predicted_trajectory_ = declare_parameter<bool>("use_predicted_trajectory");
   use_imu_path_ = declare_parameter<bool>("use_imu_path");
@@ -168,16 +146,11 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   use_predicted_object_data_ = declare_parameter<bool>("use_predicted_object_data");
   use_object_velocity_calculation_ = declare_parameter<bool>("use_object_velocity_calculation");
   check_autoware_state_ = declare_parameter<bool>("check_autoware_state");
-  path_footprint_extra_margin_ = declare_parameter<double>("path_footprint_extra_margin");
   imu_path_lat_dev_threshold_ = declare_parameter<double>("imu_path_lat_dev_threshold");
   speed_calculation_expansion_margin_ =
     declare_parameter<double>("speed_calculation_expansion_margin");
-  detection_range_min_height_ = declare_parameter<double>("detection_range_min_height");
   detection_range_max_height_margin_ =
     declare_parameter<double>("detection_range_max_height_margin");
-  voxel_grid_x_ = declare_parameter<double>("voxel_grid_x");
-  voxel_grid_y_ = declare_parameter<double>("voxel_grid_y");
-  voxel_grid_z_ = declare_parameter<double>("voxel_grid_z");
   min_generated_imu_path_length_ = declare_parameter<double>("min_generated_imu_path_length");
   max_generated_imu_path_length_ = declare_parameter<double>("max_generated_imu_path_length");
   expand_width_ = declare_parameter<double>("expand_width");
@@ -186,10 +159,16 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   a_ego_min_ = declare_parameter<double>("a_ego_min");
   a_obj_min_ = declare_parameter<double>("a_obj_min");
 
-  cluster_tolerance_ = declare_parameter<double>("cluster_tolerance");
   cluster_minimum_height_ = declare_parameter<double>("cluster_minimum_height");
   minimum_cluster_size_ = declare_parameter<int>("minimum_cluster_size");
-  maximum_cluster_size_ = declare_parameter<int>("maximum_cluster_size");
+  window_size_ = declare_parameter<int>("window_size");
+  if (minimum_cluster_size_ > (2 * window_size_ + 1) * (2 * window_size_ + 1)) {
+    RCLCPP_WARN(
+      get_logger(),
+      "[AEB] minimum_cluster_size (%d) exceeds the window cell count (2*window_size+1)^2 = %d; the "
+      "pointcloud branch can never trigger. Increase window_size or lower minimum_cluster_size.",
+      minimum_cluster_size_, (2 * window_size_ + 1) * (2 * window_size_ + 1));
+  }
 
   imu_prediction_time_horizon_ = declare_parameter<double>("imu_prediction_time_horizon");
   imu_prediction_time_interval_ = declare_parameter<double>("imu_prediction_time_interval");
@@ -222,7 +201,6 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
   const std::vector<rclcpp::Parameter> & parameters)
 {
   using autoware_utils::update_param;
-  update_param<bool>(parameters, "publish_debug_pointcloud", publish_debug_pointcloud_);
   update_param<bool>(parameters, "publish_debug_markers", publish_debug_markers_);
   update_param<bool>(parameters, "use_predicted_trajectory", use_predicted_trajectory_);
   update_param<bool>(parameters, "use_imu_path", use_imu_path_);
@@ -233,16 +211,11 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
   update_param<bool>(
     parameters, "use_object_velocity_calculation", use_object_velocity_calculation_);
   update_param<bool>(parameters, "check_autoware_state", check_autoware_state_);
-  update_param<double>(parameters, "path_footprint_extra_margin", path_footprint_extra_margin_);
   update_param<double>(parameters, "imu_path_lat_dev_threshold", imu_path_lat_dev_threshold_);
   update_param<double>(
     parameters, "speed_calculation_expansion_margin", speed_calculation_expansion_margin_);
-  update_param<double>(parameters, "detection_range_min_height", detection_range_min_height_);
   update_param<double>(
     parameters, "detection_range_max_height_margin", detection_range_max_height_margin_);
-  update_param<double>(parameters, "voxel_grid_x", voxel_grid_x_);
-  update_param<double>(parameters, "voxel_grid_y", voxel_grid_y_);
-  update_param<double>(parameters, "voxel_grid_z", voxel_grid_z_);
   update_param<double>(parameters, "min_generated_imu_path_length", min_generated_imu_path_length_);
   update_param<double>(parameters, "max_generated_imu_path_length", max_generated_imu_path_length_);
   update_param<double>(parameters, "expand_width", expand_width_);
@@ -251,10 +224,9 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
   update_param<double>(parameters, "a_ego_min", a_ego_min_);
   update_param<double>(parameters, "a_obj_min", a_obj_min_);
 
-  update_param<double>(parameters, "cluster_tolerance", cluster_tolerance_);
   update_param<double>(parameters, "cluster_minimum_height", cluster_minimum_height_);
   update_param<int>(parameters, "minimum_cluster_size", minimum_cluster_size_);
-  update_param<int>(parameters, "maximum_cluster_size", maximum_cluster_size_);
+  update_param<int>(parameters, "window_size", window_size_);
 
   update_param<double>(parameters, "imu_prediction_time_horizon", imu_prediction_time_horizon_);
   update_param<double>(parameters, "imu_prediction_time_interval", imu_prediction_time_interval_);
@@ -291,61 +263,6 @@ void AEB::onImu(const std::shared_ptr<const Imu> & input_msg)
   tf2::doTransform(input_msg->angular_velocity, *angular_velocity_ptr_, transform_stamped.value());
 }
 
-void AEB::onPointCloud(const std::shared_ptr<const PointCloud2> & input_msg)
-{
-  autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-
-  if (input_msg->width == 0 || input_msg->height == 0) {
-    RCLCPP_DEBUG_SKIPFIRST_THROTTLE(
-      get_logger(), *get_clock(), 5000, "[AEB]: Received empty point cloud");
-    obstacle_ros_pointcloud_ptr_ = std::make_shared<PointCloud2>();
-    obstacle_ros_pointcloud_ptr_->header = input_msg->header;
-    return;
-  }
-
-  PointCloud::Ptr pointcloud_ptr(new PointCloud);
-  pcl::fromROSMsg(*input_msg, *pointcloud_ptr);
-
-  if (input_msg->header.frame_id != "base_link") {
-    RCLCPP_ERROR_STREAM(
-      get_logger(),
-      "[AEB]: Input point cloud frame is not base_link and it is " << input_msg->header.frame_id);
-    // transform pointcloud
-    const auto logger = get_logger();
-    const auto transform_stamped =
-      utils::getTransform("base_link", input_msg->header.frame_id, tf_buffer_, logger);
-    if (!transform_stamped.has_value()) return;
-
-    // transform by using eigen matrix
-    PointCloud2 transformed_points{};
-    const Eigen::Matrix4f affine_matrix =
-      tf2::transformToEigen(transform_stamped.value().transform).matrix().cast<float>();
-    pcl_ros::transformPointCloud(affine_matrix, *input_msg, transformed_points);
-    pcl::fromROSMsg(transformed_points, *pointcloud_ptr);
-  }
-
-  // apply z-axis filter for removing False Positive points
-  PointCloud::Ptr height_filtered_pointcloud_ptr(new PointCloud);
-  pcl::PassThrough<pcl::PointXYZ> height_filter;
-  height_filter.setInputCloud(pointcloud_ptr);
-  height_filter.setFilterFieldName("z");
-  height_filter.setFilterLimits(
-    detection_range_min_height_,
-    vehicle_info_.vehicle_height_m + detection_range_max_height_margin_);
-  height_filter.filter(*height_filtered_pointcloud_ptr);
-
-  pcl::VoxelGrid<pcl::PointXYZ> filter;
-  PointCloud::Ptr no_height_filtered_pointcloud_ptr(new PointCloud);
-  filter.setInputCloud(height_filtered_pointcloud_ptr);
-  filter.setLeafSize(voxel_grid_x_, voxel_grid_y_, voxel_grid_z_);
-  filter.filter(*no_height_filtered_pointcloud_ptr);
-
-  obstacle_ros_pointcloud_ptr_ = std::make_shared<PointCloud2>();
-
-  pcl::toROSMsg(*no_height_filtered_pointcloud_ptr, *obstacle_ros_pointcloud_ptr_);
-  obstacle_ros_pointcloud_ptr_->header = input_msg->header;
-}
-
 bool AEB::fetchLatestData()
 {
   const auto missing = [this](const auto & name) {
@@ -359,17 +276,13 @@ bool AEB::fetchLatestData()
   }
 
   if (use_pointcloud_data_) {
-    const auto pointcloud_ptr = sub_point_cloud_->take_data();
-    if (!pointcloud_ptr) {
-      return missing("object pointcloud message");
+    const auto obstacle_grid_ptr = sub_obstacle_grid_->take_data();
+    if (!obstacle_grid_ptr) {
+      return missing("obstacle grid message");
     }
-
-    onPointCloud(pointcloud_ptr);
-    if (!obstacle_ros_pointcloud_ptr_) {
-      return missing("object pointcloud");
-    }
+    obstacle_grid_ptr_ = obstacle_grid_ptr;
   } else {
-    obstacle_ros_pointcloud_ptr_.reset();
+    obstacle_grid_ptr_.reset();
   }
 
   if (use_predicted_object_data_) {
@@ -381,8 +294,8 @@ bool AEB::fetchLatestData()
     predicted_objects_ptr_ = {};
   }
 
-  if (!obstacle_ros_pointcloud_ptr_ && !predicted_objects_ptr_) {
-    return missing("object detection method (pointcloud or predicted objects)");
+  if (!obstacle_grid_ptr_ && !predicted_objects_ptr_) {
+    return missing("object detection method (obstacle grid or predicted objects)");
   }
 
   const bool has_imu_path = std::invoke([&]() {
@@ -482,15 +395,6 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
     return false;
   }
 
-  auto merge_expanded_path_polys = [&](const std::vector<Path> & paths) {
-    std::vector<Polygon2d> merged_expanded_path_polygons;
-    for (const auto & path : paths) {
-      generatePathFootprint(
-        path, expand_width_ + path_footprint_extra_margin_, merged_expanded_path_polygons);
-    }
-    return merged_expanded_path_polygons;
-  };
-
   auto get_objects_on_path = [&](
                                const auto & path, PointCloud::Ptr points_belonging_to_cluster_hulls,
                                const colorTuple & debug_colors, const std::string & debug_ns) {
@@ -501,7 +405,7 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
     if (
       use_pointcloud_data_ && points_belonging_to_cluster_hulls &&
       !points_belonging_to_cluster_hulls->empty()) {
-      const auto current_time = obstacle_ros_pointcloud_ptr_->header.stamp;
+      const auto current_time = obstacle_grid_ptr_->header.stamp;
       getClosestObjectsOnPath(path, current_time, points_belonging_to_cluster_hulls, objects);
     }
     if (use_predicted_object_data_) {
@@ -565,26 +469,13 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
                               ? std::nullopt
                               : generateEgoPath(*predicted_traj_ptr_);
 
-  PointCloud::Ptr filtered_objects = pcl::make_shared<PointCloud>();
-  if (use_pointcloud_data_) {
-    const std::vector<Path> paths = [&]() {
-      std::vector<Path> paths;
-      if (use_imu_path_) paths.push_back(ego_imu_path);
-      if (ego_mpc_path.has_value()) {
-        paths.push_back(ego_mpc_path.value());
-      }
-      return paths;
-    }();
-
-    if (paths.empty()) return false;
-    const std::vector<Polygon2d> merged_path_polygons = merge_expanded_path_polys(paths);
-    // Data of filtered point cloud
-    cropPointCloudWithEgoFootprintPath(merged_path_polygons, filtered_objects);
-  }
-
+  // The obstacle grid (sensing-side, base_link) replaces the raw cloud + voxel + cluster + hull
+  // pipeline; surviving occupied-cell centers feed the unchanged getClosestObjectsOnPath corridor
+  // crop. Per-path corridor cropping is recovered downstream, so no pre-crop is needed here.
   PointCloud::Ptr points_belonging_to_cluster_hulls = pcl::make_shared<PointCloud>();
-  getPointsBelongingToClusterHulls(
-    filtered_objects, points_belonging_to_cluster_hulls, debug_markers);
+  if (use_pointcloud_data_ && obstacle_grid_ptr_) {
+    getCellsFromObstacleGrid(*obstacle_grid_ptr_, points_belonging_to_cluster_hulls);
+  }
 
   const auto imu_path_objects =
     (!use_imu_path_ || !angular_velocity_ptr_)
@@ -625,13 +516,6 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
   // evaluate if there is a collision for merged (imu and mpc) paths
   const bool has_collision = check_collision(merge_imu_mpc_path, merged_imu_mpc_objects);
 
-  // Debug print
-  if (!filtered_objects->empty() && publish_debug_pointcloud_) {
-    auto filtered_objects_ros_pointcloud_ptr =
-      ALLOCATE_OUTPUT_MESSAGE_UNIQUE(pub_obstacle_pointcloud_);
-    pcl::toROSMsg(*filtered_objects, *filtered_objects_ros_pointcloud_ptr);
-    pub_obstacle_pointcloud_->publish(std::move(filtered_objects_ros_pointcloud_ptr));
-  }
   return has_collision;
 }
 
@@ -880,59 +764,57 @@ void AEB::createObjectDataUsingPredictedObjects(
   });
 }
 
-void AEB::getPointsBelongingToClusterHulls(
-  const PointCloud::Ptr obstacle_points_ptr,
-  const PointCloud::Ptr points_belonging_to_cluster_hulls, MarkerArray & debug_markers)
+void AEB::getCellsFromObstacleGrid(
+  const grid_map_msgs::msg::GridMap & msg, const PointCloud::Ptr points_belonging_to_cluster_hulls)
 {
   autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-  // eliminate noisy points by only considering points belonging to clusters of at least a certain
-  // size
-  if (obstacle_points_ptr->empty()) return;
-  const std::vector<pcl::PointIndices> cluster_indices = std::invoke([&]() {
-    std::vector<pcl::PointIndices> cluster_idx;
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
-    tree->setInputCloud(obstacle_points_ptr);
-    pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-    ec.setClusterTolerance(cluster_tolerance_);
-    ec.setMinClusterSize(minimum_cluster_size_);
-    ec.setMaxClusterSize(maximum_cluster_size_);
-    ec.setSearchMethod(tree);
-    ec.setInputCloud(obstacle_points_ptr);
-    ec.extract(cluster_idx);
-    return cluster_idx;
-  });
-  std::vector<Polygon3d> hull_polygons;
-  for (const auto & indices : cluster_indices) {
-    PointCloud::Ptr cluster(new PointCloud);
-    bool cluster_surpasses_threshold_height{false};
-    for (const auto & index : indices.indices) {
-      const auto & p = (*obstacle_points_ptr)[index];
-      cluster_surpasses_threshold_height = (cluster_surpasses_threshold_height)
-                                             ? cluster_surpasses_threshold_height
-                                             : (p.z > cluster_minimum_height_);
-      cluster->push_back(p);
+  grid_map::GridMap grid;
+  grid_map::GridMapRosConverter::fromMessage(msg, grid);
+  // Normalize the circular buffer so raw (row,col) index arithmetic in the window scan below equals
+  // spatial adjacency regardless of the publisher's start index.
+  grid.convertToDefaultStartIndex();
+
+  namespace gu = autoware::obstacle_grid_utils;
+  // per-cell gate: at least one point and max_height >= cluster_minimum_height (z floor)
+  const gu::Gate gate{1u, cluster_minimum_height_};
+  const double z_band_top = vehicle_info_.vehicle_height_m + detection_range_max_height_margin_;
+  const int k = window_size_;  // half-window of the (2k+1)^2 occupied-cell neighborhood
+
+  // 1) per-cell qualification (count + height band)
+  const auto size = grid.getSize();
+  grid_map::Matrix qual(size(0), size(1));
+  qual.setZero();
+  for (grid_map::GridMapIterator it(grid); !it.isPastEnd(); ++it) {
+    const auto & idx = *it;
+    if (
+      gu::cell_qualifies(grid, idx, gate) &&
+      static_cast<double>(grid.at("min_height", idx)) <= z_band_top) {
+      qual(idx(0), idx(1)) = 1.0f;
     }
-    if (!cluster_surpasses_threshold_height) continue;
-    // Make a 2d convex hull for the objects
-    pcl::ConvexHull<pcl::PointXYZ> hull;
-    hull.setDimension(2);
-    hull.setInputCloud(cluster);
-    std::vector<pcl::Vertices> polygons;
-    PointCloud::Ptr surface_hull(new PointCloud);
-    hull.reconstruct(*surface_hull, polygons);
-    Polygon3d hull_polygon;
-    for (const auto & p : *surface_hull) {
-      points_belonging_to_cluster_hulls->push_back(p);
-      if (publish_debug_markers_) {
-        const auto geom_point = autoware_utils::create_point(p.x, p.y, p.z);
-        appendPointToPolygon(hull_polygon, geom_point);
+  }
+  // 2) window min-occupied-cells filter (~ minimum_cluster_size) + emit surviving cell centers
+  for (grid_map::GridMapIterator it(grid); !it.isPastEnd(); ++it) {
+    const auto & idx = *it;
+    if (qual(idx(0), idx(1)) == 0.0f) {
+      continue;
+    }
+    int neighbours = 0;
+    for (int di = -k; di <= k; ++di) {
+      for (int dj = -k; dj <= k; ++dj) {
+        const int i = idx(0) + di;
+        const int j = idx(1) + dj;
+        if (i >= 0 && j >= 0 && i < qual.rows() && j < qual.cols() && qual(i, j) > 0.0f) {
+          ++neighbours;
+        }
       }
     }
-    hull_polygons.push_back(hull_polygon);
-  }
-  if (publish_debug_markers_ && !hull_polygons.empty()) {
-    constexpr colorTuple debug_color = {255.0 / 256.0, 51.0 / 256.0, 255.0 / 256.0, 0.999};
-    addClusterHullMarkers(now(), hull_polygons, debug_color, "hulls", debug_markers);
+    if (neighbours < minimum_cluster_size_) {
+      continue;  // approximate the per-cluster minimum size gate
+    }
+    grid_map::Position c;
+    grid.getPosition(idx, c);
+    points_belonging_to_cluster_hulls->push_back(
+      pcl::PointXYZ(c.x(), c.y(), grid.at("max_height", idx)));
   }
 }
 
@@ -961,61 +843,6 @@ void AEB::getClosestObjectsOnPath(
       longitudinal_offset, 0.0);
     if (obj_data_opt.has_value()) objects.push_back(obj_data_opt.value());
   }
-}
-
-void AEB::cropPointCloudWithEgoFootprintPath(
-  const std::vector<Polygon2d> & ego_polys, PointCloud::Ptr filtered_objects)
-{
-  autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-  if (obstacle_ros_pointcloud_ptr_->width == 0 || obstacle_ros_pointcloud_ptr_->height == 0) {
-    RCLCPP_DEBUG_SKIPFIRST_THROTTLE(
-      get_logger(), *get_clock(), 5000,
-      "[AEB]: Received empty obstacle point cloud, skipping crop");
-    return;
-  }
-  if (ego_polys.empty()) {
-    return;
-  }
-  PointCloud::Ptr full_points_ptr(new PointCloud);
-  pcl::fromROSMsg(*obstacle_ros_pointcloud_ptr_, *full_points_ptr);
-  // Create a Point cloud with the points of the ego footprint
-  PointCloud::Ptr path_polygon_points(new PointCloud);
-  std::for_each(ego_polys.begin(), ego_polys.end(), [&](const auto & poly) {
-    std::for_each(poly.outer().begin(), poly.outer().end(), [&](const auto & p) {
-      pcl::PointXYZ point(p.x(), p.y(), 0.0);
-      path_polygon_points->push_back(point);
-    });
-  });
-  // Make a surface hull with the ego footprint to filter out points
-  pcl::ConvexHull<pcl::PointXYZ> hull;
-  hull.setDimension(2);
-  hull.setInputCloud(path_polygon_points);
-  std::vector<pcl::Vertices> polygons;
-  PointCloud::Ptr surface_hull(new PointCloud);
-  hull.reconstruct(*surface_hull, polygons);
-  // Filter out points outside of the path's convex hull
-  pcl::CropHull<pcl::PointXYZ> path_polygon_hull_filter;
-  path_polygon_hull_filter.setDim(2);
-  path_polygon_hull_filter.setInputCloud(full_points_ptr);
-  path_polygon_hull_filter.setHullIndices(polygons);
-  path_polygon_hull_filter.setHullCloud(surface_hull);
-  path_polygon_hull_filter.filter(*filtered_objects);
-  filtered_objects->header = full_points_ptr->header;
-}
-
-void AEB::addClusterHullMarkers(
-  const rclcpp::Time & current_time, const std::vector<Polygon3d> & hulls,
-  const colorTuple & debug_colors, const std::string & ns, MarkerArray & debug_markers)
-{
-  autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-  const auto [color_r, color_g, color_b, color_a] = debug_colors;
-
-  auto hull_marker = autoware_utils::create_default_marker(
-    "base_link", current_time, ns, 0, Marker::LINE_LIST,
-    autoware_utils::create_marker_scale(0.03, 0.0, 0.0),
-    autoware_utils::create_marker_color(color_r, color_g, color_b, color_a));
-  utils::fillMarkerFromPolygon(hulls, hull_marker);
-  debug_markers.markers.push_back(hull_marker);
 }
 
 void AEB::addMarker(

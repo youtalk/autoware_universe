@@ -18,26 +18,19 @@
     mpc_prediction_time_interval: 0.1
 
     # Debug
-    publish_debug_pointcloud: false
     publish_debug_markers: true
 
-    # Point cloud partitioning
-    detection_range_min_height: 0.0
+    # Obstacle grid z-band
     detection_range_max_height_margin: 0.0
-    voxel_grid_x: 0.1
-    voxel_grid_y: 0.1
-    voxel_grid_z: 0.5
 
-    # Point cloud cropping
+    # Ego path cropping
     expand_width: -0.2
-    path_footprint_extra_margin: 1.0
     speed_calculation_expansion_margin: 0.7
 
-    # Point cloud clustering
-    cluster_tolerance: 0.15 #[m]
-    cluster_minimum_height: 0.1
-    minimum_cluster_size: 10
-    maximum_cluster_size: 10000
+    # Obstacle grid gating (replaces voxel + Euclidean clustering; per-cell + window)
+    cluster_minimum_height: 0.1  # per-cell max_height floor [m] (grid gate min_height)
+    minimum_cluster_size: 10     # window min-occupied-cells threshold (~ minimum cluster size)
+    window_size: 2               # half-window k of the (2k+1)^2 occupied-cell neighborhood
 
     # RSS distance collision check
     longitudinal_offset_margin: 1.0

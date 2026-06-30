@@ -65,6 +65,10 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/common/autoware_traffic_light_compliance_checker/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/common/autoware_traffic_light_recognition_marker_publisher/Readme/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
@@ -357,6 +361,10 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/perception/autoware_euclidean_cluster/docs/label-based-euclidean-cluster/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/perception/autoware_ground_segmentation/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
@@ -438,6 +446,10 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/perception/autoware_object_merger/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/perception/autoware_object_merger/docs/object_fusion_merger/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
@@ -701,6 +713,10 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/planning/autoware_trajectory_optimizer/docs/temporal_mpt_optimizer/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/planning/autoware_trajectory_optimizer/docs/trajectory_optimizer_specification/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
@@ -709,7 +725,15 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/planning/autoware_trajectory_selector/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/planning/autoware_trajectory_validator/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/planning/autoware_trajectory_validator/docs/TrafficLightFilter/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
@@ -718,6 +742,10 @@
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/planning/behavior_path_planner/autoware_behavior_path_bidirectional_traffic_module/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/planning/behavior_path_planner/autoware_behavior_path_direction_change_module/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
@@ -917,6 +945,10 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/sensing/autoware_cuda_pointcloud_preprocessor/docs/cuda-polar-voxel-noise-filter/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/sensing/autoware_cuda_pointcloud_preprocessor/docs/cuda-polar-voxel-outlier-filter/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
@@ -989,6 +1021,10 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/sensing/autoware_pointcloud_preprocessor/docs/polar-voxel-noise-filter/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/sensing/autoware_pointcloud_preprocessor/docs/polar-voxel-outlier-filter/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
@@ -1041,23 +1077,11 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://autowarefoundation.github.io/autoware_universe/latest/simulator/autoware_dummy_perception_publisher/</loc>
+         <loc>https://autowarefoundation.github.io/autoware_universe/latest/simulator/autoware_dummy_traffic_light_publisher/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
          <loc>https://autowarefoundation.github.io/autoware_universe/latest/simulator/autoware_fault_injection/</loc>
-         <lastmod>2026-06-30</lastmod>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware_universe/latest/simulator/autoware_learning_based_vehicle_model/</loc>
-         <lastmod>2026-06-30</lastmod>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware_universe/latest/simulator/autoware_simple_planning_simulator/</loc>
-         <lastmod>2026-06-30</lastmod>
-    </url>
-    <url>
-         <loc>https://autowarefoundation.github.io/autoware_universe/latest/simulator/autoware_simple_planning_simulator/docs/actuation_cmd_sim/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>

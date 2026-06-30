@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    roi:
+      length_x: 60.0  # forward detection range [m] (far-region lanelet consumers)
+      length_y: 40.0  # lateral surround + adjacent-lane coverage [m]
+      offset_x: 20.0  # grid-center +x offset from base_link [m] (ego near the rear edge)
+    resolution: 0.2   # cell size [m]; <= existing ~0.3 m lateral jitter
+    crop:
+      z_min: -1.0     # union z-band lower bound [m]
+      z_max: 3.0      # union z-band upper bound [m]; consumers re-apply their own z gate

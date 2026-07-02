@@ -23,7 +23,6 @@
 
   <depend>autoware_agnocast_wrapper</depend>
   <depend>autoware_motion_utils</depend>
-  <depend>autoware_obstacle_grid_utils</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_system_msgs</depend>
   <depend>autoware_test_utils</depend>

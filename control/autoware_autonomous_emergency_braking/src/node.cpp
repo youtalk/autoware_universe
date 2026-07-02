@@ -16,7 +16,6 @@
 #include <autoware/autonomous_emergency_braking/utils.hpp>
 #include <autoware/motion_utils/marker/marker_helper.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
-#include <autoware/obstacle_grid_utils/obstacle_grid_utils.hpp>
 #include <autoware_utils/autoware_utils.hpp>
 #include <autoware_utils/geometry/boost_geometry.hpp>
 #include <autoware_utils/geometry/boost_polygon_utils.hpp>
@@ -45,6 +44,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -57,6 +57,10 @@ namespace
 {
 using autoware::motion::control::autonomous_emergency_braking::colorTuple;
 constexpr double MIN_MOVING_VELOCITY_THRESHOLD = 0.1;
+// Obstacle-grid layer contract (see autoware_obstacle_grid_extractor).
+constexpr char kPointCountLayer[] = "point_count";
+constexpr char kMinHeightLayer[] = "min_height";
+constexpr char kLowMaxHeightLayer[] = "low_max_height";
 // Sky blue (RGB: 0, 148, 205) - A medium-bright blue color
 constexpr colorTuple IMU_PATH_COLOR = {0.0 / 256.0, 148.0 / 256.0, 205.0 / 256.0, 0.999};
 // Forest green (RGB: 0, 100, 0) - A deep, dark green color
@@ -161,14 +165,8 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
 
   cluster_minimum_height_ = declare_parameter<double>("cluster_minimum_height");
   minimum_cluster_size_ = declare_parameter<int>("minimum_cluster_size");
-  window_size_ = declare_parameter<int>("window_size");
-  if (minimum_cluster_size_ > (2 * window_size_ + 1) * (2 * window_size_ + 1)) {
-    RCLCPP_WARN(
-      get_logger(),
-      "[AEB] minimum_cluster_size (%d) exceeds the window cell count (2*window_size+1)^2 = %d; the "
-      "pointcloud branch can never trigger. Increase window_size or lower minimum_cluster_size.",
-      minimum_cluster_size_, (2 * window_size_ + 1) * (2 * window_size_ + 1));
-  }
+  min_point_count_cell_ = declare_parameter<int>("min_point_count_cell");
+  obstacle_grid_timeout_sec_ = declare_parameter<double>("obstacle_grid_timeout_sec");
 
   imu_prediction_time_horizon_ = declare_parameter<double>("imu_prediction_time_horizon");
   imu_prediction_time_interval_ = declare_parameter<double>("imu_prediction_time_interval");
@@ -226,7 +224,8 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
 
   update_param<double>(parameters, "cluster_minimum_height", cluster_minimum_height_);
   update_param<int>(parameters, "minimum_cluster_size", minimum_cluster_size_);
-  update_param<int>(parameters, "window_size", window_size_);
+  update_param<int>(parameters, "min_point_count_cell", min_point_count_cell_);
+  update_param<double>(parameters, "obstacle_grid_timeout_sec", obstacle_grid_timeout_sec_);
 
   update_param<double>(parameters, "imu_prediction_time_horizon", imu_prediction_time_horizon_);
   update_param<double>(parameters, "imu_prediction_time_interval", imu_prediction_time_interval_);
@@ -279,6 +278,19 @@ bool AEB::fetchLatestData()
     const auto obstacle_grid_ptr = sub_obstacle_grid_->take_data();
     if (!obstacle_grid_ptr) {
       return missing("obstacle grid message");
+    }
+    // Staleness watchdog: the polling subscriber returns the last received grid forever, and the
+    // producer deliberately publishes nothing on its failure paths, so silence must read as
+    // "unavailable", never as "clear" — a frozen grid would keep pre-failure obstacles and hide
+    // every obstacle that appeared after the failure.
+    const double grid_age_sec =
+      (this->now() - rclcpp::Time(obstacle_grid_ptr->header.stamp)).seconds();
+    if (grid_age_sec > obstacle_grid_timeout_sec_) {
+      RCLCPP_ERROR_THROTTLE(
+        get_logger(), *get_clock(), 5000,
+        "[AEB]: obstacle grid is stale (%.2f s old > %.2f s); treating it as unavailable",
+        grid_age_sec, obstacle_grid_timeout_sec_);
+      return false;
     }
     obstacle_grid_ptr_ = obstacle_grid_ptr;
   } else {
@@ -470,8 +482,9 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
                               : generateEgoPath(*predicted_traj_ptr_);
 
   // The obstacle grid (sensing-side, base_link) replaces the raw cloud + voxel + cluster + hull
-  // pipeline; surviving occupied-cell centers feed the unchanged getClosestObjectsOnPath corridor
-  // crop. Per-path corridor cropping is recovered downstream, so no pre-crop is needed here.
+  // pipeline; the corner points of the qualifying cells feed the unchanged
+  // getClosestObjectsOnPath corridor crop. Per-path corridor cropping is recovered downstream,
+  // so no pre-crop is needed here.
   PointCloud::Ptr points_belonging_to_cluster_hulls = pcl::make_shared<PointCloud>();
   if (use_pointcloud_data_ && obstacle_grid_ptr_) {
     getCellsFromObstacleGrid(*obstacle_grid_ptr_, points_belonging_to_cluster_hulls);
@@ -768,53 +781,119 @@ void AEB::getCellsFromObstacleGrid(
   const grid_map_msgs::msg::GridMap & msg, const PointCloud::Ptr points_belonging_to_cluster_hulls)
 {
   autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+  // Contract validation. The old raw-cloud path TF-transformed a mismatched frame; a grid cannot
+  // be re-framed cheaply, so a mismatch is a wiring error: reject loudly and emit nothing
+  // (producer silence/staleness is covered by the watchdog in fetchLatestData).
+  if (msg.header.frame_id != "base_link") {
+    RCLCPP_ERROR_THROTTLE(
+      get_logger(), *get_clock(), 5000,
+      "[AEB]: obstacle grid frame is '%s', expected 'base_link'; ignoring the grid",
+      msg.header.frame_id.c_str());
+    return;
+  }
   grid_map::GridMap grid;
-  grid_map::GridMapRosConverter::fromMessage(msg, grid);
-  // Normalize the circular buffer so raw (row,col) index arithmetic in the window scan below equals
-  // spatial adjacency regardless of the publisher's start index.
-  grid.convertToDefaultStartIndex();
-
-  namespace gu = autoware::obstacle_grid_utils;
-  // per-cell gate: at least one point and max_height >= cluster_minimum_height (z floor)
-  const gu::Gate gate{1u, cluster_minimum_height_};
-  const double z_band_top = vehicle_info_.vehicle_height_m + detection_range_max_height_margin_;
-  const int k = window_size_;  // half-window of the (2k+1)^2 occupied-cell neighborhood
-
-  // 1) per-cell qualification (count + height band)
-  const auto size = grid.getSize();
-  grid_map::Matrix qual(size(0), size(1));
-  qual.setZero();
-  for (grid_map::GridMapIterator it(grid); !it.isPastEnd(); ++it) {
-    const auto & idx = *it;
-    if (
-      gu::cell_qualifies(grid, idx, gate) &&
-      static_cast<double>(grid.at("min_height", idx)) <= z_band_top) {
-      qual(idx(0), idx(1)) = 1.0f;
+  if (!grid_map::GridMapRosConverter::fromMessage(msg, grid)) {
+    RCLCPP_ERROR_THROTTLE(
+      get_logger(), *get_clock(), 5000, "[AEB]: failed to convert the obstacle grid message");
+    return;
+  }
+  for (const char * layer : {kPointCountLayer, kMinHeightLayer, kLowMaxHeightLayer}) {
+    if (!grid.exists(layer)) {
+      RCLCPP_ERROR_THROTTLE(
+        get_logger(), *get_clock(), 5000,
+        "[AEB]: obstacle grid is missing the '%s' layer; ignoring the grid", layer);
+      return;
     }
   }
-  // 2) window min-occupied-cells filter (~ minimum_cluster_size) + emit surviving cell centers
-  for (grid_map::GridMapIterator it(grid); !it.isPastEnd(); ++it) {
-    const auto & idx = *it;
-    if (qual(idx(0), idx(1)) == 0.0f) {
-      continue;
+  // Normalize the circular buffer so raw (row,col) index arithmetic below equals spatial
+  // adjacency regardless of the publisher's start index.
+  grid.convertToDefaultStartIndex();
+
+  const grid_map::Matrix & cnt = grid[kPointCountLayer];
+  const grid_map::Matrix & min_h = grid[kMinHeightLayer];
+  const grid_map::Matrix & low_max_h = grid[kLowMaxHeightLayer];
+  const double z_band_top = vehicle_info_.vehicle_height_m + detection_range_max_height_margin_;
+  const int rows = static_cast<int>(cnt.rows());
+  const int cols = static_cast<int>(cnt.cols());
+  const auto flat = [cols](const int i, const int j) {
+    return static_cast<size_t>(i) * static_cast<size_t>(cols) + static_cast<size_t>(j);
+  };
+
+  // 1) per-cell qualification: enough returns in the cell, the tallest IN-BAND return above the
+  //    height floor (low_max_height, so an overhead structure sharing a cell with ground returns
+  //    can never qualify it — the per-cell analog of the old per-point z crop), and the lowest
+  //    return under the z-band top.
+  std::vector<std::uint8_t> qual(static_cast<size_t>(rows) * static_cast<size_t>(cols), 0);
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < cols; ++j) {
+      const float c = cnt(i, j);
+      const float lm = low_max_h(i, j);
+      const float mn = min_h(i, j);
+      const bool q = std::isfinite(c) && c >= static_cast<float>(min_point_count_cell_) &&
+                     std::isfinite(lm) && static_cast<double>(lm) >= cluster_minimum_height_ &&
+                     std::isfinite(mn) && static_cast<double>(mn) <= z_band_top;
+      qual[flat(i, j)] = q ? 1 : 0;
     }
-    int neighbours = 0;
-    for (int di = -k; di <= k; ++di) {
-      for (int dj = -k; dj <= k; ++dj) {
-        const int i = idx(0) + di;
-        const int j = idx(1) + dj;
-        if (i >= 0 && j >= 0 && i < qual.rows() && j < qual.cols() && qual(i, j) > 0.0f) {
-          ++neighbours;
+  }
+
+  // 2) 8-connected component labeling; a component qualifies iff its summed point_count reaches
+  //    minimum_cluster_size — the grid analog of the former Euclidean-cluster minimum size in
+  //    POINTS, not cells, so a small-footprint obstacle (pedestrian, pole) that concentrates many
+  //    returns into a few cells still passes, while isolated sparse returns are rejected and
+  //    disjoint sparse groups (never 8-connected) cannot pool together.
+  const double half = 0.5 * grid.getResolution();
+  std::vector<std::uint8_t> visited(qual.size(), 0);
+  std::vector<grid_map::Index> component;
+  std::vector<grid_map::Index> stack;
+  for (int i0 = 0; i0 < rows; ++i0) {
+    for (int j0 = 0; j0 < cols; ++j0) {
+      if (qual[flat(i0, j0)] == 0 || visited[flat(i0, j0)] != 0) {
+        continue;
+      }
+      component.clear();
+      stack.clear();
+      stack.emplace_back(i0, j0);
+      visited[flat(i0, j0)] = 1;
+      double point_sum = 0.0;
+      while (!stack.empty()) {
+        const grid_map::Index idx = stack.back();
+        stack.pop_back();
+        component.push_back(idx);
+        point_sum += static_cast<double>(cnt(idx(0), idx(1)));
+        for (int di = -1; di <= 1; ++di) {
+          for (int dj = -1; dj <= 1; ++dj) {
+            const int i = idx(0) + di;
+            const int j = idx(1) + dj;
+            if (i < 0 || j < 0 || i >= rows || j >= cols) {
+              continue;
+            }
+            if (qual[flat(i, j)] == 0 || visited[flat(i, j)] != 0) {
+              continue;
+            }
+            visited[flat(i, j)] = 1;
+            stack.emplace_back(i, j);
+          }
+        }
+      }
+      if (point_sum < static_cast<double>(minimum_cluster_size_)) {
+        continue;  // the component has too few returns to be a real obstacle
+      }
+      // 3) emit the four cell-corner points (z = tallest in-band return of the cell): corners make
+      //    the downstream point-based corridor gate edge-conservative — a cell overlapping the
+      //    convex corridor always has at least one corner inside — where centers alone missed an
+      //    edge intrusion of up to half a cell.
+      for (const auto & idx : component) {
+        grid_map::Position c;
+        grid.getPosition(idx, c);
+        const float z = low_max_h(idx(0), idx(1));
+        for (const double sx : {-half, half}) {
+          for (const double sy : {-half, half}) {
+            points_belonging_to_cluster_hulls->push_back(
+              pcl::PointXYZ(static_cast<float>(c.x() + sx), static_cast<float>(c.y() + sy), z));
+          }
         }
       }
     }
-    if (neighbours < minimum_cluster_size_) {
-      continue;  // approximate the per-cluster minimum size gate
-    }
-    grid_map::Position c;
-    grid.getPosition(idx, c);
-    points_belonging_to_cluster_hulls->push_back(
-      pcl::PointXYZ(c.x(), c.y(), grid.at("max_height", idx)));
   }
 }
 

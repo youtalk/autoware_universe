@@ -27,10 +27,13 @@
     expand_width: -0.2
     speed_calculation_expansion_margin: 0.7
 
-    # Obstacle grid gating (replaces voxel + Euclidean clustering; per-cell + window)
-    cluster_minimum_height: 0.1  # per-cell max_height floor [m] (grid gate min_height)
-    minimum_cluster_size: 10     # window min-occupied-cells threshold (~ minimum cluster size)
-    window_size: 2               # half-window k of the (2k+1)^2 occupied-cell neighborhood
+    # Obstacle grid gating (replaces voxel + Euclidean clustering; per-cell gate + 8-connected
+    # component point-sum). minimum_cluster_size counts RAW returns (the grid is pre-voxel), so a
+    # value tuned for the old post-voxel cluster size may need to be raised accordingly.
+    cluster_minimum_height: 0.1  # per-cell low_max_height floor [m] (tallest in-band return)
+    minimum_cluster_size: 10     # min summed point_count over an 8-connected component of cells
+    min_point_count_cell: 1      # per-cell density floor [returns]
+    obstacle_grid_timeout_sec: 0.5  # grid staleness watchdog [s]; stale = unavailable, not "clear"
 
     # RSS distance collision check
     longitudinal_offset_margin: 1.0

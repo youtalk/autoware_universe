@@ -30,8 +30,10 @@
 #include <gtest/gtest.h>
 #include <pcl/memory.h>
 
+#include <cmath>
 #include <limits>
 #include <memory>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -80,16 +82,19 @@ VelocityReport make_velocity_report_msg(
 }
 
 // Build a base_link obstacle grid (grid_map_msgs/GridMap) with one occupied block
-// [x0,x1] x [y0,y1] at the production ROI/resolution; cells carry the given count + z band.
+// [x0,x1] x [y0,y1] at the production ROI/resolution; cells carry the given count + z band +
+// tallest in-band return (low_max_height).
 grid_map_msgs::msg::GridMap make_obstacle_grid_msg(
-  double x0, double x1, double y0, double y1, float zmin, float zmax, float count)
+  double x0, double x1, double y0, double y1, float zmin, float zmax, float low_max, float count,
+  const std::string & frame = "base_link")
 {
-  grid_map::GridMap g({"max_height", "min_height", "point_count"});
-  g.setFrameId("base_link");
+  grid_map::GridMap g({"max_height", "min_height", "point_count", "low_max_height"});
+  g.setFrameId(frame);
   g.setGeometry(grid_map::Length(60.0, 40.0), 0.2, grid_map::Position(20.0, 0.0));
   g["point_count"].setConstant(std::numeric_limits<float>::quiet_NaN());
   g["max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
   g["min_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
+  g["low_max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
   for (double x = x0; x <= x1 + 1e-9; x += 0.2) {
     for (double y = y0; y <= y1 + 1e-9; y += 0.2) {
       grid_map::Index idx;
@@ -97,6 +102,7 @@ grid_map_msgs::msg::GridMap make_obstacle_grid_msg(
       g.at("point_count", idx) = count;
       g.at("max_height", idx) = zmax;
       g.at("min_height", idx) = zmin;
+      g.at("low_max_height", idx) = low_max;
     }
   }
   return *grid_map::GridMapRosConverter::toMessage(g);
@@ -240,9 +246,9 @@ TEST_F(TestAEB, checkImuPathGeneration)
   ASSERT_TRUE(footprint.size() == imu_path.size() - 1);
 
   const auto stamp = rclcpp::Time();
-  // dense occupied block on the ego path -> survives the per-cell + window gate, and the surviving
-  // cell centers are found on the imu path.
-  const auto grid_msg = make_obstacle_grid_msg(0.5, 1.5, -0.5, 0.5, 0.5f, 0.5f, 5.0f);
+  // dense occupied block on the ego path -> survives the per-cell gate + component point-sum, and
+  // the emitted cell corner points are found on the imu path.
+  const auto grid_msg = make_obstacle_grid_msg(0.5, 1.5, -0.5, 0.5, 0.5f, 0.5f, 0.5f, 5.0f);
   PointCloud::Ptr points_belonging_to_cluster_hulls = pcl::make_shared<PointCloud>();
   aeb_node_->getCellsFromObstacleGrid(grid_msg, points_belonging_to_cluster_hulls);
   ASSERT_FALSE(points_belonging_to_cluster_hulls->empty());
@@ -405,53 +411,128 @@ TEST_F(TestAEB, getCellsFromObstacleGridGating)
     aeb_node_->getCellsFromObstacleGrid(g, cells);
     return cells;
   };
+  // Package defaults the point-sum gate is calibrated against; pinned so a default change fails
+  // loudly instead of silently. All block fixtures use cell-CENTER coordinates (odd multiples of
+  // 0.1 for ROI offset 20 / res 0.2) so each point lands in a distinct, contiguous cell.
+  ASSERT_EQ(aeb_node_->minimum_cluster_size_, 10);
+  ASSERT_EQ(aeb_node_->min_point_count_cell_, 1);
 
-  // (a) dense block spanning a real z range -> survives; emitted cell z must be max_height (not
-  //     min_height): independent oracle zmax=0.9, distinct from zmin=0.2.
+  // (a) dense block spanning a real z range -> survives; emitted z must be the tallest IN-BAND
+  //     return (low_max_height): independent oracle 0.9, distinct from zmin 0.2 and zmax 1.1.
   {
-    const auto cells = cells_of(make_obstacle_grid_msg(5.0, 6.0, -0.4, 0.4, 0.2f, 0.9f, 5.0f));
+    const auto cells =
+      cells_of(make_obstacle_grid_msg(5.1, 5.9, -0.3, 0.3, 0.2f, 1.1f, 0.9f, 5.0f));
     ASSERT_FALSE(cells->empty());
     for (const auto & p : *cells) {
       EXPECT_GE(p.z, floor);
-      EXPECT_FLOAT_EQ(p.z, 0.9f);  // emitted z == max_height of the cell
+      EXPECT_FLOAT_EQ(p.z, 0.9f);  // emitted z == low_max_height of the cell
     }
   }
-  // (b) a block whose max_height is just below cluster_minimum_height -> rejected by the height
-  // gate.
-  //     Derive the height from the param so it stays a genuine just-below-floor reject.
+  // (b) a block whose tallest in-band return is just below cluster_minimum_height -> rejected by
+  //     the height floor. Derived from the param so it stays a genuine just-below-floor reject.
   {
-    const auto cells =
-      cells_of(make_obstacle_grid_msg(5.0, 6.0, -0.4, 0.4, 0.0f, floor - 0.05f, 5.0f));
+    const auto cells = cells_of(
+      make_obstacle_grid_msg(5.1, 5.9, -0.3, 0.3, 0.0f, floor - 0.05f, floor - 0.05f, 5.0f));
     EXPECT_TRUE(cells->empty());
   }
-  // (c) an overhead-only obstacle whose lowest return is above the z-band top (e.g. a gantry) ->
-  //     rejected by the upper z-band gate (min_height <= vehicle_height + margin). Independent
-  //     oracle from the node's own vehicle_info/margin, not the SUT formula.
+  // (c) overhead-only obstacle (gantry with no returns below the producer's overhead_split):
+  //     low_max_height is NaN and min_height is above the z-band top -> rejected regardless of
+  //     point count. Independent oracle from the node's own vehicle_info/margin.
   {
     const float zmin = static_cast<float>(z_band_top) + 0.5f;
+    const auto cells = cells_of(make_obstacle_grid_msg(
+      5.1, 5.9, -0.3, 0.3, zmin, zmin + 0.3f, std::numeric_limits<float>::quiet_NaN(), 50.0f));
+    EXPECT_TRUE(cells->empty());
+  }
+  // (d) overhead structure sharing its cells with ground returns: min_height is low (0.05,
+  //     under the band top) and max_height is overhead (2.8), but the tallest IN-BAND return is
+  //     only the ground residue (0.05 < floor) -> rejected. A max_height-based floor would have
+  //     qualified these cells and emergency-braked under a passable gantry.
+  {
     const auto cells =
-      cells_of(make_obstacle_grid_msg(5.0, 6.0, -0.4, 0.4, zmin, zmin + 0.3f, 5.0f));
+      cells_of(make_obstacle_grid_msg(5.1, 5.9, -0.3, 0.3, 0.05f, 2.8f, 0.05f, 50.0f));
     EXPECT_TRUE(cells->empty());
   }
-  // (d) a single sparse cell -> below the window min-occupied-cells threshold -> rejected.
+  // (e) wall/truck: same (min_height, max_height) signature as (d) but with real in-band mass
+  //     (low_max_height 2.0 >= floor) -> detected. low_max_height is the only discriminator
+  //     between (d) and (e); (min_height, max_height) alone cannot tell them apart.
   {
-    const auto cells = cells_of(make_obstacle_grid_msg(5.0, 5.0, 0.0, 0.0, 0.5f, 0.5f, 5.0f));
+    ASSERT_LE(2.0, z_band_top + 1e-9);
+    const auto cells =
+      cells_of(make_obstacle_grid_msg(5.1, 5.9, -0.3, 0.3, 0.05f, 2.8f, 2.0f, 50.0f));
+    EXPECT_FALSE(cells->empty());
+  }
+  // (f) small-footprint obstacle (pedestrian-class): a 2x2-cell block whose summed point_count
+  //     (4 x 10 = 40) reaches minimum_cluster_size -> detected. The former per-window CELL count
+  //     structurally rejected any obstacle under ~10 occupied cells (~0.4 m^2 footprint).
+  {
+    const auto cells =
+      cells_of(make_obstacle_grid_msg(5.1, 5.3, -0.1, 0.1, 0.5f, 1.7f, 1.7f, 10.0f));
+    EXPECT_FALSE(cells->empty());
+  }
+  // (g) single dense cell (a pole trunk: one cell, 30 returns) -> sum 30 >= 10 -> detected, and
+  //     exactly the 4 corner points of the cell [5.0,5.2]x[0.0,0.2] are emitted (edge-aware).
+  {
+    const auto cells =
+      cells_of(make_obstacle_grid_msg(5.1, 5.1, 0.1, 0.1, 0.2f, 1.2f, 1.2f, 30.0f));
+    ASSERT_EQ(cells->size(), 4u);
+    for (const auto & p : *cells) {
+      EXPECT_NEAR(std::abs(p.x - 5.1), 0.1, 1e-6);
+      EXPECT_NEAR(std::abs(p.y - 0.1), 0.1, 1e-6);
+      EXPECT_FLOAT_EQ(p.z, 1.2f);
+    }
+  }
+  // (h) single sparse cell (5 returns < 10) -> rejected: isolated sparse returns stay rejected.
+  {
+    const auto cells = cells_of(make_obstacle_grid_msg(5.1, 5.1, 0.1, 0.1, 0.5f, 0.5f, 0.5f, 5.0f));
     EXPECT_TRUE(cells->empty());
   }
-  // (e) window min-occupied-cells boundary (assumes the package default minimum_cluster_size=10,
-  //     window_size=2; pinned below so a default change fails loudly instead of silently). Uses
-  //     cell-CENTER coordinates (odd multiples of 0.1 for offset 20 / res 0.2) so each point lands
-  //     in a distinct, contiguous cell (boundary-aligned coords map ambiguously).
-  ASSERT_EQ(aeb_node_->minimum_cluster_size_, 10);
-  ASSERT_EQ(aeb_node_->window_size_, 2);
+  // (i) disjoint sparse cells must NOT pool: two 5-return cells 0.6 m apart (not 8-connected)
+  //     each form a component of sum 5 < 10 -> rejected; making one of them 8-adjacent to a
+  //     second 5-return cell connects them (5 + 5 = 10) -> that pair is detected.
   {
-    // a compact 3x3 block = 9 qualifying cells: the best-connected cell sees 9 < 10 -> all
-    // rejected.
-    const auto cells = cells_of(make_obstacle_grid_msg(5.1, 5.5, -0.1, 0.3, 0.5f, 0.5f, 5.0f));
+    grid_map::GridMap g({"max_height", "min_height", "point_count", "low_max_height"});
+    g.setFrameId("base_link");
+    g.setGeometry(grid_map::Length(60.0, 40.0), 0.2, grid_map::Position(20.0, 0.0));
+    for (const char * name : {"max_height", "min_height", "point_count", "low_max_height"}) {
+      g[name].setConstant(std::numeric_limits<float>::quiet_NaN());
+    }
+    auto occupy = [&g](const double x, const double y) {
+      grid_map::Index idx;
+      ASSERT_TRUE(g.getIndex(grid_map::Position(x, y), idx));
+      g.at("point_count", idx) = 5.0f;
+      g.at("max_height", idx) = 0.5f;
+      g.at("min_height", idx) = 0.5f;
+      g.at("low_max_height", idx) = 0.5f;
+    };
+    occupy(5.1, 0.1);
+    occupy(5.7, 0.1);  // 0.6 m away -> a full empty cell between -> disjoint
+    const auto cells = cells_of(*grid_map::GridMapRosConverter::toMessage(g));
     EXPECT_TRUE(cells->empty());
-    // a 4x3 block = 12 qualifying cells: an interior cell sees 12 >= 10 -> survives.
-    const auto cells2 = cells_of(make_obstacle_grid_msg(5.1, 5.7, -0.1, 0.3, 0.5f, 0.5f, 5.0f));
+    occupy(5.3, 0.1);  // 8-adjacent to the 5.1 cell -> component sum 10
+    const auto cells2 = cells_of(*grid_map::GridMapRosConverter::toMessage(g));
     EXPECT_FALSE(cells2->empty());
+  }
+  // (j) wrong frame -> the whole grid is rejected (a grid cannot be re-framed): no cells, no
+  //     silent misinterpretation of map-frame coordinates as base_link.
+  {
+    const auto cells =
+      cells_of(make_obstacle_grid_msg(5.1, 5.9, -0.3, 0.3, 0.2f, 0.9f, 0.9f, 30.0f, "map"));
+    EXPECT_TRUE(cells->empty());
+  }
+  // (k) missing required layer -> the whole grid is rejected without throwing (an uncaught
+  //     std::out_of_range would escape the diag-updater timer and kill the component container).
+  {
+    grid_map::GridMap g({"max_height", "min_height", "point_count"});  // no low_max_height
+    g.setFrameId("base_link");
+    g.setGeometry(grid_map::Length(60.0, 40.0), 0.2, grid_map::Position(20.0, 0.0));
+    for (const char * name : {"max_height", "min_height", "point_count"}) {
+      g[name].setConstant(0.5f);
+    }
+    PointCloud::Ptr cells = pcl::make_shared<PointCloud>();
+    EXPECT_NO_THROW(
+      aeb_node_->getCellsFromObstacleGrid(*grid_map::GridMapRosConverter::toMessage(g), cells));
+    EXPECT_TRUE(cells->empty());
   }
 }
 

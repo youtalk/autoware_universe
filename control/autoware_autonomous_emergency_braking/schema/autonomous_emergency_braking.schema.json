@@ -103,18 +103,23 @@
         },
         "cluster_minimum_height": {
           "type": "number",
-          "description": "Per-cell max_height floor [m]; a grid cell qualifies only if its max_height is at least this value.",
+          "description": "Per-cell low_max_height floor [m]; a grid cell qualifies only if its tallest in-band return (low_max_height) is at least this value.",
           "default": 0.1
         },
         "minimum_cluster_size": {
           "type": "integer",
-          "description": "Window min-occupied-cells threshold approximating the former minimum cluster size.",
+          "description": "Minimum summed point_count over an 8-connected component of qualifying cells. Counts RAW returns (the grid is pre-voxel), so values tuned for the old post-voxel cluster size may need to be raised.",
           "default": 10
         },
-        "window_size": {
+        "min_point_count_cell": {
           "type": "integer",
-          "description": "Half-window k of the (2k+1)^2 occupied-cell neighborhood used by the window filter.",
-          "default": 2
+          "description": "Per-cell density floor [returns]; a cell qualifies only if its point_count is at least this value.",
+          "default": 1
+        },
+        "obstacle_grid_timeout_sec": {
+          "type": "number",
+          "description": "Staleness watchdog for the obstacle grid [s]; a grid older than this is treated as unavailable (fail-safe), never as clear.",
+          "default": 0.5
         },
         "longitudinal_offset_margin": {
           "type": "number",

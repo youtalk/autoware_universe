@@ -324,7 +324,9 @@ public:
   explicit AEB(const rclcpp::NodeOptions & node_options);
 
   // subscriber
-  // Versioned obstacle-grid intake (RELIABLE KEEP_LAST(1)); replaces the raw no-ground point cloud.
+  // Obstacle-grid intake (agnocast polling subscriber, RELIABLE KEEP_LAST(1)); replaces the raw
+  // no-ground point cloud. The versioned spec binding is adopted additively once the
+  // interface-spec foundation lands.
   autoware::agnocast_wrapper::polling::PollingSubscriber<grid_map_msgs::msg::GridMap>::SharedPtr
     sub_obstacle_grid_ =
       autoware::agnocast_wrapper::polling::create_polling_subscriber<grid_map_msgs::msg::GridMap>(
@@ -451,11 +453,13 @@ public:
     const PointCloud::Ptr points_belonging_to_cluster_hulls, std::vector<ObjectData> & objects);
 
   /**
-   * @brief Extract obstacle cell centers from the obstacle grid (pointcloud branch).
-   * Applies the per-cell gate (point_count + height band) and a window min-occupied-cells filter
-   * approximating the former minimum_cluster_size, emitting surviving cell centers in base_link.
+   * @brief Extract obstacle cell corner points from the obstacle grid (pointcloud branch).
+   * Validates the message contract (base_link frame, required layers), applies the per-cell gate
+   * (point_count density floor + in-band height band on low_max_height/min_height), labels
+   * 8-connected components of qualifying cells, keeps components whose summed point_count reaches
+   * minimum_cluster_size, and emits the four corner points of each surviving cell (edge-aware).
    * @param msg The obstacle grid (grid_map_msgs/GridMap, base_link)
-   * @param points_belonging_to_cluster_hulls output: surviving occupied-cell centers (base_link)
+   * @param points_belonging_to_cluster_hulls output: corner points of surviving cells (base_link)
    */
   void getCellsFromObstacleGrid(
     const grid_map_msgs::msg::GridMap & msg,
@@ -547,9 +551,10 @@ public:
   double t_response_;
   double a_ego_min_;
   double a_obj_min_;
-  double cluster_minimum_height_;  // per-cell max_height floor [m] (grid gate min_height)
-  int minimum_cluster_size_;       // window min-occupied-cells threshold (approx. cluster size)
-  int window_size_;                // half-window k of the (2k+1)^2 occupied-cell neighborhood
+  double cluster_minimum_height_;     // per-cell low_max_height floor [m] (tallest in-band return)
+  int minimum_cluster_size_;          // min summed point_count per 8-connected cell component
+  int min_point_count_cell_;          // per-cell density floor [returns]
+  double obstacle_grid_timeout_sec_;  // grid staleness watchdog [s]; stale = unavailable
   double imu_prediction_time_horizon_;
   double imu_prediction_time_interval_;
   double mpc_prediction_time_horizon_;

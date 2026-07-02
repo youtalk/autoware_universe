@@ -149,25 +149,21 @@ If the `use_predicted_trajectory` parameter is set to true, the AEB module will 
 
 After generating the ego footprint path(s), the target obstacles are identified. There are two methods to find target obstacles: using the input point cloud, or using the predicted object information coming from perception modules.
 
-#### Pointcloud obstacle filtering
+#### Obstacle grid filtering
 
-The AEB module can filter the input pointcloud to find target obstacles with which the ego vehicle might collide. This method can be enable if the `use_pointcloud_data` parameter is set to true. The pointcloud obstacle filtering has three major steps, which are rough filtering, noise filtering with clustering and rigorous filtering.
+The AEB module can consume the sensing-side obstacle grid (`grid_map_msgs/GridMap`, published by `autoware_obstacle_grid_extractor` in `base_link`) to find target obstacles with which the ego vehicle might collide. This method is enabled if the `use_pointcloud_data` parameter is set to true. It replaces the former on-node crop + voxel + Euclidean-clustering + convex-hull pipeline with per-cell gating on the grid, and has three steps: message validation, per-cell gating with component labeling, and rigorous filtering.
 
-##### Rough filtering
+##### Message validation and staleness watchdog
 
-In rough filtering step, we select target obstacle with simple filter. Create a search area up to a certain distance (default is half of the ego vehicle width plus the `path_footprint_extra_margin` parameter plus the `expand_width` parameter) away from the predicted path of the ego vehicle and ignore the point cloud that are not within it. The rough filtering step is illustrated below.
+The grid message must be stamped in `base_link` and carry the `point_count`, `min_height` and `low_max_height` layers; a message violating this contract is rejected with an error log and produces no obstacle points. Additionally, a grid whose stamp is older than `obstacle_grid_timeout_sec` is treated as unavailable (the producer deliberately publishes nothing on its failure paths, so silence must never be read as "no obstacles").
 
-![rough_filtering](./image/obstacle_filtering_1.drawio.svg)
+##### Per-cell gating and connected-component filtering
 
-##### Noise filtering with clustering and convex hulls
-
-To prevent the AEB from considering noisy points, euclidean clustering is performed on the filtered point cloud. The points in the point cloud that are not close enough to other points to form a cluster are discarded. Furthermore, each point in a cluster is compared against the `cluster_minimum_height` parameter, if no point inside a cluster has a height/z value greater than `cluster_minimum_height`, the whole cluster of points is discarded. The parameters `cluster_tolerance`, `minimum_cluster_size` and `maximum_cluster_size` can be used to tune the clustering and the size of objects to be ignored, for more information about the clustering method used by the AEB module, please check the official documentation on euclidean clustering of the PCL library: <https://pcl.readthedocs.io/projects/tutorials/en/master/cluster_extraction.html>.
-
-Furthermore, a 2D convex hull is created around each detected cluster, the vertices of each hull represent the most extreme/outside points of the cluster. These vertices are then checked in the next step.
+A cell qualifies if it has at least `min_point_count_cell` returns, its tallest in-band return (`low_max_height`, the tallest return at or below the producer's `overhead_split`) is at least `cluster_minimum_height`, and its lowest return is below the vehicle height plus `detection_range_max_height_margin`. Gating on `low_max_height` rather than the raw maximum ensures an overhead structure (gantry, branch) sharing a cell with ground returns can never qualify the cell, while a wall or tall vehicle still does. Qualifying cells are then grouped into 8-connected components, and a component is kept only if the sum of its cells' `point_count` reaches `minimum_cluster_size` — the grid analog of the former Euclidean-cluster minimum size in points, so a small-footprint obstacle (pedestrian, pole) that concentrates many returns into a few cells is kept, while isolated sparse returns are discarded. Note that `minimum_cluster_size` counts raw returns (the grid is built before any voxel downsampling), so values tuned for the old post-voxel cluster size may need to be raised. For each surviving cell, the four cell corner points are emitted (with the cell's tallest in-band return as z), so the downstream corridor check sees the cell's full extent rather than only its center.
 
 ##### Rigorous filtering
 
-After Noise filtering, the module performs a geometric collision check to determine whether the filtered obstacles/hull vertices actually have possibility to collide with the ego vehicle. In this check, the ego vehicle is represented as a rectangle, and the point cloud obstacles are represented as points. Only the vertices with a possibility of collision are labeled as target obstacles.
+After gating, the module performs a geometric collision check to determine whether the emitted cell corner points actually have possibility to collide with the ego vehicle. In this check, the ego vehicle is represented as a rectangle, and the obstacle cells are represented by their corner points. Only the points with a possibility of collision are labeled as target obstacles.
 
 ![rigorous_filtering](./image/obstacle_filtering_2.drawio.svg)
 

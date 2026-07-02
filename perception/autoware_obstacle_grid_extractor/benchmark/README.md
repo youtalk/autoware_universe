@@ -1,4 +1,4 @@
-# Obstacle grid — size/coverage & latency validation (S3)
+# Obstacle grid — size/coverage & latency validation
 
 The producer cost is `O(N)` over the input points, so it is never the bottleneck on the last-resort
 path; there is no "producer must not exceed summed consumer cost" gate. What is validated instead:
@@ -21,5 +21,7 @@ frames:
 | coverage (in-ROI point → occupied cell)                               | ~1.000                                                 |
 | grid-vs-raw nearest distance                                          | conservative on 100 % of frames; error ≤ 0.26 m @0.2 m |
 
-See the Milestone-S evaluation for the full methodology, the consumer behavior-equivalence numbers, and
-how to regenerate the figures.
+Methodology for the real-data rows: each recorded frame is transformed `map -> base_link` with the
+time-matched kinematic-state pose and fed to the extractor at the production ROI; `d_legacy` (distance
+to the nearest raw point) is compared per frame against the grid query `d_grid` (distance to the
+nearest qualifying cell footprint), so "conservative" means `d_grid <= d_legacy` on every frame.

@@ -36,7 +36,7 @@ using autoware::obstacle_grid_extractor::ObstacleGridExtractor;
 
 ExtractorParams prodParams()
 {
-  return ExtractorParams{60.0, 40.0, 20.0, 0.2, -1.0f, 3.0f};
+  return ExtractorParams{60.0, 40.0, 20.0, 0.2, -1.0f, 3.0f, 2.5f};
 }
 }  // namespace
 
@@ -63,7 +63,7 @@ TEST(ObstacleGridCoverage, GeometryAndNoSilentDrop)
     grid_map::GridMapRosConverter::fromMessage(msg, g);
 
     // (a) geometry
-    ASSERT_EQ(g.getLayers().size(), 3u);
+    ASSERT_EQ(g.getLayers().size(), 4u);
     EXPECT_NEAR(g.getResolution(), 0.2, 1e-9);
     EXPECT_EQ(g.getFrameId(), "base_link");
 

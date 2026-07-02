@@ -33,6 +33,7 @@ ObstacleGridExtractorNode::ObstacleGridExtractorNode(const rclcpp::NodeOptions &
   p.resolution = declare_parameter<double>("resolution");
   p.crop_z_min = static_cast<float>(declare_parameter<double>("crop.z_min"));
   p.crop_z_max = static_cast<float>(declare_parameter<double>("crop.z_max"));
+  p.overhead_split = static_cast<float>(declare_parameter<double>("overhead_split"));
   extractor_ = std::make_unique<ObstacleGridExtractor>(p);
 
   using std::placeholders::_1;
@@ -53,7 +54,9 @@ void ObstacleGridExtractorNode::onCloud(const sensor_msgs::msg::PointCloud2::Con
     tf2::doTransform(*msg, in_base_link, tf);  // static extrinsic only
   } catch (const tf2::TransformException & e) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "TF to base_link failed: %s", e.what());
-    return;  // do NOT publish a wrong-frame grid; the consumer watchdog fires on silence
+    // Never publish a wrong-frame grid. Nothing (not even the all-NaN heartbeat) is published on
+    // this path, so consumers MUST treat a stale grid stamp as "unavailable", never as "clear".
+    return;
   }
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::fromROSMsg(in_base_link, cloud);

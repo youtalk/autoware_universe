@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <limits>
 
 namespace
 {
@@ -26,7 +27,8 @@ using autoware::obstacle_grid_extractor::ObstacleGridExtractor;
 
 ExtractorParams testParams()
 {
-  return ExtractorParams{/*x*/ 60.0, /*y*/ 40.0, /*offset*/ 20.0, /*res*/ 0.2, -1.0f, 3.0f};
+  return ExtractorParams{/*x*/ 60.0,      /*y*/ 40.0,     /*offset*/ 20.0,        /*res*/ 0.2,
+                         /*z_min*/ -1.0f, /*z_max*/ 3.0f, /*overhead_split*/ 2.5f};
 }
 
 grid_map::GridMap toGrid(const grid_map_msgs::msg::GridMap & msg)
@@ -126,6 +128,66 @@ TEST(ObstacleGridExtractor, CropZBandBoundsAreInclusive)
   grid_map::Index idx2;
   ASSERT_TRUE(g2.getIndex(grid_map::Position(8.1, 0.1), idx2));
   EXPECT_TRUE(std::isnan(g2.at("point_count", idx2)));
+}
+
+TEST(ObstacleGridExtractor, LowMaxHeightExcludesOverheadReturns)
+{
+  std_msgs::msg::Header h;
+  h.frame_id = "base_link";
+
+  // gantry-like cell: a ground return (0.05) + an overhead return (2.8 > overhead_split 2.5).
+  // low_max_height must record only the tallest IN-BAND return (0.05), while max_height still
+  // reports the true top (2.8) — this is the discriminator consumers use to reject overhead-only
+  // structures without losing tall in-band obstacles.
+  pcl::PointCloud<pcl::PointXYZ> gantry;
+  gantry.emplace_back(5.05f, 0.05f, 0.05f);
+  gantry.emplace_back(5.15f, 0.15f, 2.8f);
+  const auto g = toGrid(ObstacleGridExtractor(testParams()).extract(gantry, h));
+  grid_map::Index idx;
+  ASSERT_TRUE(g.getIndex(grid_map::Position(5.1, 0.1), idx));
+  EXPECT_FLOAT_EQ(g.at("point_count", idx), 2.0f);
+  EXPECT_FLOAT_EQ(g.at("max_height", idx), 2.8f);
+  EXPECT_FLOAT_EQ(g.at("low_max_height", idx), 0.05f);
+
+  // overhead-only cell: low_max_height stays NaN while point_count/max_height are populated.
+  pcl::PointCloud<pcl::PointXYZ> overhead_only;
+  overhead_only.emplace_back(8.05f, 0.05f, 2.8f);
+  const auto g2 = toGrid(ObstacleGridExtractor(testParams()).extract(overhead_only, h));
+  grid_map::Index idx2;
+  ASSERT_TRUE(g2.getIndex(grid_map::Position(8.1, 0.1), idx2));
+  EXPECT_FLOAT_EQ(g2.at("point_count", idx2), 1.0f);
+  EXPECT_FLOAT_EQ(g2.at("max_height", idx2), 2.8f);
+  EXPECT_TRUE(std::isnan(g2.at("low_max_height", idx2)));
+
+  // wall-like cell: an in-band tall return (2.0 <= 2.5) IS recorded by low_max_height.
+  pcl::PointCloud<pcl::PointXYZ> wall;
+  wall.emplace_back(11.05f, 0.05f, 0.05f);
+  wall.emplace_back(11.15f, 0.15f, 2.0f);
+  const auto g3 = toGrid(ObstacleGridExtractor(testParams()).extract(wall, h));
+  grid_map::Index idx3;
+  ASSERT_TRUE(g3.getIndex(grid_map::Position(11.1, 0.1), idx3));
+  EXPECT_FLOAT_EQ(g3.at("low_max_height", idx3), 2.0f);
+}
+
+TEST(ObstacleGridExtractor, NonFinitePointsAreDropped)
+{
+  std_msgs::msg::Header h;
+  h.frame_id = "base_link";
+
+  // a NaN-z point with finite x/y arrives FIRST in the cell; without the finiteness guard it
+  // would pass the z crop (NaN comparisons are false) and permanently poison max/min_height
+  // (std::max/std::min return the first, NaN, argument). The real point must fully define the cell.
+  const float nan = std::numeric_limits<float>::quiet_NaN();
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  cloud.emplace_back(5.05f, 0.05f, nan);
+  cloud.emplace_back(5.15f, 0.15f, 0.5f);
+  const auto g = toGrid(ObstacleGridExtractor(testParams()).extract(cloud, h));
+  grid_map::Index idx;
+  ASSERT_TRUE(g.getIndex(grid_map::Position(5.1, 0.1), idx));
+  EXPECT_FLOAT_EQ(g.at("point_count", idx), 1.0f);  // the NaN point is not counted
+  EXPECT_FLOAT_EQ(g.at("max_height", idx), 0.5f);
+  EXPECT_FLOAT_EQ(g.at("min_height", idx), 0.5f);
+  EXPECT_FLOAT_EQ(g.at("low_max_height", idx), 0.5f);
 }
 
 TEST(ObstacleGridExtractor, EmptyCloudIsFreshHeartbeat)

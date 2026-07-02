@@ -8,3 +8,5 @@
     crop:
       z_min: -1.0     # union z-band lower bound [m]
       z_max: 3.0      # union z-band upper bound [m]; consumers re-apply their own z gate
+    overhead_split: 2.5  # low_max_height ceiling [m]; must be >= every consumer's own z-band top
+                         # (vehicle_height + margin) so in-band mass is never hidden from them

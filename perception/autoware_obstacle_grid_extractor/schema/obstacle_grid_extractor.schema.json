@@ -52,9 +52,14 @@
           },
           "required": ["z_min", "z_max"],
           "additionalProperties": false
+        },
+        "overhead_split": {
+          "type": "number",
+          "default": 2.5,
+          "description": "Ceiling of the low_max_height layer [m]: low_max_height records the tallest return at or below this height, so consumers can reject cells whose only tall content is an overhead structure (gantry, branch). Must be at least every consumer's own z-band top (vehicle_height + margin)."
         }
       },
-      "required": ["roi", "resolution", "crop"],
+      "required": ["roi", "resolution", "crop", "overhead_split"],
       "additionalProperties": false
     }
   },

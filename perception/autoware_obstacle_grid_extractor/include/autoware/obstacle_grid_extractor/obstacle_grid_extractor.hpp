@@ -32,12 +32,16 @@ struct ExtractorParams
   double resolution;    // cell size [m]
   float crop_z_min;
   float crop_z_max;
+  float overhead_split;  // low_max_height ceiling [m]: returns above it are overhead-only
 };
 
 /// Single-pass rasterizer: one cell index per point (grid_map::getIndex ==
 /// costmap_generator's fetchGridIndexFromPoint), updating max_height/min_height/
-/// point_count. O(N). No clustering, no hull. Empty cells stay NaN; an empty
-/// cloud yields an all-NaN grid with the header preserved (the heartbeat).
+/// point_count plus low_max_height (max z among returns at or below overhead_split,
+/// so consumers can reject cells whose only tall content is an overhead structure).
+/// O(N). No clustering, no hull. Non-finite points are dropped. Empty cells stay
+/// NaN; an empty cloud yields an all-NaN grid with the header preserved (the
+/// heartbeat).
 class ObstacleGridExtractor
 {
 public:
@@ -49,7 +53,8 @@ public:
 
 private:
   ExtractorParams params_;
-  mutable grid_map::GridMap grid_;  // pre-sized {max_height, min_height, point_count}
+  // pre-sized {max_height, min_height, point_count, low_max_height}
+  mutable grid_map::GridMap grid_;
 };
 }  // namespace autoware::obstacle_grid_extractor
 #endif  // AUTOWARE__OBSTACLE_GRID_EXTRACTOR__OBSTACLE_GRID_EXTRACTOR_HPP_

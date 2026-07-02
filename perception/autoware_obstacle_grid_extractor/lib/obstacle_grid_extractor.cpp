@@ -27,10 +27,11 @@ namespace
 constexpr char kMaxHeight[] = "max_height";
 constexpr char kMinHeight[] = "min_height";
 constexpr char kPointCount[] = "point_count";
+constexpr char kLowMaxHeight[] = "low_max_height";
 }  // namespace
 
 ObstacleGridExtractor::ObstacleGridExtractor(const ExtractorParams & params)
-: params_(params), grid_({kMaxHeight, kMinHeight, kPointCount})
+: params_(params), grid_({kMaxHeight, kMinHeight, kPointCount, kLowMaxHeight})
 {
   grid_.setFrameId("base_link");
   grid_.setGeometry(
@@ -46,12 +47,17 @@ grid_map_msgs::msg::GridMap ObstacleGridExtractor::extract(
   grid_[kMaxHeight].setConstant(nan);
   grid_[kMinHeight].setConstant(nan);
   grid_[kPointCount].setConstant(nan);  // empty cell = NaN
+  grid_[kLowMaxHeight].setConstant(nan);
 
   auto & hi = grid_[kMaxHeight];
   auto & lo = grid_[kMinHeight];
   auto & cnt = grid_[kPointCount];
+  auto & low_hi = grid_[kLowMaxHeight];
 
   for (const auto & p : cloud_base_link) {  // O(N) single pass
+    if (!std::isfinite(p.x) || !std::isfinite(p.y) || !std::isfinite(p.z)) {
+      continue;  // a NaN z would otherwise pass the crop and poison the cell's height layers
+    }
     if (p.z < params_.crop_z_min || p.z > params_.crop_z_max) {
       continue;
     }
@@ -68,6 +74,10 @@ grid_map_msgs::msg::GridMap ObstacleGridExtractor::extract(
       c += 1.0f;
       hi(idx(0), idx(1)) = std::max(hi(idx(0), idx(1)), p.z);
       lo(idx(0), idx(1)) = std::min(lo(idx(0), idx(1)), p.z);
+    }
+    if (p.z <= params_.overhead_split) {
+      float & lm = low_hi(idx(0), idx(1));
+      lm = std::isnan(lm) ? p.z : std::max(lm, p.z);
     }
   }
 

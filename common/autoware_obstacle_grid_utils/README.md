@@ -2,7 +2,7 @@
 
 Header-only consumer helpers for the obstacle grid published on
 `/sensing/obstacle_segmentation/obstacle_grid` (`grid_map_msgs/msg/GridMap`, frame `base_link`,
-layers `max_height` / `min_height` / `point_count` / `low_max_height`, `NaN` = empty cell).
+layers `max_height` / `min_height` / `point_count`, `NaN` = empty cell).
 
 The grid is a shared last-resort safety product. These helpers exist so every consumer
 (collision_detector, surround_obstacle_checker, obstacle_collision_checker, planning_validator,
@@ -13,8 +13,8 @@ hand-copying the same per-cell math.
 
 Consumers must validate `frame_id == base_link` and the presence of the required layers on intake,
 and treat any contract violation or a stale stamp as **unavailable** (never as "clear"). Staleness
-is a per-consumer stamp-age watchdog (`obstacle_grid_timeout_sec`, default 0.5 s); an all-`NaN`
-grid with a fresh stamp is a valid alive heartbeat.
+is a per-consumer stamp-age watchdog (parameter name and default timeout TBD per consumer); an
+all-`NaN` grid with a fresh stamp is a valid alive heartbeat.
 
 ## Helpers
 
@@ -23,7 +23,7 @@ All helpers live in namespace `autoware::obstacle_grid_utils` in
 
 | Helper                                       | Purpose                                                                                                                                                                                                                                                                                      |
 | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Gate{min_point_count_cell, min_height}`     | Per-cell qualification threshold: a cell qualifies iff `point_count >= min_point_count_cell && max_height >= min_height`. Height is `max_height`-based; height-braking consumers read `low_max_height` directly.                                                                             |
+| `Gate{min_point_count_cell, min_height}`     | Per-cell qualification threshold: a cell qualifies iff `point_count >= min_point_count_cell && max_height >= min_height`. Height is `max_height`-based.                                                                                                                                      |
 | `cell_qualifies(grid, index, gate)`          | Whether one cell passes the gate (`NaN`-safe).                                                                                                                                                                                                                                               |
 | `cell_footprint(center, resolution)`         | The cell's footprint box as a polygon, so distances to it are edge-aware.                                                                                                                                                                                                                    |
 | `cell_corners(center, resolution)`           | The 4 corner points of the cell footprint (min-min, min-max, max-max, max-min) for edge-conservative corridor/lane membership.                                                                                                                                                               |

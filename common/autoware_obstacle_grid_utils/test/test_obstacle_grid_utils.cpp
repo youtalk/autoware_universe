@@ -291,6 +291,46 @@ TEST(ObstacleGridUtils, ConnectedComponentsRowWrapDoesNotFalselyConnect)
   EXPECT_EQ(connected_components(g, {a, b}).size(), 2u);
 }
 
+TEST(ObstacleGridUtils, ConnectedComponentsDuplicateIndexCountedOnce)
+{
+  // The code guards duplicates via the visited set: supplying the same index twice must yield a
+  // single one-cell component whose point_sum is NOT double-counted.
+  auto g = make_empty_grid();
+  const grid_map::Index a(10, 10);
+  set_cell(g, a, 25);
+  const auto comps = connected_components(g, {a, a});
+  ASSERT_EQ(comps.size(), 1u);
+  EXPECT_EQ(comps[0].cells.size(), 1u);
+  EXPECT_NEAR(comps[0].point_sum, 25.0, 1e-6);
+}
+
+TEST(ObstacleGridUtils, ConnectedComponentsMergeAcrossBufferWrapSeam)
+{
+  // A move()d grid has a non-zero circular-buffer start index, so raw buffer-index adjacency no
+  // longer equals geometric adjacency at the wrap seam. Two geometrically adjacent cells whose
+  // buffer indices land on opposite ends of the buffer (rows size-1 and 0) must still merge into
+  // ONE component -- the regression guard for stepping in unwrapped index space.
+  auto g = make_empty_grid();
+  g.move(grid_map::Position(1.0, 0.0));  // shift the buffer origin along x (5 cells at 0.2 m)
+  ASSERT_FALSE(g.isDefaultStartIndex());
+  const grid_map::Size size = g.getSize();
+  const grid_map::Index start = g.getStartIndex();
+  ASSERT_NE(start(0), 0);  // x-move must have offset the row start index
+  // Unwrapped row u maps to buffer row (u + start(0)) % size(0); the seam is at u0 = size-1-start.
+  const int u0 = size(0) - 1 - start(0);
+  const int col = 5;
+  const auto buf_a = grid_map::getBufferIndexFromIndex(grid_map::Index(u0, col), size, start);
+  const auto buf_b = grid_map::getBufferIndexFromIndex(grid_map::Index(u0 + 1, col), size, start);
+  // Confirm the two geometric neighbours really straddle the buffer seam (buffer rows 49 and 0).
+  ASSERT_EQ(buf_a(0) - buf_b(0), size(0) - 1);
+  set_cell(g, buf_a, 6);
+  set_cell(g, buf_b, 6);
+  const auto comps = connected_components(g, {buf_a, buf_b});
+  ASSERT_EQ(comps.size(), 1u);  // geometrically adjacent across the seam -> one component
+  EXPECT_EQ(comps[0].cells.size(), 2u);
+  EXPECT_NEAR(comps[0].point_sum, 12.0, 1e-6);
+}
+
 }  // namespace autoware::obstacle_grid_utils
 
 int main(int argc, char ** argv)

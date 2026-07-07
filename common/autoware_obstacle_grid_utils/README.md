@@ -1,0 +1,33 @@
+# autoware_obstacle_grid_utils
+
+Header-only consumer helpers for the obstacle grid published on
+`/sensing/obstacle_segmentation/obstacle_grid` (`grid_map_msgs/msg/GridMap`, frame `base_link`,
+layers `max_height` / `min_height` / `point_count` / `low_max_height`, `NaN` = empty cell).
+
+The grid is a shared last-resort safety product. These helpers exist so every consumer
+(collision_detector, surround_obstacle_checker, obstacle_collision_checker, planning_validator,
+trajectory ObstacleStop, AEB, ...) queries the grid through one reviewed implementation instead of
+hand-copying the same per-cell math.
+
+## Contract reminder
+
+Consumers must validate `frame_id == base_link` and the presence of the required layers on intake,
+and treat any contract violation or a stale stamp as **unavailable** (never as "clear"). Staleness
+is a per-consumer stamp-age watchdog (`obstacle_grid_timeout_sec`, default 0.5 s); an all-`NaN`
+grid with a fresh stamp is a valid alive heartbeat.
+
+## Helpers
+
+All helpers live in namespace `autoware::obstacle_grid_utils` in
+`include/autoware/obstacle_grid_utils/obstacle_grid_utils.hpp`.
+
+| Helper                                       | Purpose                                                                                                                                                                                                                                                                                      |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Gate{min_point_count_cell, min_height}`     | Per-cell qualification threshold: a cell qualifies iff `point_count >= min_point_count_cell && max_height >= min_height`. Height is `max_height`-based; height-braking consumers read `low_max_height` directly.                                                                             |
+| `cell_qualifies(grid, index, gate)`          | Whether one cell passes the gate (`NaN`-safe).                                                                                                                                                                                                                                               |
+| `cell_footprint(center, resolution)`         | The cell's footprint box as a polygon, so distances to it are edge-aware.                                                                                                                                                                                                                    |
+| `cell_corners(center, resolution)`           | The 4 corner points of the cell footprint (min-min, min-max, max-max, max-min) for edge-conservative corridor/lane membership.                                                                                                                                                               |
+| `nearest_distance(grid, ego_polygon, gate)`  | Edge-aware 2D distance from `ego_polygon` to the nearest qualifying cell; `+inf` when nothing qualifies inside the ROI.                                                                                                                                                                      |
+| `nearest_cell(grid, ego_polygon, gate)`      | Same edge-aware distance **and** where the nearest qualifying cell is (`std::optional<NearestCell{distance, position, index}>`, `std::nullopt` when nothing qualifies). On a distance tie the first cell reached by the grid iterator wins (either-of).                                      |
+| `cells_in_polygon(grid, lane_polygon, gate)` | Centers of qualifying cells inside a polygon.                                                                                                                                                                                                                                                |
+| `connected_components(grid, qualifying)`     | 8-connected labeling of the **caller-supplied** qualifying cell indices; returns `std::vector<CellComponent{cells, point_sum}>` with `point_sum` the sum of `point_count` over each component. Does not gate — the caller applies its `Gate` first. Components come out in first-seen order. |

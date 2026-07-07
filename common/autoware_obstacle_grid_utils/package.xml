@@ -5,8 +5,9 @@
   <version>0.51.0</version>
   <description>
     Header-only consumer helper for the obstacle grid: a per-cell qualification gate plus
-    nearest-distance and cells-in-polygon queries over a grid_map_msgs/GridMap, shared by all
-    last-resort safety consumers so they cannot each re-derive the query logic incorrectly.
+    nearest-distance/nearest-cell, cells-in-polygon, cell-corner, and 8-connected component
+    queries over a grid_map_msgs/GridMap, shared by all last-resort safety consumers so they
+    cannot each re-derive the query logic incorrectly.
   </description>
   <maintainer email="yutaka.kondo@youtalk.jp">Yutaka Kondo</maintainer>
   <license>Apache License 2.0</license>

@@ -14,6 +14,12 @@
               "description": "enable to check surrounding pointcloud",
               "default": "false"
             },
+            "obstacle_grid_timeout_sec": {
+              "type": "number",
+              "description": "Staleness watchdog for the obstacle grid [s]; a grid older than this is treated as unavailable (fail-safe), never as clear.",
+              "default": "0.5",
+              "minimum": 0.0
+            },
             "surround_check_front_distance": {
               "type": "number",
               "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
@@ -35,6 +41,7 @@
           },
           "required": [
             "enable_check",
+            "obstacle_grid_timeout_sec",
             "surround_check_front_distance",
             "surround_check_side_distance",
             "surround_check_back_distance"

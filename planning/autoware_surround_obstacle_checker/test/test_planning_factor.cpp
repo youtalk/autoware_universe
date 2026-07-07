@@ -18,10 +18,15 @@
 #include <autoware/planning_test_manager/autoware_planning_test_manager.hpp>
 #include <autoware_test_utils/autoware_test_utils.hpp>
 #include <autoware_utils_uuid/uuid_helper.hpp>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
+
+#include <grid_map_msgs/msg/grid_map.hpp>
 
 #include <gtest/gtest.h>
-#include <tf2_ros/static_transform_broadcaster.h>
 
+#include <cmath>
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -43,8 +48,6 @@ public:
     test_node_ = std::make_shared<rclcpp::Node>("planning_interface_test_node");
     test_target_node_ = generateTestTargetNode();
 
-    tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(test_node_);
-
     const std::string output_planning_factors_topic =
       "planning/planning_factors/surround_obstacle_checker";
     sub_planning_factor_ =
@@ -60,8 +63,8 @@ public:
       test_node_->create_publisher<nav_msgs::msg::Odometry>("/localization/kinematic_state", 1);
     pub_dynamic_objects_ = test_node_->create_publisher<PredictedObjects>(
       "/surround_obstacle_checker_node/input/objects", 1);
-    pub_pointcloud_ = test_node_->create_publisher<sensor_msgs::msg::PointCloud2>(
-      "/surround_obstacle_checker_node/input/pointcloud", 1);
+    pub_obstacle_grid_ = test_node_->create_publisher<grid_map_msgs::msg::GridMap>(
+      "/surround_obstacle_checker_node/input/obstacle_grid", 1);
   }
 
   void setEnableCheck(const std::string & type, const bool enable)
@@ -98,20 +101,6 @@ public:
     return std::make_shared<SurroundObstacleCheckerNode>(node_options);
   }
 
-  void publishStaticTransforms()
-  {
-    const auto odometry = autoware::test_utils::makeInitialPose();
-    geometry_msgs::msg::TransformStamped transform;
-    transform.header.stamp = test_node_->now();
-    transform.header.frame_id = "map";
-    transform.child_frame_id = "base_link";
-    transform.transform.translation.x = odometry.pose.pose.position.x;
-    transform.transform.translation.y = odometry.pose.pose.position.y;
-    transform.transform.translation.z = odometry.pose.pose.position.z;
-    transform.transform.rotation = odometry.pose.pose.orientation;
-    tf_broadcaster_->sendTransform(transform);
-  }
-
   void publishMandatoryTopics()
   {
     auto odometry = autoware::test_utils::makeInitialPose();
@@ -145,48 +134,31 @@ public:
     pub_dynamic_objects_->publish(dynamic_objects);
   }
 
-  void publishPointCloud()
+  // Publish a base_link obstacle grid with a single occupied cell at the base_link origin. The grid
+  // is stamped fresh so the staleness watchdog accepts it. Because the cell center is the base_link
+  // origin, the node's reported nearest point in map frame equals the ego position exactly.
+  void publishObstacleGrid()
   {
-    sensor_msgs::msg::PointCloud2 pointcloud;
-    pointcloud.header.stamp = test_target_node_->now();
-    pointcloud.header.frame_id = "base_link";
-    pointcloud.height = 1;
-    pointcloud.width = 1;
-    pointcloud.is_dense = true;
-    pointcloud.is_bigendian = false;
-    pointcloud.fields.resize(3);
-    pointcloud.fields[0].name = "x";
-    pointcloud.fields[0].offset = 0;
-    pointcloud.fields[0].datatype = sensor_msgs::msg::PointField::FLOAT32;
-    pointcloud.fields[0].count = 1;
-    pointcloud.fields[1].name = "y";
-    pointcloud.fields[1].offset = 4;
-    pointcloud.fields[1].datatype = sensor_msgs::msg::PointField::FLOAT32;
-    pointcloud.fields[1].count = 1;
-    pointcloud.fields[2].name = "z";
-    pointcloud.fields[2].offset = 8;
-    pointcloud.fields[2].datatype = sensor_msgs::msg::PointField::FLOAT32;
-    pointcloud.fields[2].count = 1;
-    pointcloud.point_step = 16;  // 4 bytes for each field
-    pointcloud.row_step = pointcloud.point_step * pointcloud.width;
-    pointcloud.data.resize(pointcloud.row_step * pointcloud.height);
+    grid_map::GridMap grid(std::vector<std::string>{"point_count", "max_height"});
+    grid.setFrameId("base_link");
+    // Odd cell count (3.8 / 0.2 = 19) so a cell center lands exactly on the base_link origin.
+    grid.setGeometry(grid_map::Length(3.8, 3.8), 0.2, grid_map::Position(0.0, 0.0));
+    grid["point_count"].setConstant(std::numeric_limits<float>::quiet_NaN());
+    grid["max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
+    grid_map::Index idx;
+    grid.getIndex(grid_map::Position(0.0, 0.0), idx);
+    grid.at("point_count", idx) = 5.0f;
+    grid.at("max_height", idx) = 0.5f;
 
-    const auto odometry = autoware::test_utils::makeInitialPose();
-    const float expected_base_link_x =
-      0.5f * std::cos(-tf2::getYaw(odometry.pose.pose.orientation));
-    const float expected_base_link_y =
-      0.5f * std::sin(-tf2::getYaw(odometry.pose.pose.orientation));
-
-    std::array<float, 4> point = {
-      expected_base_link_x, expected_base_link_y, 0.0f,
-      1.0f};  // x, y, z, intensity in base_link frame
-    std::memcpy(pointcloud.data.data(), point.data(), point.size() * sizeof(float));
-    pub_pointcloud_->publish(pointcloud);
+    auto msg = grid_map::GridMapRosConverter::toMessage(grid);
+    msg->header.stamp = test_target_node_->now();
+    pub_obstacle_grid_->publish(*msg);
   }
 
   void validatePlanningFactor(
     const unique_identifier_msgs::msg::UUID & validate_object_id,
-    const uint16_t expected_object_type)
+    const uint16_t expected_object_type, const double expected_x, const double expected_y,
+    const double position_tolerance = 1e-6)
   {
     // make sure planning_factor_msg_ is received
     EXPECT_NE(planning_factor_msg_, nullptr);
@@ -212,12 +184,9 @@ public:
       EXPECT_FALSE(safety_factor.is_safe);
       EXPECT_EQ(safety_factor.points.size(), 1);
 
-      const double expected_x = 3722.16015625 + 0.5;
-      const double expected_y = 73723.515625;
-
       Point2d validate_point_2d(expected_x, expected_y);
       Point2d safety_factor_point_2d(safety_factor.points.at(0).x, safety_factor.points.at(0).y);
-      EXPECT_NEAR(bg::distance(validate_point_2d, safety_factor_point_2d), 0.0, 1e-6);
+      EXPECT_NEAR(bg::distance(validate_point_2d, safety_factor_point_2d), 0.0, position_tolerance);
 
       EXPECT_EQ(safety_factor.object_id, validate_object_id);
     }
@@ -236,12 +205,11 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_kinematic_state_;
   rclcpp::Publisher<autoware_perception_msgs::msg::PredictedObjects>::SharedPtr
     pub_dynamic_objects_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_pointcloud_;
+  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr pub_obstacle_grid_;
   std::shared_ptr<SurroundObstacleCheckerNode> test_target_node_;
   rclcpp::Subscription<autoware_internal_planning_msgs::msg::PlanningFactorArray>::SharedPtr
     sub_planning_factor_;
   autoware_internal_planning_msgs::msg::PlanningFactorArray::SharedPtr planning_factor_msg_;
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_broadcaster_;
 };
 
 TEST_F(SurroundObstacleCheckerPlanningFactorTest, TestByDynamicObject)
@@ -253,7 +221,7 @@ TEST_F(SurroundObstacleCheckerPlanningFactorTest, TestByDynamicObject)
     spinSome();
     rclcpp::sleep_for(std::chrono::milliseconds(100));
   }
-  validatePlanningFactor(object_id, SafetyFactor::OBJECT);
+  validatePlanningFactor(object_id, SafetyFactor::OBJECT, 3722.16015625 + 0.5, 73723.515625);
 }
 
 TEST_F(SurroundObstacleCheckerPlanningFactorTest, TestByPointCloud)
@@ -261,13 +229,17 @@ TEST_F(SurroundObstacleCheckerPlanningFactorTest, TestByPointCloud)
   setEnableCheck("pointcloud", true);
   const auto default_id = unique_identifier_msgs::msg::UUID{};
   for (size_t i = 0; i < 5; i++) {
-    publishStaticTransforms();
     publishMandatoryTopics();
-    publishPointCloud();
+    publishObstacleGrid();
     spinSome();
     rclcpp::sleep_for(std::chrono::milliseconds(100));
   }
-  validatePlanningFactor(default_id, SafetyFactor::POINTCLOUD);
+  // The occupied cell is centered on the base_link origin and is reported by its corners, so the
+  // map-frame nearest point sits within half a cell diagonal (0.2 m cells) of the ego position
+  // (independent oracle: the sample initial pose), with the default UUID and POINTCLOUD.
+  validatePlanningFactor(
+    default_id, SafetyFactor::POINTCLOUD, 3722.16015625, 73723.515625,
+    0.5 * std::sqrt(2.0) * 0.2 + 1e-6);
 }
 
 }  // namespace autoware::surround_obstacle_checker

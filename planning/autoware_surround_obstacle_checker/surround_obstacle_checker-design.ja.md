@@ -46,12 +46,14 @@ stop
 
 ### Check data
 
-点群、動的物体、自車速度のデータが取得できているかどうかを確認する。
+障害物グリッド、動的物体、自車速度のデータが取得できているかどうかを確認する。
 
 ### Get distance to nearest object
 
 自車と最近傍の障害物との距離を計算する。
-ここでは、自車のポリゴンを計算し、点群の各点および各動的物体のポリゴンとの距離をそれぞれ計算することで最近傍の障害物との距離を求める。
+点群チェックでは、自車のポリゴンと障害物グリッド（`grid_map_msgs/GridMap`、`base_link`、`autoware_obstacle_grid_extractor` が生成）の最近傍の該当セルとの距離を求める。動的物体では、自車のポリゴンと各動的物体のポリゴンとの距離を求める。セルは何らかの点を含んだ時点（`point_count >= 1`）で該当とみなし、チェックは純粋に 2D であるためセルの高さはゲートしない。報告される最近傍点は該当セルの中心で `z = 0.0`（セルは単一の高さを持たないため 2D の情報として扱う）。
+
+グリッドは `base_link` 相対で有限の関心領域（ROI）を持つ製品であるため、点群チェックは ROI 内の障害物のみを対象とする。ROI 外の障害物には停止計画を行わない。
 
 ### Stop condition
 
@@ -76,13 +78,11 @@ Stop condition の項で述べたように、状態によって障害物判定�
 
 ### Input
 
-| Name                                           | Type                                              | Description                                                        |
-| ---------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------ |
-| `/perception/obstacle_segmentation/pointcloud` | `sensor_msgs::msg::PointCloud2`                   | Pointcloud of obstacles which the ego-vehicle should stop or avoid |
-| `/perception/object_recognition/objects`       | `autoware_perception_msgs::msg::PredictedObjects` | Dynamic objects                                                    |
-| `/localization/kinematic_state`                | `nav_msgs::msg::Odometry`                         | Current twist                                                      |
-| `/tf`                                          | `tf2_msgs::msg::TFMessage`                        | TF                                                                 |
-| `/tf_static`                                   | `tf2_msgs::msg::TFMessage`                        | TF static                                                          |
+| Name                                           | Type                                              | Description                                                                       |
+| ---------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `/sensing/obstacle_segmentation/obstacle_grid` | `grid_map_msgs::msg::GridMap`                     | Obstacle grid (`base_link`, layers `point_count`/`max_height`) from the extractor |
+| `/perception/object_recognition/objects`       | `autoware_perception_msgs::msg::PredictedObjects` | Dynamic objects                                                                   |
+| `/localization/kinematic_state`                | `nav_msgs::msg::Odometry`                         | Current twist                                                                     |
 
 ### Output
 
@@ -107,4 +107,4 @@ Stop condition の項で述べたように、状態によって障害物判定�
 
 ## Assumptions / Known limits
 
-この機能が動作するためには障害物点群の観測が必要なため、障害物が死角に入っている場合は停止計画を行わない。
+この機能が動作するためには障害物グリッドの観測が必要なため、障害物が死角または抽出器の ROI 外にある場合は停止計画を行わない。

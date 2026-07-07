@@ -22,11 +22,12 @@
 #include "types.hpp"
 
 #include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
+#include <autoware/obstacle_grid_utils/obstacle_grid_utils.hpp>
 #include <autoware/obstacle_proximity_checker/obstacle_proximity_checker.hpp>
 #include <autoware_surround_obstacle_checker/surround_obstacle_checker_node_parameters.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tf2/utils.hpp>
 
 #include <autoware_internal_debug_msgs/msg/float64_stamped.hpp>
 #include <autoware_internal_planning_msgs/msg/velocity_limit.hpp>
@@ -34,12 +35,12 @@
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <diagnostic_msgs/msg/key_value.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 #include <memory>
 #include <optional>
@@ -67,11 +68,15 @@ private:
 
   obstacle_proximity_checker::Parameters toProximityCheckerParameters() const;
 
-  obstacle_proximity_checker::Inputs toProximityCheckerInputs() const;
+  // Converts the qualifying cells of the latest obstacle grid into a base_link point cloud.
+  // std::nullopt means the grid is unavailable (not yet received / wrong frame / unconvertible /
+  // missing a required layer / stale), whereas an empty cloud means the grid is valid and nothing
+  // qualifies inside the ROI. That distinction is load-bearing: unavailability is "unknown" and
+  // must never be read as "clear".
+  std::optional<pcl::PointCloud<pcl::PointXYZ>::ConstPtr> toObstacleGridPointCloud() const;
 
-  std::optional<geometry_msgs::msg::TransformStamped> getTransform(
-    const std::string & source, const std::string & target, const rclcpp::Time & stamp,
-    double duration_sec) const;
+  obstacle_proximity_checker::Inputs toProximityCheckerInputs(
+    const std::optional<pcl::PointCloud<pcl::PointXYZ>::ConstPtr> & obstacle_grid_pointcloud) const;
 
   auto isStopRequired(
     const bool is_obstacle_found, const bool is_vehicle_stopped, const State & state,
@@ -79,15 +84,15 @@ private:
     -> std::pair<bool, std::optional<rclcpp::Time>>;
 
   // ros
-  mutable tf2_ros::Buffer tf_buffer_{get_clock()};
-  mutable tf2_ros::TransformListener tf_listener_{tf_buffer_};
   rclcpp::TimerBase::SharedPtr timer_;
 
   // publisher and subscriber
   autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{
     this, "~/input/odometry"};
-  autoware_utils::InterProcessPollingSubscriber<sensor_msgs::msg::PointCloud2> sub_pointcloud_{
-    this, "~/input/pointcloud", autoware_utils::single_depth_sensor_qos()};
+  // Obstacle-grid intake (plain rclcpp; InterProcessPollingSubscriber's default QoS{1} is already
+  // RELIABLE / KEEP_LAST(1), matching the producer). Replaces the raw no-ground point cloud.
+  autoware_utils::InterProcessPollingSubscriber<grid_map_msgs::msg::GridMap> sub_obstacle_grid_{
+    this, "~/input/obstacle_grid"};
   autoware_utils::InterProcessPollingSubscriber<PredictedObjects> sub_dynamic_objects_{
     this, "~/input/objects"};
   rclcpp::Publisher<VelocityLimitClearCommand>::SharedPtr pub_clear_velocity_limit_;
@@ -110,7 +115,7 @@ private:
 
   // data
   nav_msgs::msg::Odometry::ConstSharedPtr odometry_ptr_;
-  sensor_msgs::msg::PointCloud2::ConstSharedPtr pointcloud_ptr_;
+  grid_map_msgs::msg::GridMap::ConstSharedPtr obstacle_grid_ptr_;
   PredictedObjects::ConstSharedPtr object_ptr_;
 
   // State Machine

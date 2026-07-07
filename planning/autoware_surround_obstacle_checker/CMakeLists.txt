@@ -31,11 +31,19 @@ rclcpp_components_register_node(${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
-  ament_add_ros_isolated_gtest(test_${PROJECT_NAME}
-  test/test_surround_obstacle_checker.cpp
-  test/test_planning_factor.cpp
+  # Unit tests: node construction + direct calls into the intake seam, no live middleware.
+  ament_auto_add_gtest(test_${PROJECT_NAME}
+    test/test_surround_obstacle_checker.cpp
   )
   target_link_libraries(test_${PROJECT_NAME}
+    ${PROJECT_NAME}
+  )
+
+  # Live planning-factor pipeline test (real pub/sub across two nodes).
+  ament_add_ros_isolated_gtest(test_${PROJECT_NAME}_planning_factor
+    test/test_planning_factor.cpp
+  )
+  target_link_libraries(test_${PROJECT_NAME}_planning_factor
     ${PROJECT_NAME}
   )
 endif()

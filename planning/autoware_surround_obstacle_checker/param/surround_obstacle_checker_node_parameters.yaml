@@ -3,6 +3,12 @@ surround_obstacle_checker_node:
     enable_check:
       type: bool
       description: Enable to check surrounding obstacle
+    obstacle_grid_timeout_sec:
+      type: double
+      description: Staleness watchdog for the obstacle grid [s]; a grid older than this is treated
+        as unavailable (fail-safe), never as clear.
+      validation:
+        gt_eq<>: [0.0]
   object_types:
     type: string_array
     default_value:

@@ -35,9 +35,9 @@
   <depend>grid_map_msgs</depend>
   <depend>grid_map_ros</depend>
   <depend>libpcl-all-dev</depend>
+  <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>

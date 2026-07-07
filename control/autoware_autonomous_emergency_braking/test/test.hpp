@@ -34,7 +34,7 @@ namespace autoware::motion::control::autonomous_emergency_braking::test
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_system_msgs::msg::AutowareState;
 using autoware_vehicle_msgs::msg::VelocityReport;
-using sensor_msgs::msg::Imu;
+using nav_msgs::msg::Odometry;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_utils::Polygon2d;
@@ -50,9 +50,10 @@ using std_msgs::msg::Header;
 
 std::shared_ptr<AEB> generateNode();
 Header get_header(const char * const frame_id, rclcpp::Time t);
-Imu make_imu_message(
-  const Header & header, const double ax, const double ay, const double yaw,
-  const double angular_velocity_z);
+// Build a base_link Odometry carrying the given yaw rate in twist.twist.angular.z. This is the
+// localization-fused source the AEB reads for the IMU-path yaw rate (topic
+// ~/input/kinematic_state).
+Odometry make_odometry_message(const Header & header, const double angular_velocity_z);
 VelocityReport make_velocity_report_msg(
   const Header & header, const double lat_velocity, const double long_velocity,
   const double heading_rate);
@@ -61,7 +62,7 @@ class PubSubNode : public rclcpp::Node
 public:
   explicit PubSubNode(const rclcpp::NodeOptions & node_options);
   // publisher
-  rclcpp::Publisher<Imu>::SharedPtr pub_imu_;
+  rclcpp::Publisher<Odometry>::SharedPtr pub_kinematic_state_;
   rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr pub_obstacle_grid_;
   rclcpp::Publisher<VelocityReport>::SharedPtr pub_velocity_;
   rclcpp::Publisher<Trajectory>::SharedPtr pub_predicted_traj_;
@@ -72,10 +73,10 @@ public:
   void publishDefaultTopicsNoSpin()
   {
     const auto header = get_header("base_link", now());
-    const auto imu_msg = make_imu_message(header, 0.0, 0.0, 0.0, 0.05);
+    const auto kinematic_state_msg = make_odometry_message(header, 0.05);
     const auto velocity_msg = make_velocity_report_msg(header, 0.0, 3.0, 0.0);
 
-    pub_imu_->publish(imu_msg);
+    pub_kinematic_state_->publish(kinematic_state_msg);
     pub_velocity_->publish(velocity_msg);
   };
 };

@@ -35,7 +35,7 @@
 #include <autoware_vehicle_msgs/msg/velocity_report.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <grid_map_msgs/msg/grid_map.hpp>
-#include <sensor_msgs/msg/imu.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
 #include <tier4_metric_msgs/msg/metric.hpp>
 #include <tier4_metric_msgs/msg/metric_array.hpp>
@@ -59,7 +59,7 @@ namespace autoware::motion::control::autonomous_emergency_braking
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_system_msgs::msg::AutowareState;
 using autoware_vehicle_msgs::msg::VelocityReport;
-using sensor_msgs::msg::Imu;
+using nav_msgs::msg::Odometry;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_utils::Polygon2d;
@@ -333,8 +333,12 @@ public:
   autoware::agnocast_wrapper::polling::PollingSubscriber<VelocityReport>::SharedPtr sub_velocity_ =
     autoware::agnocast_wrapper::polling::create_polling_subscriber<VelocityReport>(
       this, "~/input/velocity");
-  autoware::agnocast_wrapper::polling::PollingSubscriber<Imu>::SharedPtr sub_imu_ =
-    autoware::agnocast_wrapper::polling::create_polling_subscriber<Imu>(this, "~/input/imu");
+  // The yaw rate for the sensor-side ego path is derived from the localization-fused twist of
+  // /localization/kinematic_state (already expressed in base_link, so no TF step is needed),
+  // not from a raw IMU. The legacy imu_* parameter/topic names are retained for compatibility.
+  autoware::agnocast_wrapper::polling::PollingSubscriber<Odometry>::SharedPtr sub_kinematic_state_ =
+    autoware::agnocast_wrapper::polling::create_polling_subscriber<Odometry>(
+      this, "~/input/kinematic_state");
   autoware::agnocast_wrapper::polling::PollingSubscriber<Trajectory>::SharedPtr
     sub_predicted_traj_ =
       autoware::agnocast_wrapper::polling::create_polling_subscriber<Trajectory>(
@@ -358,12 +362,6 @@ public:
   mutable std::shared_ptr<autoware_utils::TimeKeeper> time_keeper_{nullptr};
 
   // callback
-  /**
-   * @brief Callback for IMU messages
-   * @param input_msg Shared pointer to the IMU message
-   */
-  void onImu(const std::shared_ptr<const Imu> & input_msg);
-
   /**
    * @brief Timer callback function
    */

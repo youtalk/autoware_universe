@@ -249,18 +249,6 @@ void AEB::onTimer()
   updater_.force_update();
 }
 
-void AEB::onImu(const std::shared_ptr<const Imu> & input_msg)
-{
-  // transform imu
-  const auto logger = get_logger();
-  const auto transform_stamped =
-    utils::getTransform("base_link", input_msg->header.frame_id, tf_buffer_, logger);
-  if (!transform_stamped.has_value()) return;
-
-  angular_velocity_ptr_ = std::make_shared<Vector3>();
-  tf2::doTransform(input_msg->angular_velocity, *angular_velocity_ptr_, transform_stamped.value());
-}
-
 bool AEB::fetchLatestData()
 {
   const auto missing = [this](const auto & name) {
@@ -311,13 +299,17 @@ bool AEB::fetchLatestData()
 
   const bool has_imu_path = std::invoke([&]() {
     if (!use_imu_path_) return false;
-    const auto imu_ptr = sub_imu_->take_data();
-    if (!imu_ptr) {
-      return missing("imu message");
+    // The yaw rate is read from the localization-fused twist of /localization/kinematic_state,
+    // which is already expressed in base_link, so no TF transform is applied here. As with the
+    // legacy IMU source, angular_velocity_ptr_ is not reset when this cycle's message is absent,
+    // preserving the previous staleness behavior.
+    const auto kinematic_state_ptr = sub_kinematic_state_->take_data();
+    if (!kinematic_state_ptr) {
+      return missing("kinematic state");
     }
-    // imu_ptr is valid
-    onImu(imu_ptr);
-    return (!angular_velocity_ptr_) ? missing("imu") : true;
+    angular_velocity_ptr_ = std::make_shared<Vector3>();
+    angular_velocity_ptr_->z = kinematic_state_ptr->twist.twist.angular.z;
+    return true;
   });
 
   const bool has_predicted_path = std::invoke([&]() {

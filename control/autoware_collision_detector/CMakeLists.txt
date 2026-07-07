@@ -6,7 +6,6 @@ autoware_package()
 
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common)
 
 include_directories(
   SYSTEM
@@ -15,10 +14,7 @@ include_directories(
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/node.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-  ${PCL_LIBRARIES}
+  src/grid_query.cpp
 )
 
 autoware_agnocast_wrapper_register_node(${PROJECT_NAME}
@@ -27,6 +23,14 @@ autoware_agnocast_wrapper_register_node(${PROJECT_NAME}
   AGNOCAST_EXECUTOR AgnocastOnlyCallbackIsolatedExecutor
   ROS2_EXECUTOR SingleThreadedExecutor
 )
+
+# The gtest links the agnocast-registered node library, which needs LD_PRELOAD at run time, so it is
+# built only in the plain rclcpp configuration (same guard as the sibling agnocast packages).
+if(BUILD_TESTING AND NOT "$ENV{ENABLE_AGNOCAST}" STREQUAL "1")
+  ament_auto_add_gtest(test_${PROJECT_NAME}
+    test/test_grid_query.cpp
+  )
+endif()
 
 ament_auto_package(
   INSTALL_TO_SHARE

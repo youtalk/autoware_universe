@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "autoware_collision_detector parameter",
+  "type": "object",
+  "definitions": {
+    "autoware_collision_detector": {
+      "type": "object",
+      "properties": {
+        "use_pointcloud": {
+          "type": "boolean",
+          "description": "Use the obstacle grid as an obstacle source for collision checking.",
+          "default": false
+        },
+        "use_dynamic_object": {
+          "type": "boolean",
+          "description": "Use dynamic objects as an obstacle source for collision checking.",
+          "default": true
+        },
+        "obstacle_grid_timeout_sec": {
+          "type": "number",
+          "description": "Staleness watchdog for the obstacle grid [s]; a grid older than this is treated as unavailable (fail-safe), never as clear.",
+          "default": 0.5
+        },
+        "collision_distance": {
+          "type": "number",
+          "description": "Distance at which an object is determined to have collided with ego [m].",
+          "default": 0.1
+        },
+        "nearby_filter_radius": {
+          "type": "number",
+          "description": "Radius to filter nearby objects [m].",
+          "default": 5.0
+        },
+        "keep_ignoring_time": {
+          "type": "number",
+          "description": "Time to keep filtering objects that first appeared in the vicinity [s].",
+          "default": 10.0
+        },
+        "nearby_object_type_filters": {
+          "type": "object",
+          "description": "Classes subject to filtering for objects first appearing in the vicinity.",
+          "properties": {
+            "filter_car": { "type": "boolean", "default": false },
+            "filter_truck": { "type": "boolean", "default": false },
+            "filter_bus": { "type": "boolean", "default": false },
+            "filter_trailer": { "type": "boolean", "default": false },
+            "filter_bicycle": { "type": "boolean", "default": false },
+            "filter_motorcycle": { "type": "boolean", "default": false },
+            "filter_pedestrian": { "type": "boolean", "default": false },
+            "filter_animal": { "type": "boolean", "default": true },
+            "filter_hazard": { "type": "boolean", "default": true },
+            "filter_over_drivable": { "type": "boolean", "default": true },
+            "filter_under_drivable": { "type": "boolean", "default": true },
+            "filter_unknown": { "type": "boolean", "default": true }
+          },
+          "required": [
+            "filter_car",
+            "filter_truck",
+            "filter_bus",
+            "filter_trailer",
+            "filter_bicycle",
+            "filter_motorcycle",
+            "filter_pedestrian",
+            "filter_animal",
+            "filter_hazard",
+            "filter_over_drivable",
+            "filter_under_drivable",
+            "filter_unknown"
+          ],
+          "additionalProperties": false
+        },
+        "ignore_behind_rear_axle": {
+          "type": "boolean",
+          "description": "If true, collisions detected behind the rear axle of the ego vehicle are ignored.",
+          "default": true
+        },
+        "time_buffer": {
+          "type": "object",
+          "description": "Buffer to start or stop publishing the ERROR diagnostic.",
+          "properties": {
+            "on_duration": {
+              "type": "number",
+              "description": "Minimum consecutive detection time before triggering the diagnostic [s].",
+              "default": 0.2
+            },
+            "off_duration": {
+              "type": "number",
+              "description": "Minimum consecutive time without collision detection (including the hysteresis) before releasing the diagnostic [s].",
+              "default": 5.0
+            },
+            "off_distance_hysteresis": {
+              "type": "number",
+              "description": "Extra distance used to detect collisions once the diagnostic is triggered [m].",
+              "default": 1.0
+            }
+          },
+          "required": ["on_duration", "off_duration", "off_distance_hysteresis"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "use_pointcloud",
+        "use_dynamic_object",
+        "obstacle_grid_timeout_sec",
+        "collision_distance",
+        "nearby_filter_radius",
+        "keep_ignoring_time",
+        "nearby_object_type_filters",
+        "ignore_behind_rear_axle",
+        "time_buffer"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/autoware_collision_detector"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

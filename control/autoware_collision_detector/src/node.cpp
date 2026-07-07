@@ -26,12 +26,9 @@
 #include <boost/geometry/geometries/linestring.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 
-#include <pcl/common/transforms.h>
-#include <pcl/point_cloud.h>
-#include <pcl_conversions/pcl_conversions.h>
-
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -43,7 +40,6 @@
 namespace autoware::collision_detector
 {
 namespace bg = boost::geometry;
-using autoware_utils::create_point;
 using autoware_utils::pose2transform;
 
 namespace
@@ -139,6 +135,7 @@ CollisionDetectorNode::CollisionDetectorNode(const rclcpp::NodeOptions & node_op
     auto & p = node_param_;
     p.use_pointcloud = this->declare_parameter<bool>("use_pointcloud");
     p.use_dynamic_object = this->declare_parameter<bool>("use_dynamic_object");
+    p.obstacle_grid_timeout_sec = this->declare_parameter<double>("obstacle_grid_timeout_sec");
     p.collision_distance = this->declare_parameter<double>("collision_distance");
     p.nearby_filter_radius = this->declare_parameter<double>("nearby_filter_radius");
     p.keep_ignoring_time = this->declare_parameter<double>("keep_ignoring_time");
@@ -367,14 +364,40 @@ void CollisionDetectorNode::checkCollision(diagnostic_updater::DiagnosticStatusW
     return;
   }
 
-  pointcloud_ptr_ = sub_pointcloud_->take_data();
+  obstacle_grid_ptr_ = sub_obstacle_grid_->take_data();
   object_ptr_ = sub_dynamic_objects_->take_data();
   operation_mode_ptr_ = sub_operation_mode_->take_data();
 
-  if (node_param_.use_pointcloud && !pointcloud_ptr_) {
-    RCLCPP_WARN_THROTTLE(
-      this->get_logger(), *this->get_clock(), 5000 /* ms */, "waiting for pointcloud info...");
-    return;
+  obstacle_grid_.reset();
+  if (node_param_.use_pointcloud) {
+    if (!obstacle_grid_ptr_) {
+      RCLCPP_WARN_THROTTLE(
+        this->get_logger(), *this->get_clock(), 5000 /* ms */, "waiting for obstacle grid info...");
+      return;
+    }
+    // Staleness watchdog: the polling subscriber returns the last received grid forever, and the
+    // producer publishes nothing on its failure paths, so silence must read as "unavailable", never
+    // as "clear" — a frozen grid would hide every obstacle that appeared after the failure. A stale
+    // grid is treated exactly like "no grid received yet" (early return, diagnostic state held).
+    const rclcpp::Time now = this->now();
+    const rclcpp::Time grid_stamp(obstacle_grid_ptr_->header.stamp);
+    if (is_grid_stale(now, grid_stamp, node_param_.obstacle_grid_timeout_sec)) {
+      RCLCPP_ERROR_THROTTLE(
+        this->get_logger(), *this->get_clock(), 5000 /* ms */,
+        "obstacle grid is stale (%.2f s old > %.2f s); treating it as unavailable",
+        (now - grid_stamp).seconds(), node_param_.obstacle_grid_timeout_sec);
+      return;
+    }
+    // Contract validation (frame == base_link, convertible, required layers). A violation is a
+    // wiring error, treated as unavailable (never as clear), same early-return path as a missing
+    // grid — a grid cannot be re-framed cheaply the way the old point cloud could.
+    obstacle_grid_ = validate_obstacle_grid(*obstacle_grid_ptr_);
+    if (!obstacle_grid_) {
+      RCLCPP_ERROR_THROTTLE(
+        this->get_logger(), *this->get_clock(), 5000 /* ms */,
+        "obstacle grid violates the contract (frame/layers); treating it as unavailable");
+      return;
+    }
   }
 
   if (node_param_.use_dynamic_object && !object_ptr_) {
@@ -453,65 +476,29 @@ void CollisionDetectorNode::checkCollision(diagnostic_updater::DiagnosticStatusW
 std::optional<Obstacle> CollisionDetectorNode::getNearestObstacle(
   const autoware_utils_geometry::Polygon2d & ego_polygon) const
 {
-  std::optional<Obstacle> nearest_pointcloud;
+  std::optional<Obstacle> nearest_grid;
   std::optional<Obstacle> nearest_object;
 
   if (node_param_.use_pointcloud) {
-    nearest_pointcloud = getNearestObstacleByPointCloud(ego_polygon);
+    nearest_grid = getNearestObstacleByGrid(ego_polygon);
   }
 
   if (node_param_.use_dynamic_object) {
     nearest_object = getNearestObstacleByDynamicObject(ego_polygon);
   }
 
-  if (!nearest_pointcloud && !nearest_object) {
-    return {};
-  }
-
-  if (!nearest_pointcloud) {
-    return nearest_object;
-  }
-
-  if (!nearest_object) {
-    return nearest_pointcloud;
-  }
-
-  return nearest_pointcloud->first < nearest_object->first ? nearest_pointcloud : nearest_object;
+  return nearest_of(nearest_grid, nearest_object);
 }
 
-std::optional<Obstacle> CollisionDetectorNode::getNearestObstacleByPointCloud(
+std::optional<Obstacle> CollisionDetectorNode::getNearestObstacleByGrid(
   const autoware_utils_geometry::Polygon2d & ego_polygon) const
 {
-  if (pointcloud_ptr_->width == 0 || pointcloud_ptr_->height == 0) {
+  // checkCollision only reaches here after validating the grid for this cycle; a missing/stale/
+  // contract-violating grid short-circuits earlier and never falls through to a query.
+  if (!obstacle_grid_) {
     return {};
   }
-  const auto transform_stamped =
-    getTransform("base_link", pointcloud_ptr_->header.frame_id, pointcloud_ptr_->header.stamp, 0.5);
-
-  geometry_msgs::msg::Point nearest_point;
-  auto minimum_distance = std::numeric_limits<double>::max();
-
-  if (!transform_stamped) {
-    return {};
-  }
-
-  Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped->transform).cast<float>();
-  pcl::PointCloud<pcl::PointXYZ> transformed_pointcloud;
-  pcl::fromROSMsg(*pointcloud_ptr_, transformed_pointcloud);
-  pcl::transformPointCloud(transformed_pointcloud, transformed_pointcloud, isometry);
-
-  for (const auto & p : transformed_pointcloud) {
-    autoware_utils_geometry::Point2d boost_point(p.x, p.y);
-
-    const auto distance_to_object = bg::distance(ego_polygon, boost_point);
-
-    if (distance_to_object < minimum_distance) {
-      nearest_point = create_point(p.x, p.y, p.z);
-      minimum_distance = distance_to_object;
-    }
-  }
-
-  return std::make_pair(minimum_distance, nearest_point);
+  return nearest_obstacle_in_grid(*obstacle_grid_, ego_polygon);
 }
 
 std::optional<Obstacle> CollisionDetectorNode::getNearestObstacleByDynamicObject(

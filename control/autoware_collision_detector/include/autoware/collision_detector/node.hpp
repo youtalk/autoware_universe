@@ -19,23 +19,25 @@
 #include <autoware/agnocast_wrapper/node.hpp>
 #include <autoware/agnocast_wrapper/polling_subscriber.hpp>
 #include <autoware/agnocast_wrapper/tf2.hpp>
+#include <autoware/collision_detector/grid_query.hpp>
 #include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
-#include <autoware_utils/ros/polling_subscriber.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
+#include <grid_map_core/grid_map_core.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/utils.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <boost/optional.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -47,8 +49,6 @@ using autoware_adapi_v1_msgs::msg::OperationModeState;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::Shape;
-
-using Obstacle = std::pair<double /* distance */, geometry_msgs::msg::Point>;
 
 class CollisionDetectorNode : public autoware::agnocast_wrapper::Node
 {
@@ -75,6 +75,7 @@ public:
   {
     bool use_pointcloud{};
     bool use_dynamic_object{};
+    double obstacle_grid_timeout_sec{};
     double collision_distance{};
     double nearby_filter_radius{};
     double keep_ignoring_time{};
@@ -109,7 +110,7 @@ private:
   std::optional<Obstacle> getNearestObstacle(
     const autoware_utils_geometry::Polygon2d & ego_polygon) const;
 
-  std::optional<Obstacle> getNearestObstacleByPointCloud(
+  std::optional<Obstacle> getNearestObstacleByGrid(
     const autoware_utils_geometry::Polygon2d & ego_polygon) const;
 
   std::optional<Obstacle> getNearestObstacleByDynamicObject(
@@ -129,10 +130,13 @@ private:
     sub_odometry_ =
       autoware::agnocast_wrapper::polling::create_polling_subscriber<nav_msgs::msg::Odometry>(
         this, "~/input/odometry");
-  autoware::agnocast_wrapper::polling::PollingSubscriber<sensor_msgs::msg::PointCloud2>::SharedPtr
-    sub_pointcloud_ =
-      autoware::agnocast_wrapper::polling::create_polling_subscriber<sensor_msgs::msg::PointCloud2>(
-        this, "~/input/pointcloud", autoware_utils::single_depth_sensor_qos());
+  // Obstacle-grid intake (agnocast polling subscriber, RELIABLE KEEP_LAST(1) — the
+  // create_polling_subscriber default QoS{1} already matches the grid contract; do NOT override
+  // with a sensor-data QoS as the removed raw point cloud did). Replaces the raw point cloud.
+  autoware::agnocast_wrapper::polling::PollingSubscriber<grid_map_msgs::msg::GridMap>::SharedPtr
+    sub_obstacle_grid_ =
+      autoware::agnocast_wrapper::polling::create_polling_subscriber<grid_map_msgs::msg::GridMap>(
+        this, "~/input/obstacle_grid");
   autoware::agnocast_wrapper::polling::PollingSubscriber<PredictedObjects>::SharedPtr
     sub_dynamic_objects_ =
       autoware::agnocast_wrapper::polling::create_polling_subscriber<PredictedObjects>(
@@ -150,7 +154,9 @@ private:
 
   // data
   std::shared_ptr<const nav_msgs::msg::Odometry> odometry_ptr_;
-  std::shared_ptr<const sensor_msgs::msg::PointCloud2> pointcloud_ptr_;
+  std::shared_ptr<const grid_map_msgs::msg::GridMap> obstacle_grid_ptr_;
+  // Contract-validated + converted grid for the current cycle (set in checkCollision).
+  std::optional<grid_map::GridMap> obstacle_grid_;
   std::shared_ptr<const PredictedObjects> object_ptr_;
   std::shared_ptr<const OperationModeState> operation_mode_ptr_;
   std::optional<rclcpp::Time> start_of_consecutive_collision_stamp_;

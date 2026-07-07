@@ -17,7 +17,11 @@ This module publishes an `ERROR` diagnostic if a collision is detected with the 
 
 ### Check data
 
-Check that `collision_detector` receives no ground pointcloud, dynamic objects.
+Check that `collision_detector` receives the obstacle grid and/or dynamic objects.
+When `use_pointcloud` is enabled, the node validates the incoming obstacle grid contract (frame
+`base_link`, the required `point_count` / `max_height` layers) and watchdogs its stamp age against
+`obstacle_grid_timeout_sec`. A missing, stale, or contract-violating grid is treated as unavailable
+(the diagnostic state is held), never as "clear".
 
 ### Object Filtering
 
@@ -47,7 +51,7 @@ Check that `collision_detector` receives no ground pointcloud, dynamic objects.
 ### Get distance to nearest object
 
 Calculate distance between ego vehicle and the nearest object.
-In this function, it calculates the minimum distance between the polygon of ego vehicle and all points in pointclouds and the polygons of dynamic objects.
+For the obstacle grid, the minimum distance is taken between the ego footprint polygon and the footprint box of every qualifying cell (a cell qualifies with `point_count >= 1`; this is a purely 2D query with no height gate, matching the pre-migration behavior). For dynamic objects, the minimum distance is taken between the ego footprint polygon and the object polygons. The smaller of the two candidates is used.
 If the minimum distance is lower than the `collision_distance` parameter, then a collision is detected.
 
 ### Time buffer and distance hysteresis
@@ -61,12 +65,12 @@ To stop publishing the `ERROR` diagnostic, no collision must be detected for at 
 
 ### Input
 
-| Name                                           | Type                                              | Description                                                        |
-| ---------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------ |
-| `/perception/obstacle_segmentation/pointcloud` | `sensor_msgs::msg::PointCloud2`                   | Pointcloud of obstacles which the ego-vehicle should stop or avoid |
-| `/perception/object_recognition/objects`       | `autoware_perception_msgs::msg::PredictedObjects` | Dynamic objects                                                    |
-| `/tf`                                          | `tf2_msgs::msg::TFMessage`                        | TF                                                                 |
-| `/tf_static`                                   | `tf2_msgs::msg::TFMessage`                        | TF static                                                          |
+| Name                                           | Type                                              | Description                                                                   |
+| ---------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `/sensing/obstacle_segmentation/obstacle_grid` | `grid_map_msgs::msg::GridMap`                     | Obstacle grid (base_link) whose qualifying cells the ego should stop or avoid |
+| `/perception/object_recognition/objects`       | `autoware_perception_msgs::msg::PredictedObjects` | Dynamic objects                                                               |
+| `/tf`                                          | `tf2_msgs::msg::TFMessage`                        | TF                                                                            |
+| `/tf_static`                                   | `tf2_msgs::msg::TFMessage`                        | TF static                                                                     |
 
 ### Output
 
@@ -79,8 +83,9 @@ To stop publishing the `ERROR` diagnostic, no collision must be detected for at 
 
 | Name                                  | Type                    | Description                                                                                                                                                                                                                                                                                                                                    | Default value                                                                                                                              |
 | :------------------------------------ | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| `use_pointcloud`                      | `bool`                  | Use pointcloud as obstacle check                                                                                                                                                                                                                                                                                                               | `true`                                                                                                                                     |
+| `use_pointcloud`                      | `bool`                  | Use the obstacle grid as obstacle check                                                                                                                                                                                                                                                                                                        | `false`                                                                                                                                    |
 | `use_dynamic_object`                  | `bool`                  | Use dynamic object as obstacle check                                                                                                                                                                                                                                                                                                           | `true`                                                                                                                                     |
+| `obstacle_grid_timeout_sec`           | `double`                | Obstacle grid older than this is treated as unavailable (fail-safe), never as clear. [s]                                                                                                                                                                                                                                                       | 0.5                                                                                                                                        |
 | `collision_distance`                  | `double`                | Distance threshold at which an object is considered a collision. [m]                                                                                                                                                                                                                                                                           | 0.15                                                                                                                                       |
 | `nearby_filter_radius`                | `double`                | Distance range for filtering objects. Objects within this radius are considered. [m]                                                                                                                                                                                                                                                           | 5.0                                                                                                                                        |
 | `keep_ignoring_time`                  | `double`                | Time to keep filtering objects that first appeared in the vicinity [sec]                                                                                                                                                                                                                                                                       | 10.0                                                                                                                                       |

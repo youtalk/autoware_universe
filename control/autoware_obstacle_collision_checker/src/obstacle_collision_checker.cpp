@@ -14,10 +14,13 @@
 
 #include "autoware/obstacle_collision_checker/obstacle_collision_checker.hpp"
 
+#include <autoware/obstacle_grid_utils/obstacle_grid_utils.hpp>
 #include <autoware_utils/geometry/geometry.hpp>
 #include <autoware_utils/math/normalization.hpp>
 #include <autoware_utils/math/unit_conversion.hpp>
 #include <autoware_utils/system/stop_watch.hpp>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/utils.hpp>
@@ -27,6 +30,7 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <optional>
 #include <vector>
 
 namespace
@@ -251,5 +255,80 @@ bool has_collision(
   }
 
   return false;
+}
+
+std::optional<sensor_msgs::msg::PointCloud2> extract_grid_obstacle_pointcloud(
+  const grid_map_msgs::msg::GridMap & msg)
+{
+  static rclcpp::Clock clock{RCL_ROS_TIME};
+  const auto logger = rclcpp::get_logger("obstacle_collision_checker");
+
+  // Contract validation. A grid cannot be cheaply re-framed, so a frame mismatch is a wiring error:
+  // reject loudly and return nullopt so the caller reads it as "unavailable", never as "clear".
+  if (msg.header.frame_id != "base_link") {
+    RCLCPP_ERROR_THROTTLE(
+      logger, clock, 5000, "obstacle grid frame is '%s', expected 'base_link'; ignoring the grid",
+      msg.header.frame_id.c_str());
+    return std::nullopt;
+  }
+
+  grid_map::GridMap grid;
+  if (!grid_map::GridMapRosConverter::fromMessage(msg, grid)) {
+    RCLCPP_ERROR_THROTTLE(logger, clock, 5000, "failed to convert the obstacle grid message");
+    return std::nullopt;
+  }
+
+  // cell_qualifies reads only the point_count and max_height layers, so those are the only two the
+  // gate requires; a missing layer would otherwise throw std::out_of_range and kill the container.
+  for (const char * layer : {"point_count", "max_height"}) {
+    if (!grid.exists(layer)) {
+      RCLCPP_ERROR_THROTTLE(
+        logger, clock, 5000, "obstacle grid is missing the '%s' layer; ignoring the grid", layer);
+      return std::nullopt;
+    }
+  }
+
+  // Purely 2D density gate: a cell is occupied iff it holds at least one point whose max_height is
+  // at or above the 0.0 floor. No upper height band, matching the "no z-gate" policy for 2D grid
+  // consumers.
+  //
+  // Conservatism caveat vs the legacy raw-cloud path (which used only x/y and ignored z entirely):
+  //  - Lower floor (0.0, base_link frame): this assumes base_link z=0 sits at/near the ground so a
+  //    standing obstacle reports max_height > 0. It is strictly LESS sensitive than legacy for a
+  //    short obstacle whose entire top sits below the base_link horizontal plane (e.g. a low object
+  //    on a steep downslope): that cell reports max_height < 0, does not qualify, and is missed.
+  //  - No upper band: any qualifying cell emits corners regardless of point height, so this relies
+  //    on the grid PRODUCER height-cropping before counting (point_count must exclude overhead
+  //    structures such as gantries, signs, or low branches). If the producer does not height-crop,
+  //    an overhead-only cell becomes a phantom collision that a height-cropped legacy cloud
+  //    avoided.
+  constexpr autoware::obstacle_grid_utils::Gate gate{1U, 0.0};
+  const double resolution = grid.getResolution();
+
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  for (grid_map::GridMapIterator it(grid); !it.isPastEnd(); ++it) {
+    if (!autoware::obstacle_grid_utils::cell_qualifies(grid, *it, gate)) {
+      continue;
+    }
+    grid_map::Position center;
+    grid.getPosition(*it, center);
+    // Edge-conservative: emit the 4 cell corners (z = 0, purely 2D) so a cell overlapping the
+    // vehicle footprint always contributes at least one point inside it.
+    for (const auto & corner : autoware::obstacle_grid_utils::cell_corners(center, resolution)) {
+      cloud.push_back(
+        pcl::PointXYZ(static_cast<float>(corner.x()), static_cast<float>(corner.y()), 0.0f));
+    }
+  }
+
+  sensor_msgs::msg::PointCloud2 out;
+  pcl::toROSMsg(cloud, out);
+  out.header = msg.header;  // base_link frame, source-cloud stamp
+  return out;
+}
+
+bool is_grid_stale(
+  const rclcpp::Time & grid_stamp, const rclcpp::Time & now, const double timeout_sec)
+{
+  return (now - grid_stamp).seconds() > timeout_sec;
 }
 }  // namespace autoware::obstacle_collision_checker

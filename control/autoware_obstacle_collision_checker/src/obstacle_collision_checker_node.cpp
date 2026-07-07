@@ -36,6 +36,7 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
 
   // Node Parameter
   node_param_.update_rate = declare_parameter<double>("update_rate");
+  node_param_.obstacle_grid_timeout_sec = declare_parameter<double>("obstacle_grid_timeout_sec");
 
   // Core Parameter
   input_.param.delay_time = declare_parameter<double>("delay_time");
@@ -54,9 +55,11 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   self_pose_listener_ = std::make_shared<autoware_utils::SelfPoseListener>(this);
   transform_listener_ = std::make_shared<autoware_utils::TransformListener>(this);
 
-  sub_obstacle_pointcloud_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    "input/obstacle_pointcloud", rclcpp::SensorDataQoS(),
-    std::bind(&ObstacleCollisionCheckerNode::on_obstacle_pointcloud, this, _1));
+  // The obstacle grid contract mandates RELIABLE KEEP_LAST(1) (rclcpp::QoS{1} defaults to
+  // RELIABLE) — a deliberate policy change from the raw cloud's SensorDataQoS (BEST_EFFORT).
+  sub_obstacle_grid_ = create_subscription<grid_map_msgs::msg::GridMap>(
+    "input/obstacle_grid", rclcpp::QoS{1},
+    std::bind(&ObstacleCollisionCheckerNode::on_obstacle_grid, this, _1));
   sub_reference_trajectory_ = create_subscription<autoware_planning_msgs::msg::Trajectory>(
     "input/reference_trajectory", 1,
     std::bind(&ObstacleCollisionCheckerNode::on_reference_trajectory, this, _1));
@@ -83,10 +86,10 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   init_timer(1.0 / node_param_.update_rate);
 }
 
-void ObstacleCollisionCheckerNode::on_obstacle_pointcloud(
-  const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+void ObstacleCollisionCheckerNode::on_obstacle_grid(
+  const grid_map_msgs::msg::GridMap::SharedPtr msg)
 {
-  obstacle_pointcloud_ = msg;
+  obstacle_grid_ = msg;
 }
 
 void ObstacleCollisionCheckerNode::on_reference_trajectory(
@@ -122,10 +125,9 @@ bool ObstacleCollisionCheckerNode::is_data_ready()
     return false;
   }
 
-  if (!obstacle_pointcloud_) {
+  if (!obstacle_grid_) {
     RCLCPP_INFO_THROTTLE(
-      this->get_logger(), *this->get_clock(), 5000 /* ms */,
-      "waiting for obstacle_pointcloud msg...");
+      this->get_logger(), *this->get_clock(), 5000 /* ms */, "waiting for obstacle_grid msg...");
     return false;
   }
 
@@ -176,8 +178,26 @@ bool ObstacleCollisionCheckerNode::is_data_timeout()
 void ObstacleCollisionCheckerNode::on_timer()
 {
   current_pose_ = self_pose_listener_->get_current_pose();
-  if (obstacle_pointcloud_) {
-    const auto & header = obstacle_pointcloud_->header;
+
+  // Reset every tick: set true only on the stale / contract-violation paths below.
+  obstacle_grid_unavailable_ = false;
+
+  if (obstacle_grid_) {
+    // Staleness watchdog: the grid is cached and re-read every tick, and the producer stays silent
+    // on its own failure paths, so a frozen grid must read as "unavailable", never as "clear".
+    if (
+      is_grid_stale(
+        rclcpp::Time(obstacle_grid_->header.stamp), this->now(),
+        node_param_.obstacle_grid_timeout_sec)) {
+      obstacle_grid_unavailable_ = true;
+      RCLCPP_ERROR_THROTTLE(
+        this->get_logger(), *this->get_clock(), 5000 /* ms */,
+        "obstacle grid is stale; treating it as unavailable");
+      updater_.force_update();
+      return;
+    }
+
+    const auto & header = obstacle_grid_->header;
     try {
       obstacle_transform_ = transform_listener_->get_transform(
         "map", header.frame_id, header.stamp, rclcpp::Duration::from_seconds(0.01));
@@ -197,8 +217,18 @@ void ObstacleCollisionCheckerNode::on_timer()
     return;
   }
 
+  // Convert the obstacle grid into the synthetic corner-point cloud that feeds the unchanged
+  // corridor-membership pipeline. A contract violation (wrong frame / missing layers) yields
+  // nullopt and must read as "unavailable", never as "clear".
+  const auto grid_pointcloud = extract_grid_obstacle_pointcloud(*obstacle_grid_);
+  if (!grid_pointcloud) {
+    obstacle_grid_unavailable_ = true;
+    updater_.force_update();
+    return;
+  }
+
   input_.current_pose = current_pose_;
-  input_.obstacle_pointcloud = obstacle_pointcloud_;
+  input_.obstacle_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>(*grid_pointcloud);
   input_.obstacle_transform = obstacle_transform_;
   input_.reference_trajectory = reference_trajectory_;
   input_.predicted_trajectory = predicted_trajectory_;
@@ -230,6 +260,7 @@ rcl_interfaces::msg::SetParametersResult ObstacleCollisionCheckerNode::param_cal
 
       // Update params
       update_param(parameters, "update_rate", p.update_rate);
+      update_param(parameters, "obstacle_grid_timeout_sec", p.obstacle_grid_timeout_sec);
     }
 
     auto & p = input_.param;
@@ -249,6 +280,14 @@ rcl_interfaces::msg::SetParametersResult ObstacleCollisionCheckerNode::param_cal
 void ObstacleCollisionCheckerNode::check_lane_departure(
   diagnostic_updater::DiagnosticStatusWrapper & stat)
 {
+  // An unavailable grid (stale or contract-violating) must read as ERROR, never as the last
+  // computed will_collide value (which the diagnostic_updater otherwise republishes on its own
+  // timer): staleness must never read as "clear".
+  if (obstacle_grid_unavailable_) {
+    stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "obstacle grid is unavailable");
+    return;
+  }
+
   int8_t level = diagnostic_msgs::msg::DiagnosticStatus::OK;
   std::string msg = "OK";
 

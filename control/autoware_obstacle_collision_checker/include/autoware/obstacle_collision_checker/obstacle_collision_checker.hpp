@@ -17,17 +17,20 @@
 
 #include <autoware_utils/geometry/geometry.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
+#include <rclcpp/time.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -90,6 +93,30 @@ bool will_collide(
 bool has_collision(
   const pcl::PointCloud<pcl::PointXYZ> & obstacle_pointcloud,
   const LinearRing2d & vehicle_footprint);
+
+/// Convert an obstacle grid (grid_map_msgs/GridMap, base_link) into a synthetic point cloud made of
+/// the four corner points of every qualifying cell, ready to feed the unchanged corridor-membership
+/// pipeline (get_transformed_point_cloud -> filter_point_cloud_by_trajectory -> will_collide).
+///
+/// Corner emission (rather than the cell center) keeps corridor membership edge-conservative: a
+/// cell overlapping the vehicle footprint always contributes at least one corner inside it, where a
+/// center-only test could miss an edge intrusion of up to half a cell (the AEB precedent). The
+/// cell qualification is a purely 2D density gate (Gate{1, 0.0}: at least one point,
+/// max_height >= 0.0 so sub-ground noise is dropped), matching the "no z-gate" policy for the 2D
+/// obstacle-grid consumers.
+///
+/// Returns std::nullopt on any contract violation (frame_id != "base_link", failed conversion, or a
+/// missing required layer): the caller must treat that as "unavailable", never as "clear". An
+/// all-NaN heartbeat grid is NOT a violation — it validates and yields a valid, empty point cloud
+/// ("alive, nothing detected"). The output cloud carries the grid header verbatim (base_link frame,
+/// source-cloud stamp).
+std::optional<sensor_msgs::msg::PointCloud2> extract_grid_obstacle_pointcloud(
+  const grid_map_msgs::msg::GridMap & msg);
+
+/// Stamp-age staleness watchdog for the obstacle grid. Returns true iff the grid is older than
+/// timeout_sec (strict '>', so an age exactly equal to the timeout is NOT stale). A future/negative
+/// age (clock skew) reads as fresh. Staleness must read as "unavailable", never as "clear".
+bool is_grid_stale(const rclcpp::Time & grid_stamp, const rclcpp::Time & now, double timeout_sec);
 }  // namespace autoware::obstacle_collision_checker
 
 #endif  // AUTOWARE__OBSTACLE_COLLISION_CHECKER__OBSTACLE_COLLISION_CHECKER_HPP_

@@ -1,6 +1,6 @@
 <launch>
   <arg name="input/lanelet_map_bin" default="/map/vector_map"/>
-  <arg name="input/obstacle_pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
+  <arg name="input/obstacle_grid" default="/sensing/obstacle_segmentation/obstacle_grid"/>
   <arg name="input/reference_trajectory" default="/planning/trajectory"/>
   <arg name="input/predicted_trajectory" default="/control/trajectory_follower/predicted_trajectory"/>
   <arg name="input/odometry" default="/localization/kinematic_state"/>
@@ -12,7 +12,7 @@
     <param from="$(var config_file)"/>
     <param from="$(var vehicle_info_param_file)"/>
     <remap from="input/lanelet_map_bin" to="$(var input/lanelet_map_bin)"/>
-    <remap from="input/obstacle_pointcloud" to="$(var input/obstacle_pointcloud)"/>
+    <remap from="input/obstacle_grid" to="$(var input/obstacle_grid)"/>
     <remap from="input/reference_trajectory" to="$(var input/reference_trajectory)"/>
     <remap from="input/predicted_trajectory" to="$(var input/predicted_trajectory)"/>
     <remap from="input/odometry" to="$(var input/odometry)"/>

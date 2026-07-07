@@ -28,8 +28,8 @@
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <memory>
 #include <vector>
@@ -39,6 +39,7 @@ namespace autoware::obstacle_collision_checker
 struct NodeParam
 {
   double update_rate{};
+  double obstacle_grid_timeout_sec{};
 };
 
 class ObstacleCollisionCheckerNode : public rclcpp::Node
@@ -50,7 +51,7 @@ private:
   // Subscriber
   std::shared_ptr<autoware_utils::SelfPoseListener> self_pose_listener_;
   std::shared_ptr<autoware_utils::TransformListener> transform_listener_;
-  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_obstacle_pointcloud_;
+  rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr sub_obstacle_grid_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
     sub_reference_trajectory_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
@@ -60,14 +61,14 @@ private:
   // Data Buffer
   geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose_;
   geometry_msgs::msg::Twist::ConstSharedPtr current_twist_;
-  sensor_msgs::msg::PointCloud2::ConstSharedPtr obstacle_pointcloud_;
+  grid_map_msgs::msg::GridMap::ConstSharedPtr obstacle_grid_;
   geometry_msgs::msg::TransformStamped::ConstSharedPtr obstacle_transform_;
   autoware_planning_msgs::msg::Trajectory::ConstSharedPtr reference_trajectory_;
   autoware_planning_msgs::msg::Trajectory::ConstSharedPtr predicted_trajectory_;
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   // Callback
-  void on_obstacle_pointcloud(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+  void on_obstacle_grid(const grid_map_msgs::msg::GridMap::SharedPtr msg);
   void on_reference_trajectory(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg);
   void on_predicted_trajectory(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg);
   void on_odom(const nav_msgs::msg::Odometry::SharedPtr msg);
@@ -95,6 +96,10 @@ private:
   // Core
   Input input_;
   Output output_;
+
+  // Set every tick when the obstacle grid is stale or violates the contract; threaded into the
+  // diagnostic so an unavailable grid reads as ERROR, never as the last (possibly OK) result.
+  bool obstacle_grid_unavailable_{false};
 
   // Diagnostic Updater
   diagnostic_updater::Updater updater_;

@@ -14,6 +14,11 @@
         "update_rate": {
           "type": "number"
         },
+        "obstacle_grid_timeout_sec": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Obstacle grid staleness timeout; grids older than this read as unavailable."
+        },
         "footprint_margin": {
           "type": "number",
           "default": 0.0,
@@ -41,7 +46,8 @@
         "max_deceleration",
         "resample_interval",
         "search_radius",
-        "update_rate"
+        "update_rate",
+        "obstacle_grid_timeout_sec"
       ]
     }
   },

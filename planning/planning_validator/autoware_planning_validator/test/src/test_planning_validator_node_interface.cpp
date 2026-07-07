@@ -18,6 +18,8 @@
 #include <autoware/planning_test_manager/autoware_planning_test_manager.hpp>
 #include <autoware_test_utils/autoware_test_utils.hpp>
 
+#include <grid_map_msgs/msg/grid_map.hpp>
+
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -69,6 +71,9 @@ void publishMandatoryTopics(
     test_target_node, "planning_validator_node/input/pointcloud",
     sensor_msgs::msg::PointCloud2{}.set__header(
       std_msgs::msg::Header{}.set__frame_id("base_link")));
+  test_manager->publishInput(
+    test_target_node, "planning_validator_node/input/obstacle_grid",
+    grid_map_msgs::msg::GridMap{}.set__header(std_msgs::msg::Header{}.set__frame_id("base_link")));
   test_manager->publishInput(
     test_target_node, "planning_validator_node/input/lanelet_map_bin",
     autoware::test_utils::makeMapBinMsg());

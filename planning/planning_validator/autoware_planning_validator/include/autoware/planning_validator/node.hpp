@@ -36,6 +36,7 @@
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -55,6 +56,7 @@ using autoware_utils::StopWatch;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
+using grid_map_msgs::msg::GridMap;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::PointCloud2;
 
@@ -86,6 +88,11 @@ private:
     sub_lanelet_map_bin_{this, "~/input/lanelet_map_bin", rclcpp::QoS{1}.transient_local()};
   autoware_utils::InterProcessPollingSubscriber<PointCloud2> sub_pointcloud_{
     this, "~/input/pointcloud", autoware_utils::single_depth_sensor_qos()};
+  // Obstacle grid uses the default (reliable, KEEP_LAST(1)) QoS, matching the producer contract;
+  // do NOT use a sensor (best-effort) QoS here. The versioned component-interface binding attaches
+  // to this subscription in a later step; today it is a plain polling subscription.
+  autoware_utils::InterProcessPollingSubscriber<GridMap> sub_obstacle_grid_{
+    this, "~/input/obstacle_grid"};
   autoware_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
     this, "~/input/kinematics"};
   autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> sub_acceleration_{

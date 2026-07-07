@@ -9,7 +9,7 @@ The check is executed only when:
 
 ## Inner Workings
 
-The intersection_collision_checker checks for collisions using pointcloud data and route information. It identifies target lanes at intersections and extracts pcd objects withing target lanes, and performs simplistic tracking and velocity estimation of pcd objects for each target lane. Times to arrival are computed for Ego and pcd objects, and the difference in the arrival time is used to judge if a collision is imminent.
+The intersection_collision_checker checks for collisions using the 2.5D obstacle grid and route information. It identifies target lanes at intersections and extracts pcd objects withing target lanes, and performs simplistic tracking and velocity estimation of pcd objects for each target lane. Times to arrival are computed for Ego and pcd objects, and the difference in the arrival time is used to judge if a collision is imminent.
 
 ### Flowchart
 
@@ -115,7 +115,7 @@ The image below shows the target lanelets at a left-turn intersection. (`left_tu
 
 After target lanes are determined, The next step is to identify pcd objects and perform velocity estimation and tracking for each target lane, and determine possibility of collision.
 
-First the object pointcloud is filtered and transformed to map frame.
+First the qualifying obstacle-grid cells are extracted (per-cell density and z-band gating) and their corner points are transformed to the map frame.
 Then the logic described in the following diagram is applied for each target lane to get the nearest pcd object:
 
 ```plantuml
@@ -124,9 +124,8 @@ Then the logic described in the following diagram is applied for each target lan
 start
 
 #LightBlue:Get PCD points within target lanelet;
-#LightBlue:Cluster PCD points;
 #LightBlue:Create Empty PCD object;
-:Process clustered PCD points;
+:Process PCD points within lanelet;
 repeat
   #LightBlue:Compute arc length from pcd point to overlap point;
   if (Is PCD point before overlap point ?) then (yes)
@@ -137,7 +136,7 @@ repeat
     endif
   else(no)
   endif
-  repeat while (Processed all clustered PCD points?) is (FALSE)
+  repeat while (Processed all PCD points within lanelet?) is (FALSE)
 if (previous target lane object exists?) then (yes)
   #LightBlue:Update tracking data;
   #LightBlue:Compute object's time to arrive at overlap;
@@ -168,7 +167,7 @@ If any of the following conditions are met the tracking information is reset and
 | Name                  | Unit   | Type   | Description                                                                                 | Default value |
 | :-------------------- | ------ | ------ | ------------------------------------------------------------------------------------------- | ------------- |
 | `enable`              | [-]    | bool   | Flag to enable/disable the check globally                                                   | true          |
-| `detection_range`     | [m]    | double | Range of detection from ego position, pointcloud points beyond this range are filtered out  | 50.0          |
+| `detection_range`     | [m]    | double | Range from ego position used to bound target-lanelet extension                              | 50.0          |
 | `ttc_threshold`       | [s]    | double | Threshold value for the difference between ego and object reach times to trigger and a stop | 1.0           |
 | `ego_deceleration`    | [m/ss] | double | Ego deceleration relate used to estimate ego stopping time                                  | 1.0           |
 | `min_time_horizon`    | [s]    | double | Minimum time horizon to check ahead along ego trajectory                                    | 10.0          |
@@ -190,23 +189,23 @@ If any of the following conditions are met the tracking information is reset and
 | `left_turn.check_turn_lanes`        | [-]   | bool   | Flag to enable/disable checking turning lanes       | true          |
 | `left_turn.check_traffic_signal`    | [-]   | bool   | Use traffic light context for left-turn validation  | true          |
 
-### Pointcloud Parameters
+### Obstacle grid Parameters
 
-| Name                                              | Unit | Type   | Description                                                                    | Default value |
-| :------------------------------------------------ | ---- | ------ | ------------------------------------------------------------------------------ | ------------- |
-| `pointcloud.height_buffer`                        | [m]  | double | Height offset to add above ego vehicle height when filtering pointcloud points | 0.5           |
-| `pointcloud.min_height`                           | [m]  | double | Minimum height threshold for filtering pointcloud points                       | 0.5           |
-| `pointcloud.voxel_grid_filter.x`                  | [m]  | double | x value for voxel leaf size                                                    | 0.2           |
-| `pointcloud.voxel_grid_filter.y`                  | [m]  | double | y value for voxel leaf size                                                    | 0.2           |
-| `pointcloud.voxel_grid_filter.z`                  | [m]  | double | z value for voxel leaf size                                                    | 0.2           |
-| `pointcloud.voxel_grid_filter.min_size`           | [-]  | int    | min number of points per voxel leaf                                            | 3             |
-| `pointcloud.clustering.tolerance`                 | [m]  | double | Distance tolerance between two points in a cluster                             | 0.5           |
-| `pointcloud.clustering.min_height`                | [m]  | double | Minimum height of a cluster to be considered as a target                       | 0.5           |
-| `pointcloud.clustering.min_size`                  | [-]  | int    | Minimum number of points in a cluster to be considered as a target             | 10            |
-| `pointcloud.clustering.max_size`                  | [-]  | int    | Maximum number of points in a cluster to be considered as a target             | 10000         |
-| `pointcloud.velocity_estimation.max_acceleration` | [s]  | double | Max acceleration threshold above which object tracking is reset                | 20.0          |
-| `pointcloud.velocity_estimation.max_velocity`     | [s]  | double | Max velocity threshold above which object tracking is reset                    | 25.0          |
-| `pointcloud.velocity_estimation.observation_time` | [s]  | double | Minimum tracking time for a pointcloud object to be considered reliable        | 0.3           |
-| `pointcloud.velocity_estimation.max_history_time` | [s]  | double | Maximum duration since last object update above which object will be discarded | 0.5           |
-| `pointcloud.velocity_estimation.buffer_size`      | [-]  | int    | Number of data samples to keep for object velocity estimation                  | 10            |
-| `pointcloud.latency`                              | [s]  | double | Time delay used to compensate for latency in pointcloud data                   | 0.3           |
+The data source is the 2.5D obstacle grid (`grid_map_msgs/GridMap`, base_link, layers `point_count` / `min_height` / `low_max_height`). The parameter group key is kept as `pointcloud` to minimize downstream churn.
+
+!!! note "Effective detection ceiling"
+
+    The height floor (`pointcloud.min_height`) is applied to `low_max_height`, which by the producer contract is the tallest return at or below the producer's `overhead_split` (the height above which returns are treated as overhead structure). A cell whose returns fall exclusively above `overhead_split` has `low_max_height = NaN` and is therefore rejected. Consequently the effective detection ceiling is `min(vehicle_height_m + height_buffer, producer overhead_split)`: `height_buffer` beyond `overhead_split` has no effect on the floor test, and returns landing purely in the `(overhead_split, vehicle_height_m + height_buffer]` band are not detected. This only produces a gap when `vehicle_height_m + height_buffer > overhead_split` (i.e. tall platforms such as bus/truck; for a passenger-car height the band top stays at or below `overhead_split` and there is no gap). This matches the accepted property that AEB carries, and is benign for grounded obstacles, which always present sub-`overhead_split` returns.
+
+| Name                                              | Unit | Type   | Description                                                                                                              | Default value |
+| :------------------------------------------------ | ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| `pointcloud.height_buffer`                        | [m]  | double | Height offset added above the ego vehicle height; a cell is rejected only if its lowest return is above this band top    | 0.5           |
+| `pointcloud.min_height`                           | [m]  | double | Height floor applied to the cell's tallest in-band return (`low_max_height`); rejects ground residue                     | 0.5           |
+| `pointcloud.min_point_count_cell`                 | [-]  | int    | Per-cell raw (pre-voxel) return floor; a cell must hold at least this many returns. NOT the old post-voxel `min_size=10` | 1             |
+| `pointcloud.grid_timeout_sec`                     | [s]  | double | Staleness watchdog; a grid older than this reads as data-unavailable (fail-safe), never as clear                         | 0.5           |
+| `pointcloud.velocity_estimation.max_acceleration` | [s]  | double | Max acceleration threshold above which object tracking is reset                                                          | 20.0          |
+| `pointcloud.velocity_estimation.max_velocity`     | [s]  | double | Max velocity threshold above which object tracking is reset                                                              | 25.0          |
+| `pointcloud.velocity_estimation.observation_time` | [s]  | double | Minimum tracking time for a pointcloud object to be considered reliable                                                  | 0.3           |
+| `pointcloud.velocity_estimation.max_history_time` | [s]  | double | Maximum duration since last object update above which object will be discarded                                           | 0.5           |
+| `pointcloud.velocity_estimation.buffer_size`      | [-]  | int    | Number of data samples to keep for object velocity estimation                                                            | 10            |
+| `pointcloud.latency`                              | [s]  | double | Time delay used to compensate for latency in pointcloud data                                                             | 0.3           |

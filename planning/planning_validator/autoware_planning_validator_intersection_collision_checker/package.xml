@@ -19,6 +19,7 @@
 
   <depend>autoware_internal_debug_msgs</depend>
   <depend>autoware_motion_utils</depend>
+  <depend>autoware_obstacle_grid_utils</depend>
   <depend>autoware_planning_validator</depend>
   <depend>autoware_route_handler</depend>
   <depend>autoware_signal_processing</depend>
@@ -26,10 +27,14 @@
   <depend>autoware_trajectory</depend>
   <depend>autoware_utils</depend>
   <depend>generate_parameter_library</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
   <depend>libboost-dev</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
 
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

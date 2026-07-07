@@ -21,21 +21,16 @@
 #include <autoware_utils/ros/marker_helper.hpp>
 #include <autoware_utils/ros/parameter.hpp>
 #include <autoware_utils/transform/transforms.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <magic_enum.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include <autoware_internal_planning_msgs/msg/planning_factor.hpp>
 
-#include <pcl/filters/crop_hull.h>
-#include <pcl/filters/extract_indices.h>
-#include <pcl/filters/passthrough.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/registration/gicp.h>
-#include <pcl/segmentation/extract_clusters.h>
-#include <pcl/surface/convex_hull.h>
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -64,11 +59,8 @@ void IntersectionCollisionChecker::init(
   param_listener_ = std::make_unique<intersection_collision_checker_node::ParamListener>(
     node.get_node_parameters_interface());
 
-  pub_cluster_pointcloud_ =
-    node.create_publisher<PointCloud2>("~/intersection_collision_checker/debug/cluster_points", 1);
-
-  pub_voxel_pointcloud_ =
-    node.create_publisher<PointCloud2>("~/intersection_collision_checker/debug/voxel_points", 1);
+  pub_grid_points_ = node.create_publisher<PointCloud2>(
+    "~/intersection_collision_checker/debug/obstacle_grid_points", 1);
 
   pub_string_ =
     node.create_publisher<StringStamped>("~/intersection_collision_checker/debug/state", 1);
@@ -114,8 +106,20 @@ void IntersectionCollisionChecker::set_diag_status(
 
 bool IntersectionCollisionChecker::is_data_ready(std::string & msg)
 {
-  if (!context_->data->obstacle_pointcloud) {
-    msg = "Point cloud data is not available.";
+  if (!context_->data->obstacle_grid) {
+    msg = "Obstacle grid is not available.";
+    return false;
+  }
+
+  const auto & p = params_.icc_parameters;
+  const auto grid_age =
+    (clock_->now() - rclcpp::Time(context_->data->obstacle_grid->header.stamp)).seconds();
+  if (grid_age > p.pointcloud.grid_timeout_sec) {
+    // A stale grid must read as data-unavailable (fail-safe), never as a spurious "clear".
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "Obstacle grid is stale (age %.2f s); skipping collision check.",
+      grid_age);
+    msg = "Obstacle grid is stale.";
     return false;
   }
 
@@ -172,10 +176,10 @@ bool IntersectionCollisionChecker::is_safe(DebugData & debug_data)
     return true;
   }
 
-  PointCloud::Ptr filtered_pointcloud(new PointCloud);
-  filter_pointcloud(context_->data->obstacle_pointcloud, filtered_pointcloud, debug_data);
+  const auto filtered_pointcloud =
+    extract_obstacle_grid_points(*context_->data->obstacle_grid, debug_data);
   if (filtered_pointcloud->empty()) {
-    debug_data.text = "no points in the filtered pointcloud";
+    debug_data.text = "no qualifying obstacle grid cells";
     return true;
   }
 
@@ -185,8 +189,8 @@ bool IntersectionCollisionChecker::is_safe(DebugData & debug_data)
   const auto prev_collision_lanes = collision_lanes_;
   collision_lanes_.clear();
 
-  const bool is_safe = check_collision(
-    debug_data, filtered_pointcloud, context_->data->obstacle_pointcloud->header.stamp);
+  const bool is_safe =
+    check_collision(debug_data, filtered_pointcloud, context_->data->obstacle_grid->header.stamp);
 
   const auto & p = params_.icc_parameters;
   const auto now = clock_->now();
@@ -302,68 +306,74 @@ Direction IntersectionCollisionChecker::get_turn_direction(
   return Direction::NONE;
 }
 
-void IntersectionCollisionChecker::filter_pointcloud(
-  PointCloud2::ConstSharedPtr & input, PointCloud::Ptr & filtered_pointcloud,
-  DebugData & debug_data) const
+PointCloud::Ptr IntersectionCollisionChecker::extract_obstacle_grid_points(
+  const grid_map_msgs::msg::GridMap & msg, DebugData & debug_data) const
 {
-  if (input->data.empty()) return;
+  PointCloud::Ptr map_points(new PointCloud);
+
+  // Intake contract validation. The grid is produced in base_link with layers point_count,
+  // min_height and low_max_height; any violation is treated as data-unavailable (empty output),
+  // never as a spurious "clear".
+  if (msg.header.frame_id != "base_link") {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "obstacle grid frame_id is '%s', expected 'base_link'; skipping.",
+      msg.header.frame_id.c_str());
+    return map_points;
+  }
+
+  grid_map::GridMap grid;
+  if (!grid_map::GridMapRosConverter::fromMessage(msg, grid)) {
+    RCLCPP_ERROR_THROTTLE(logger_, *clock_, 5000, "failed to decode obstacle grid; skipping.");
+    return map_points;
+  }
+  if (!grid.exists("point_count") || !grid.exists("min_height") || !grid.exists("low_max_height")) {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "obstacle grid is missing required layers; skipping.");
+    return map_points;
+  }
+  grid.convertToDefaultStartIndex();
 
   const auto & p = params_.icc_parameters;
+  const double height_floor = p.pointcloud.min_height;
+  const double z_band_top = context_->vehicle_info.vehicle_height_m + p.pointcloud.height_buffer;
 
-  pcl::fromROSMsg(*input, *filtered_pointcloud);
+  // Per-cell z-band gate + edge-conservative corner emission (base_link frame). Height gating uses
+  // direct layer reads (low_max_height floor, min_height band-top) rather than a max_height-based
+  // gate, so an overhead structure that shares a cell with ground residue is rejected.
+  const auto corners = collision_checker_utils::qualifying_cell_corners(
+    grid, p.pointcloud.min_point_count_cell, height_floor, z_band_top);
+  if (corners.empty()) return map_points;
 
-  {
-    pcl::PassThrough<pcl::PointXYZ> filter;
-    filter.setInputCloud(filtered_pointcloud);
-    filter.setFilterFieldName("x");
-    filter.setFilterLimits(-1.0 * p.detection_range, p.detection_range);
-    filter.filter(*filtered_pointcloud);
+  PointCloud::Ptr base_link_points(new PointCloud);
+  base_link_points->reserve(corners.size());
+  for (const auto & corner : corners) {
+    base_link_points->push_back(
+      pcl::PointXYZ(
+        static_cast<float>(corner.x), static_cast<float>(corner.y), static_cast<float>(corner.z)));
   }
 
-  if (filtered_pointcloud->empty()) return;
-
-  {
-    pcl::PassThrough<pcl::PointXYZ> filter;
-    filter.setInputCloud(filtered_pointcloud);
-    filter.setFilterFieldName("z");
-    filter.setFilterLimits(
-      p.pointcloud.min_height,
-      context_->vehicle_info.vehicle_height_m + p.pointcloud.height_buffer);
-    filter.filter(*filtered_pointcloud);
+  // Single map<-base_link transform: the target lanelets, arc coordinates and overlap points are
+  // all in map, so the downstream pipeline stays unchanged. A missing transform reads as
+  // data-unavailable (empty), not as a clear.
+  geometry_msgs::msg::TransformStamped transform_stamped;
+  try {
+    transform_stamped = context_->tf_buffer.lookupTransform(
+      "map", msg.header.frame_id, msg.header.stamp, rclcpp::Duration::from_seconds(0.1));
+  } catch (tf2::TransformException & e) {
+    RCLCPP_WARN(logger_, "no transform found for obstacle grid: %s", e.what());
+    return PointCloud::Ptr(new PointCloud);
   }
 
-  if (filtered_pointcloud->empty()) return;
+  const Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.transform).cast<float>();
+  autoware_utils::transform_pointcloud(*base_link_points, *map_points, isometry);
 
-  {
-    geometry_msgs::msg::TransformStamped transform_stamped;
-    try {
-      transform_stamped = context_->tf_buffer.lookupTransform(
-        "map", input->header.frame_id, input->header.stamp, rclcpp::Duration::from_seconds(0.1));
-    } catch (tf2::TransformException & e) {
-      RCLCPP_WARN(logger_, "no transform found for pointcloud: %s", e.what());
-    }
+  const auto grid_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>();
+  pcl::toROSMsg(*map_points, *grid_pointcloud);
+  grid_pointcloud->header.stamp = msg.header.stamp;
+  grid_pointcloud->header.frame_id = "map";
+  debug_data.grid_points = grid_pointcloud;
 
-    Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.transform).cast<float>();
-    autoware_utils::transform_pointcloud(*filtered_pointcloud, *filtered_pointcloud, isometry);
-  }
-
-  {
-    pcl::VoxelGrid<pcl::PointXYZ> filter;
-    filter.setInputCloud(filtered_pointcloud);
-    filter.setLeafSize(
-      p.pointcloud.voxel_grid_filter.x, p.pointcloud.voxel_grid_filter.y,
-      p.pointcloud.voxel_grid_filter.z);
-    filter.setMinimumPointsNumberPerVoxel(p.pointcloud.voxel_grid_filter.min_size);
-    filter.filter(*filtered_pointcloud);
-  }
-
-  {
-    const auto voxel_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>();
-    pcl::toROSMsg(*filtered_pointcloud, *voxel_pointcloud);
-    voxel_pointcloud->header.stamp = context_->data->obstacle_pointcloud->header.stamp;
-    voxel_pointcloud->header.frame_id = "map";
-    debug_data.voxel_points = voxel_pointcloud;
-  }
+  return map_points;
 }
 
 bool IntersectionCollisionChecker::check_collision(
@@ -398,7 +408,7 @@ bool IntersectionCollisionChecker::check_collision(
     const auto target_ll = target_lanelet.second;
     if (!target_ll.is_active || target_ll.lanelets.empty()) continue;
 
-    const auto pcd_object = get_pcd_object(debug_data, time_stamp, filtered_point_cloud, target_ll);
+    const auto pcd_object = get_pcd_object(time_stamp, filtered_point_cloud, target_ll);
     if (!pcd_object.has_value()) continue;
 
     if (history_.find(pcd_object->overlap_lanelet_id) == history_.end()) {
@@ -463,8 +473,8 @@ void IntersectionCollisionChecker::update_tracked_object(
 }
 
 std::optional<PCDObject> IntersectionCollisionChecker::get_pcd_object(
-  DebugData & debug_data, const rclcpp::Time & time_stamp,
-  const PointCloud::Ptr & filtered_point_cloud, const TargetLanelet & target_lanelet) const
+  const rclcpp::Time & time_stamp, const PointCloud::Ptr & filtered_point_cloud,
+  const TargetLanelet & target_lanelet) const
 {
   std::optional<PCDObject> pcd_object = std::nullopt;
 
@@ -481,17 +491,12 @@ std::optional<PCDObject> IntersectionCollisionChecker::get_pcd_object(
 
   if (points_within->empty()) return pcd_object;
 
-  PointCloud::Ptr clustered_points(new PointCloud);
-  cluster_pointcloud(points_within, clustered_points, debug_data);
-
-  if (clustered_points->empty()) return pcd_object;
-
   const auto & vel_params = params_.icc_parameters.pointcloud.velocity_estimation;
 
   const auto overlap_arc_coord = autoware::experimental::lanelet2_utils::get_arc_coordinates(
     target_lanelet.lanelets, target_lanelet.overlap_point);
   auto min_arc_length = std::numeric_limits<double>::max();
-  for (const auto & p : *clustered_points) {
+  for (const auto & p : *points_within) {
     geometry_msgs::msg::Pose p_geom;
     p_geom.position = autoware_utils::create_point(p.x, p.y, p.z);
     const auto arc_coord =
@@ -527,65 +532,6 @@ void IntersectionCollisionChecker::get_points_within(
   }
 }
 
-void IntersectionCollisionChecker::cluster_pointcloud(
-  const PointCloud::Ptr & input, PointCloud::Ptr & output, DebugData & debug_data) const
-{
-  if (input->empty()) return;
-
-  const auto & p = params_.icc_parameters;
-
-  const std::vector<pcl::PointIndices> cluster_indices = std::invoke([&]() {
-    std::vector<pcl::PointIndices> cluster_idx;
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
-    tree->setInputCloud(input);
-    pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-    ec.setClusterTolerance(p.pointcloud.clustering.tolerance);
-    ec.setMinClusterSize(p.pointcloud.clustering.min_size);
-    ec.setMaxClusterSize(p.pointcloud.clustering.max_size);
-    ec.setSearchMethod(tree);
-    ec.setInputCloud(input);
-    ec.extract(cluster_idx);
-    return cluster_idx;
-  });
-
-  const auto ego_base_z = context_->data->current_kinematics->pose.pose.position.z;
-  auto above_height_threshold = [&](const double z) {
-    const auto rel_height = z - ego_base_z;
-    return rel_height > p.pointcloud.clustering.min_height;
-  };
-
-  for (const auto & indices : cluster_indices) {
-    PointCloud::Ptr cluster(new PointCloud);
-    bool cluster_above_height_threshold{false};
-    for (const auto & index : indices.indices) {
-      const auto & point = (*input)[index];
-
-      cluster_above_height_threshold |= above_height_threshold(point.z);
-      cluster->push_back(point);
-    }
-    if (!cluster_above_height_threshold) continue;
-
-    pcl::ConvexHull<pcl::PointXYZ> hull;
-    hull.setDimension(2);
-    hull.setInputCloud(cluster);
-    PointCloud::Ptr surface_hull(new PointCloud);
-    hull.reconstruct(*surface_hull);
-    for (const auto & point : *surface_hull) {
-      output->push_back(point);
-    }
-  }
-
-  if (output->empty()) return;
-
-  {
-    const auto clustered_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>();
-    pcl::toROSMsg(*output, *clustered_pointcloud);
-    clustered_pointcloud->header.stamp = context_->data->obstacle_pointcloud->header.stamp;
-    clustered_pointcloud->header.frame_id = "map";
-    debug_data.cluster_points = clustered_pointcloud;
-  }
-}
-
 void IntersectionCollisionChecker::publish_markers(const DebugData & debug_data) const
 {
   {
@@ -612,12 +558,8 @@ void IntersectionCollisionChecker::publish_markers(const DebugData & debug_data)
   context_->debug_pose_publisher->pushMarkers(
     collision_checker_utils::get_objects_marker_array(debug_data));
 
-  if (debug_data.voxel_points) {
-    pub_voxel_pointcloud_->publish(*debug_data.voxel_points);
-  }
-
-  if (debug_data.cluster_points) {
-    pub_cluster_pointcloud_->publish(*debug_data.cluster_points);
+  if (debug_data.grid_points) {
+    pub_grid_points_->publish(*debug_data.grid_points);
   }
 }
 

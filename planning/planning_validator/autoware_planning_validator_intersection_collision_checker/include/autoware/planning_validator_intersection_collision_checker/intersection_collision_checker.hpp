@@ -21,6 +21,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_internal_planning_msgs/msg/safety_factor_array.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -58,24 +59,24 @@ private:
   [[nodiscard]] Direction get_turn_direction(
     const lanelet::ConstLanelets & trajectory_lanelets) const;
 
-  void filter_pointcloud(
-    PointCloud2::ConstSharedPtr & input, PointCloud::Ptr & filtered_point_cloud,
-    DebugData & debug_data) const;
+  // Extracts the qualifying obstacle-grid cells' corner points, transformed into the map frame.
+  // Returns an empty cloud on any grid-contract failure (wrong frame, undecodable message, missing
+  // required layers, or missing map<-base_link transform), so a contract violation reads as
+  // data-unavailable and never as a spurious "clear".
+  PointCloud::Ptr extract_obstacle_grid_points(
+    const grid_map_msgs::msg::GridMap & msg, DebugData & debug_data) const;
 
   void get_points_within(
     const PointCloud::Ptr & input, const BasicPolygon2d & polygon,
     const PointCloud::Ptr & output) const;
-
-  void cluster_pointcloud(
-    const PointCloud::Ptr & input, PointCloud::Ptr & output, DebugData & debug_data) const;
 
   bool check_collision(
     DebugData & debug_data, const PointCloud::Ptr & filtered_point_cloud,
     const rclcpp::Time & time_stamp);
 
   std::optional<PCDObject> get_pcd_object(
-    DebugData & debug_data, const rclcpp::Time & time_stamp,
-    const PointCloud::Ptr & filtered_point_cloud, const TargetLanelet & target_lanelet) const;
+    const rclcpp::Time & time_stamp, const PointCloud::Ptr & filtered_point_cloud,
+    const TargetLanelet & target_lanelet) const;
 
   void update_tracked_object(PCDObject & object, const PCDObject & new_data) const;
 
@@ -99,8 +100,7 @@ private:
 
   std::unique_ptr<intersection_collision_checker_node::ParamListener> param_listener_;
 
-  rclcpp::Publisher<PointCloud2>::SharedPtr pub_voxel_pointcloud_;
-  rclcpp::Publisher<PointCloud2>::SharedPtr pub_cluster_pointcloud_;
+  rclcpp::Publisher<PointCloud2>::SharedPtr pub_grid_points_;
   rclcpp::Publisher<StringStamped>::SharedPtr pub_string_;
 
   intersection_collision_checker_node::Params params_;

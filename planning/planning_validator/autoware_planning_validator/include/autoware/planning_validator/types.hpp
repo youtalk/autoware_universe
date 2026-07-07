@@ -29,6 +29,7 @@
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -52,6 +53,7 @@ using diagnostic_msgs::msg::DiagnosticStatus;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
+using grid_map_msgs::msg::GridMap;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::PointCloud2;
 
@@ -99,6 +101,11 @@ struct PlanningValidatorData
   Odometry::ConstSharedPtr current_kinematics;
   AccelWithCovarianceStamped::ConstSharedPtr current_acceleration;
   PointCloud2::ConstSharedPtr obstacle_pointcloud;
+  // 2.5D obstacle grid (grid_map_msgs/GridMap, base_link frame). Optional input shared by the
+  // collision-checker plugins that have migrated off the raw obstacle_pointcloud; it is NOT gated
+  // in is_ready() so a missing/stale grid never stalls the whole validator. Each consumer runs its
+  // own staleness watchdog and treats absence/staleness as data-unavailable, never as "clear".
+  GridMap::ConstSharedPtr obstacle_grid;
   TrafficLightGroupArray::ConstSharedPtr traffic_signals;
 
   std::shared_ptr<RouteHandler> route_handler{std::make_shared<RouteHandler>()};

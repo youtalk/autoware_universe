@@ -27,6 +27,7 @@ The `autoware_planning_validator` takes in the following inputs:
 | `~/input/route`                  | autoware_planning_msgs/LaneletRoute             | route information                                |
 | `~/input/lanelet_map_bin`        | autoware_map_msgs/LaneletMapBin                 | lanelet vector map information                   |
 | `~/input/pointcloud`             | sensor_msgs/PointCloud2                         | obstacle pointcloud with ground removed          |
+| `~/input/obstacle_grid`          | grid_map_msgs/GridMap                           | 2.5D obstacle grid (base_link), optional input   |
 | `~/input/operational_mode_state` | autoware_adapi_v1_msgs/OperationModeState       | current operation mode state (autonomous/manual) |
 | `~/input/traffic_signals`        | autoware_perception_msgs/TrafficLightGroupArray | recognized traffic signal information            |
 

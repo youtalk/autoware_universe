@@ -226,8 +226,7 @@ struct DebugData
   EgoLanelets ego_lanelets;
   std::vector<TargetLanelet> target_lanelets;
   std::vector<PCDObject> pcd_objects;
-  PointCloud2::SharedPtr cluster_points;
-  PointCloud2::SharedPtr voxel_points;
+  PointCloud2::SharedPtr grid_points;
   Direction turn_direction{Direction::NONE};
   double processing_time_detail_ms{0.0};
   bool is_active{false};

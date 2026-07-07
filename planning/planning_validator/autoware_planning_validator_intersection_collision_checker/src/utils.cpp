@@ -17,6 +17,7 @@
 #include <autoware/lanelet2_utils/conversion.hpp>
 #include <autoware/lanelet2_utils/geometry.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/obstacle_grid_utils/obstacle_grid_utils.hpp>
 #include <autoware/traffic_light_utils/traffic_light_utils.hpp>
 #include <autoware_lanelet2_extension/regulatory_elements/Forward.hpp>
 #include <autoware_utils/geometry/boost_geometry.hpp>
@@ -32,9 +33,11 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace autoware::planning_validator::collision_checker_utils
 {
@@ -501,6 +504,49 @@ MarkerArray get_objects_marker_array(const DebugData & debug_data)
   }
 
   return marker_array;
+}
+
+std::vector<geometry_msgs::msg::Point> qualifying_cell_corners(
+  const grid_map::GridMap & grid, const std::uint32_t min_point_count_cell,
+  const double height_floor, const double z_band_top)
+{
+  std::vector<geometry_msgs::msg::Point> corners;
+  if (!grid.exists("point_count") || !grid.exists("min_height") || !grid.exists("low_max_height")) {
+    return corners;
+  }
+
+  const double resolution = grid.getResolution();
+  const auto & count_layer = grid["point_count"];
+  const auto & min_layer = grid["min_height"];
+  const auto & low_max_layer = grid["low_max_height"];
+
+  for (grid_map::GridMapIterator it(grid); !it.isPastEnd(); ++it) {
+    const grid_map::Index idx(*it);
+
+    const float count = count_layer(idx(0), idx(1));
+    if (std::isnan(count) || static_cast<std::uint32_t>(count) < min_point_count_cell) {
+      continue;
+    }
+    const float low_max = low_max_layer(idx(0), idx(1));
+    if (std::isnan(low_max) || static_cast<double>(low_max) < height_floor) {
+      continue;
+    }
+    const float min_height = min_layer(idx(0), idx(1));
+    if (std::isnan(min_height) || static_cast<double>(min_height) > z_band_top) {
+      continue;
+    }
+
+    grid_map::Position center;
+    grid.getPosition(idx, center);
+    for (const auto & corner : obstacle_grid_utils::cell_corners(center, resolution)) {
+      geometry_msgs::msg::Point point;
+      point.x = corner.x();
+      point.y = corner.y();
+      point.z = static_cast<double>(low_max);
+      corners.push_back(point);
+    }
+  }
+  return corners;
 }
 
 }  // namespace autoware::planning_validator::collision_checker_utils

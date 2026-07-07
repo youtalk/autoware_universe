@@ -5,6 +5,7 @@
   <arg name="input_acceleration" default="/localization/acceleration"/>
   <arg name="input_objects" default="/perception/object_recognition/objects"/>
   <arg name="input_pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
+  <arg name="input_obstacle_grid" default="/sensing/obstacle_segmentation/obstacle_grid"/>
   <arg name="input_route" default="/planning/mission_planning/route"/>
   <arg name="input_traffic_signals" default="/perception/traffic_light_recognition/traffic_signals"/>
   <arg name="input_vector_map" default="/map/vector_map"/>
@@ -16,6 +17,7 @@
       <param from="$(var trajectory_modifier_param_path)"/>
       <remap from="~/input/objects" to="$(var input_objects)"/>
       <remap from="~/input/pointcloud" to="$(var input_pointcloud)"/>
+      <remap from="~/input/obstacle_grid" to="$(var input_obstacle_grid)"/>
       <remap from="~/input/candidate_trajectories" to="$(var input_candidate_trajectories)"/>
       <remap from="~/input/odometry" to="$(var input_odometry)"/>
       <remap from="~/input/acceleration" to="$(var input_acceleration)"/>

@@ -465,6 +465,13 @@ void PointCloudFilter::cluster_pointcloud(
 void PointCloudFilter::filter_pointcloud_by_object(
   PointCloud::Ptr & pointcloud, const PredictedObjects & objects)
 {
+  // Fully qualified: an unqualified call would resolve back to this member and recurse.
+  ::autoware::trajectory_modifier::utils::obstacle_stop::filter_pointcloud_by_object(
+    pointcloud, objects);
+}
+
+void filter_pointcloud_by_object(PointCloud::Ptr & pointcloud, const PredictedObjects & objects)
+{
   if (pointcloud->empty() || objects.objects.empty()) return;
 
   const auto margin = 0.1;

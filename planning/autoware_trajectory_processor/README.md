@@ -178,6 +178,13 @@ The Obstacle Stop plugin serves as a deterministic safety shield operating indep
 
 The Velocity Modifier plugins is responsible for ensuring the velocity profile is smooth and feasible, and adjusts the velocity profile if an anomaly is detected while respecting deceleration and jerk constraints.
 
+The last-resort (non-object) obstacle input is the sensing obstacle grid (`grid_map_msgs/msg/GridMap` on `~/input/obstacle_grid`, `base_link` frame, layers `point_count` / `min_height` / `low_max_height`), replacing the former raw obstacle pointcloud. Each frame the plugin gates cells (`point_count >= min_point_count_cell`, `low_max_height >= clustering.min_height`, and `min_height <=` ego height `+ height_buffer`), keeps 8-connected components whose summed `point_count` reaches `clustering.min_size`, and feeds the surviving cell centers (transformed `base_link -> map` via the ego pose) to the point tracker. Notes:
+
+- Because centers rather than cell corners are emitted, corridor membership at the trajectory-polygon edge carries a bounded error of at most half a cell diagonal (~0.14 m at the 0.2 m production resolution). This is accepted for this default-off (`enable_stop_for_pointcloud: false`) consumer.
+- `clustering.min_size` sums raw pre-voxel returns (the grid is not voxel-downsampled), so a threshold tuned for the old post-voxel Euclidean-cluster size may need to be raised.
+- The height floor is now applied **per cell** (`low_max_height >= clustering.min_height`) instead of the legacy **per-cluster** test (which kept an entire Euclidean cluster once any single point in it reached the height floor). This is more conservative for overhead structures (a gantry sharing a cell with ground residue no longer qualifies the cell), but it is not strictly more conservative in every case: a low, spread obstacle whose only above-floor cell carries fewer than `clustering.min_size` returns can be missed, whereas the legacy per-cluster test would have kept the whole cluster (low cells included) and stopped. The default-off (`enable_stop_for_pointcloud: false`) gating keeps the real-world exposure low, and `clustering.min_height` / `min_size` should be tuned together for the deployed sensor.
+- A stale grid (older than `obstacle_grid_timeout_sec`), a non-`base_link` frame, or a grid missing a required layer is treated as unavailable (throttled error, no new stop from this branch) and never as "clear"; the point tracker is left untouched, so a stale frame inserts no new stop and does not age the tracker (if `enable_stop_for_pointcloud` is enabled, a grid outage suppresses the pointcloud stop for the duration of the outage rather than holding the previous one).
+
 ### Dependencies
 
 This package depends on the following packages:

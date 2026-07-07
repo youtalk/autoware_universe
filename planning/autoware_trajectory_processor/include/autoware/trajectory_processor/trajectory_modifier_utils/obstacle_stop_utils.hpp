@@ -151,6 +151,8 @@ struct DebugData
   MultiPolygon2d target_polygons;
   TrajectoryShape trajectory_shape;
   std::vector<geometry_msgs::msg::Point> target_pcd_points;
+  /// Obstacle-grid cells surviving the per-cell gate and connected-component filter this frame.
+  std::size_t grid_cell_count = 0;
   geometry_msgs::msg::Point active_collision_point;
   std::optional<PredictedObject> colliding_object;
   double ego_z = 0.0;  // cached for marker placement during publish_debug_data
@@ -340,6 +342,17 @@ private:
   double max_lateral_velocity_th_;
   double safety_buffer_;
 };
+
+/**
+ * @brief Remove points that fall inside a tracked predicted object's footprint.
+ * @details The predicted-objects branch already reasons about these obstacles, so points inside an
+ * object polygon (expanded by a small margin) are dropped to avoid double-counting them in the
+ * point branch. Operates in the map frame, matching the extracted obstacle-grid cell points.
+ *
+ * Exposed as a free function so the obstacle-grid consumers can mask points without constructing a
+ * PCL PointCloudFilter; PointCloudFilter::filter_pointcloud_by_object() forwards to it.
+ */
+void filter_pointcloud_by_object(PointCloud::Ptr & pointcloud, const PredictedObjects & objects);
 
 /// PCL-based downsampling, cropping, clustering, and object masking for obstacle point clouds.
 struct PointCloudFilter

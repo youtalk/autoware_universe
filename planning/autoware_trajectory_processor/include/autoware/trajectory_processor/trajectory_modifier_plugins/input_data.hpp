@@ -21,6 +21,7 @@
 #include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -36,6 +37,9 @@ struct InputData
   geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr current_acceleration = nullptr;
   autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr predicted_objects = nullptr;
   sensor_msgs::msg::PointCloud2::ConstSharedPtr obstacle_pointcloud = nullptr;
+  // Sensing obstacle grid (grid_map_msgs/GridMap, base_link frame). Replaces the raw obstacle
+  // pointcloud as the last-resort obstacle input for the obstacle stop plugin.
+  grid_map_msgs::msg::GridMap::ConstSharedPtr obstacle_grid = nullptr;
   std::shared_ptr<lanelet::LaneletMap> lanelet_map = nullptr;
   autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr route = nullptr;
   autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr traffic_light_signals =

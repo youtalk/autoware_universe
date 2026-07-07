@@ -19,12 +19,15 @@
 #include "autoware/trajectory_processor/trajectory_modifier_utils/obstacle_stop_utils.hpp"
 #include "autoware/trajectory_processor/trajectory_modifier_utils/utils.hpp"
 
+#include <grid_map_core/grid_map_core.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_internal_debug_msgs/msg/string_stamped.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -37,9 +40,9 @@ using autoware_internal_planning_msgs::msg::SafetyFactorArray;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_utils_geometry::MultiPolygon2d;
 using autoware_utils_geometry::Polygon2d;
-using sensor_msgs::msg::PointCloud2;
 using utils::obstacle_stop::CollisionPoint;
 using utils::obstacle_stop::DebugData;
+using utils::obstacle_stop::PointCloud;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 
@@ -70,8 +73,6 @@ private:
 
   DebugData debug_data_;
 
-  std::unique_ptr<utils::obstacle_stop::PointCloudFilter> pointcloud_filter_;
-
   std::unique_ptr<utils::obstacle_stop::ObjectFilter> object_filter_;
 
   std::unique_ptr<utils::obstacle_stop::ObstacleTracker> obstacle_tracker_;
@@ -82,8 +83,6 @@ private:
 
   MarkerArray marker_array_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_viz_pub_;
-  rclcpp::Publisher<PointCloud2>::SharedPtr pub_filtered_pointcloud_;
-  rclcpp::Publisher<PointCloud2>::SharedPtr pub_clustered_pointcloud_;
   rclcpp::Publisher<StringStamped>::SharedPtr pub_debug_text_;
 
   void check_obstacles(const TrajectoryPoints & traj_points, const InputData & input);
@@ -91,6 +90,17 @@ private:
     const TrajectoryPoints & traj_points, const InputData & input);
   std::optional<CollisionPoint> check_pointcloud(
     const TrajectoryPoints & traj_points, const InputData & input);
+
+  /**
+   * @brief Extract obstacle points (map frame) from the sensing obstacle grid.
+   * @details Mirrors the AEB grid extraction: per-cell gate (point_count, in-band height floor
+   * via low_max_height, z-band top via min_height), 8-connected component labeling keeping only
+   * components whose summed point_count reaches the minimum cluster size, then the surviving cell
+   * centers transformed base_link -> map via the ego pose. Returns the accumulated cloud; an empty
+   * cloud means no qualifying obstacle in the grid.
+   */
+  PointCloud::Ptr get_cells_from_obstacle_grid(
+    const grid_map::GridMap & grid, const geometry_msgs::msg::Pose & ego_pose) const;
 
   bool set_stop_point(TrajectoryPoints & traj_points, const InputData & input);
 

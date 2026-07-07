@@ -253,73 +253,36 @@
               "properties": {
                 "height_buffer": {
                   "type": "number",
-                  "description": "Height buffer to add above ego height [m]",
+                  "description": "Height buffer added above ego height to form the z-band top of the obstacle grid gate [m]",
                   "default": 0.5,
                   "minimum": 0.0
                 },
-                "min_height": {
-                  "type": "number",
-                  "description": "Minimum height of pointcloud [m]",
-                  "default": 0.2,
-                  "minimum": 0.0
+                "min_point_count_cell": {
+                  "type": "integer",
+                  "description": "Per-cell density floor; a grid cell qualifies only if its point_count reaches this many returns",
+                  "default": 1,
+                  "minimum": 1
                 },
-                "voxel_grid_filter": {
-                  "type": "object",
-                  "properties": {
-                    "x": {
-                      "type": "number",
-                      "description": "X dimension of voxel grid filter [m]",
-                      "default": 0.2,
-                      "minimum": 0.0
-                    },
-                    "y": {
-                      "type": "number",
-                      "description": "Y dimension of voxel grid filter [m]",
-                      "default": 0.2,
-                      "minimum": 0.0
-                    },
-                    "z": {
-                      "type": "number",
-                      "description": "Z dimension of voxel grid filter [m]",
-                      "default": 0.2,
-                      "minimum": 0.0
-                    },
-                    "min_size": {
-                      "type": "number",
-                      "description": "Minimum size of voxel grid filter [m]",
-                      "default": 3,
-                      "minimum": 0.0
-                    }
-                  },
-                  "required": [],
-                  "additionalProperties": false
+                "obstacle_grid_timeout_sec": {
+                  "type": "number",
+                  "description": "Obstacle grid staleness watchdog [s]; a grid older than this reads as unavailable, never as clear",
+                  "default": 0.5,
+                  "minimum": 0.0
                 },
                 "clustering": {
                   "type": "object",
                   "properties": {
-                    "tolerance": {
-                      "type": "number",
-                      "description": "Tolerance for clustering [m]",
-                      "default": 0.5,
-                      "minimum": 0.0
-                    },
                     "min_height": {
                       "type": "number",
-                      "description": "Minimum height for clustering [m]",
+                      "description": "Per-cell low_max_height floor [m]; the tallest in-band return of a cell must reach this to qualify",
                       "default": 0.5,
                       "minimum": 0.0
                     },
                     "min_size": {
-                      "type": "number",
-                      "description": "Minimum size for clustering [m]",
+                      "type": "integer",
+                      "description": "Minimum summed point_count over an 8-connected component of qualifying cells; counts raw pre-voxel returns",
                       "default": 10,
-                      "minimum": 0.0
-                    },
-                    "max_size": {
-                      "type": "number",
-                      "description": "Maximum size for clustering [m]",
-                      "default": 10000,
-                      "minimum": 0.0
+                      "minimum": 1
                     }
                   },
                   "required": [],

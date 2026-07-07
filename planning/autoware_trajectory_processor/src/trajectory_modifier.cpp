@@ -131,6 +131,7 @@ tl::expected<plugin::InputData, std::string> TrajectoryModifier::make_input_data
   input.current_acceleration = sub_current_acceleration_.take_data();
   input.predicted_objects = sub_objects_.take_data();
   input.obstacle_pointcloud = sub_pointcloud_.take_data();
+  input.obstacle_grid = sub_obstacle_grid_.take_data();
   input.route = sub_route_.take_data();
   input.traffic_light_signals = sub_traffic_lights_.take_data();
   input.lanelet_map = lanelet_map_ptr_;
@@ -148,6 +149,13 @@ tl::expected<plugin::InputData, std::string> TrajectoryModifier::make_input_data
   if (!input.obstacle_pointcloud) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 1000, "Missing data: obstacle_pointcloud is not set");
+  }
+  // Only warn when the grid is actually consumed. Unlike ~/input/pointcloud, this topic is not
+  // published by every deployment, and the branch that reads it is off by default, so an
+  // unconditional warning would be permanent noise wherever the feature is not in use.
+  if (params_.obstacle_stop.enable_stop_for_pointcloud && !input.obstacle_grid) {
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 1000, "Missing data: obstacle_grid is not set");
   }
   if (!input.route) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "Missing data: route is not set");

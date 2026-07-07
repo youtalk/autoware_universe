@@ -34,6 +34,7 @@
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -50,6 +51,7 @@ using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
+using grid_map_msgs::msg::GridMap;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::PointCloud2;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
@@ -83,6 +85,11 @@ private:
     this, "~/input/objects"};
   autoware_utils_rclcpp::InterProcessPollingSubscriber<PointCloud2> sub_pointcloud_{
     this, "~/input/pointcloud", autoware_utils_rclcpp::single_depth_sensor_qos()};
+  // Plain GridMap subscription with the default polling QoS (RELIABLE, KEEP_LAST(1)), matching the
+  // obstacle-grid producer's RELIABLE contract; the sensor QoS used for the raw cloud does not
+  // apply.
+  autoware_utils_rclcpp::InterProcessPollingSubscriber<GridMap> sub_obstacle_grid_{
+    this, "~/input/obstacle_grid"};
 
   autoware_utils_rclcpp::InterProcessPollingSubscriber<
     autoware_perception_msgs::msg::TrafficLightGroupArray>

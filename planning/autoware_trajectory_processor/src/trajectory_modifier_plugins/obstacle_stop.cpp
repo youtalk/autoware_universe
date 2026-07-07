@@ -19,15 +19,19 @@
 
 #include <autoware/motion_utils/distance/distance.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/obstacle_grid_utils/obstacle_grid_utils.hpp>
+#include <autoware/trajectory/interpolator/akima_spline.hpp>
+#include <autoware/trajectory/interpolator/interpolator.hpp>
 #include <autoware/trajectory/trajectory_point.hpp>
 #include <autoware_utils/ros/marker_helper.hpp>
-#include <autoware_utils/transform/transforms.hpp>
 #include <autoware_utils_geometry/geometry.hpp>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <rclcpp/logging.hpp>
-#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -35,11 +39,16 @@
 
 namespace autoware::trajectory_modifier::plugin
 {
+using utils::obstacle_stop::filter_pointcloud_by_object;
 using utils::obstacle_stop::get_nearest_object_collision;
 using utils::obstacle_stop::get_nearest_pcd_collision;
 using utils::obstacle_stop::get_trajectory_shape;
 using utils::obstacle_stop::PointCloud;
-using utils::obstacle_stop::PointCloud2;
+
+// Obstacle-grid layer contract (see autoware_obstacle_grid_extractor).
+constexpr char kPointCountLayer[] = "point_count";
+constexpr char kMinHeightLayer[] = "min_height";
+constexpr char kLowMaxHeightLayer[] = "low_max_height";
 
 void ObstacleStop::on_initialize(const TrajectoryModifierParams & params)
 {
@@ -48,10 +57,6 @@ void ObstacleStop::on_initialize(const TrajectoryModifierParams & params)
     std::make_unique<autoware::planning_factor_interface::PlanningFactorInterface>(
       node_ptr, "modifier_obstacle_stop");
 
-  pub_clustered_pointcloud_ =
-    node_ptr->create_publisher<PointCloud2>("~/obstacle_stop/debug/cluster_points", 1);
-  pub_filtered_pointcloud_ =
-    node_ptr->create_publisher<PointCloud2>("~/obstacle_stop/debug/filtered_points", 1);
   debug_viz_pub_ = node_ptr->create_publisher<visualization_msgs::msg::MarkerArray>(
     "~/obstacle_stop/debug/marker", 1);
   pub_debug_text_ = node_ptr->create_publisher<StringStamped>("~/obstacle_stop/debug/text", 1);
@@ -65,14 +70,6 @@ void ObstacleStop::on_initialize(const TrajectoryModifierParams & params)
     auto & p = params_.rss_params;
     p.ego_decel = std::clamp(
       p.ego_decel, stopping_params_.nominal_deceleration, stopping_params_.maximum_deceleration);
-  }
-
-  {
-    const auto & p = params_.pointcloud;
-    pointcloud_filter_ = std::make_unique<utils::obstacle_stop::PointCloudFilter>(
-      p.voxel_grid_filter.x, p.voxel_grid_filter.y, p.voxel_grid_filter.z,
-      p.voxel_grid_filter.min_size, p.clustering.tolerance, p.clustering.min_size,
-      p.clustering.max_size);
   }
 
   {
@@ -114,14 +111,6 @@ void ObstacleStop::update_params(const TrajectoryModifierParams & params)
     auto & p = params_.rss_params;
     p.ego_decel = std::clamp(
       p.ego_decel, stopping_params_.nominal_deceleration, stopping_params_.maximum_deceleration);
-  }
-
-  {
-    const auto & p = params_.pointcloud;
-    pointcloud_filter_->set_params(
-      p.voxel_grid_filter.x, p.voxel_grid_filter.y, p.voxel_grid_filter.z,
-      p.voxel_grid_filter.min_size, p.clustering.tolerance, p.clustering.min_size,
-      p.clustering.max_size);
   }
 
   {
@@ -335,71 +324,127 @@ std::optional<CollisionPoint> ObstacleStop::check_predicted_objects(
   return collision_point;
 }
 
+PointCloud::Ptr ObstacleStop::get_cells_from_obstacle_grid(
+  const grid_map::GridMap & grid, const geometry_msgs::msg::Pose & ego_pose) const
+{
+  namespace grid_utils = autoware::obstacle_grid_utils;
+  PointCloud::Ptr cells(new PointCloud);
+
+  const auto & p = params_.pointcloud;
+  const auto min_point_count_cell = static_cast<std::uint32_t>(p.min_point_count_cell);
+  const double low_max_height_floor = p.clustering.min_height;
+  const double z_band_top = context_->vehicle_info.vehicle_height_m + p.height_buffer;
+
+  // 1) per-cell qualification: enough returns, the tallest in-band return (low_max_height) above
+  //    the height floor, and the lowest return under the z-band top. Using low_max_height rather
+  //    than max_height means an overhead structure sharing a cell with ground residue cannot
+  //    qualify the cell -- the per-cell analog of the old per-point z crop.
+  std::vector<grid_map::Index> qualifying;
+  for (grid_map::GridMapIterator it(grid); !it.isPastEnd(); ++it) {
+    const auto & idx = *it;
+    const float cnt = grid.at(kPointCountLayer, idx);
+    const float low_max = grid.at(kLowMaxHeightLayer, idx);
+    const float min_h = grid.at(kMinHeightLayer, idx);
+    const bool q = std::isfinite(cnt) && static_cast<std::uint32_t>(cnt) >= min_point_count_cell &&
+                   std::isfinite(low_max) && static_cast<double>(low_max) >= low_max_height_floor &&
+                   std::isfinite(min_h) && static_cast<double>(min_h) <= z_band_top;
+    if (q) {
+      qualifying.push_back(idx);
+    }
+  }
+
+  // 2) 8-connected component labeling; a component qualifies iff its summed point_count reaches the
+  //    minimum cluster size -- the grid analog of the former Euclidean-cluster minimum size in
+  //    POINTS (raw, pre-voxel returns), not cells, so a small-footprint obstacle concentrating many
+  //    returns into a few cells still passes while isolated sparse returns are rejected and
+  //    disjoint sparse groups (never 8-connected) cannot pool together.
+  const auto min_component_point_sum = static_cast<double>(p.clustering.min_size);
+  const auto components = grid_utils::connected_components(grid, qualifying);
+  for (const auto & component : components) {
+    if (component.point_sum < min_component_point_sum) {
+      continue;
+    }
+    // 3) emit the surviving cell CENTERS transformed base_link -> map via the ego pose (z = the
+    //    cell's tallest in-band return). Centers keep per-cell tracker matching stable and dedup
+    //    naturally, at the cost of a bounded half-cell-diagonal membership error at the
+    //    trajectory-polygon edge (see README).
+    for (const auto & idx : component.cells) {
+      grid_map::Position center;
+      grid.getPosition(idx, center);
+      geometry_msgs::msg::Point cell_point;
+      cell_point.x = center.x();
+      cell_point.y = center.y();
+      cell_point.z = static_cast<double>(grid.at(kLowMaxHeightLayer, idx));
+      const auto map_point = autoware_utils_geometry::transform_point(cell_point, ego_pose);
+      cells->push_back(
+        pcl::PointXYZ(
+          static_cast<float>(map_point.x), static_cast<float>(map_point.y),
+          static_cast<float>(map_point.z)));
+    }
+  }
+  return cells;
+}
+
 std::optional<CollisionPoint> ObstacleStop::check_pointcloud(
   const TrajectoryPoints & traj_points, const InputData & input)
 {
   autoware_utils_debug::ScopedTimeTrack st("ObstacleStop::check_pointcloud", *get_time_keeper());
-  if (!params_.use_pointcloud || !input.obstacle_pointcloud) return std::nullopt;
+  if (!params_.use_pointcloud || !input.obstacle_grid) {
+    return std::nullopt;
+  }
+  const auto & grid_msg = *input.obstacle_grid;
 
-  PointCloud::Ptr filtered_pointcloud(new PointCloud);
-  pcl::fromROSMsg(*input.obstacle_pointcloud, *filtered_pointcloud);
-  {
-    autoware_utils_debug::ScopedTimeTrack stt(
-      "ObstacleStop::filter_pointcloud", *get_time_keeper());
-    const auto & bounding_box = debug_data_.trajectory_shape.bounding_box;
-    const auto rel_min_corner = autoware_utils_geometry::inverse_transform_point(
-      bounding_box.min_corner().to_3d(), input.current_odometry->pose.pose);
-    const auto rel_max_corner = autoware_utils_geometry::inverse_transform_point(
-      bounding_box.max_corner().to_3d(), input.current_odometry->pose.pose);
-    constexpr double buffer = 1.0;
-    const auto [min_x, max_x] = std::minmax(rel_min_corner.x(), rel_max_corner.x());
-    const auto [min_y, max_y] = std::minmax(rel_min_corner.y(), rel_max_corner.y());
-    const auto min_z = params_.pointcloud.min_height;
-    const auto max_z = context_->vehicle_info.vehicle_height_m + params_.pointcloud.height_buffer;
-    pointcloud_filter_->filter_pointcloud(
-      filtered_pointcloud, min_x - buffer, max_x + buffer, min_y - buffer, max_y + buffer, min_z,
-      max_z);
+  // Staleness watchdog: the polling subscriber returns the last received grid forever, and the
+  // producer deliberately publishes nothing on its failure paths, so silence must read as
+  // "unavailable", never as "clear". Returning nullopt here also leaves the obstacle tracker
+  // untouched, so a stale frame never ages out an already-tracked obstacle.
+  const double grid_age_sec = (get_clock()->now() - rclcpp::Time(grid_msg.header.stamp)).seconds();
+  if (grid_age_sec > params_.pointcloud.obstacle_grid_timeout_sec) {
+    RCLCPP_ERROR_THROTTLE(
+      get_node_ptr()->get_logger(), *get_clock(), 5000,
+      "[TM ObstacleStop] obstacle grid is stale (%.2f s old > %.2f s); treating it as unavailable",
+      grid_age_sec, params_.pointcloud.obstacle_grid_timeout_sec);
+    return std::nullopt;
   }
 
-  PointCloud::Ptr clustered_points(new PointCloud);
-  {
-    autoware_utils_debug::ScopedTimeTrack stt(
-      "ObstacleStop::cluster_pointcloud", *get_time_keeper());
-    pointcloud_filter_->cluster_pointcloud(
-      filtered_pointcloud, clustered_points, params_.pointcloud.clustering.min_height);
+  // Contract validation: a grid cannot be cheaply re-framed, so a frame mismatch is a wiring error
+  // -- reject loudly and treat as unavailable rather than as clear.
+  if (grid_msg.header.frame_id != "base_link") {
+    RCLCPP_ERROR_THROTTLE(
+      get_node_ptr()->get_logger(), *get_clock(), 5000,
+      "[TM ObstacleStop] obstacle grid frame is '%s', expected 'base_link'; ignoring the grid",
+      grid_msg.header.frame_id.c_str());
+    return std::nullopt;
   }
 
-  if (!clustered_points->empty()) {
-    geometry_msgs::msg::TransformStamped transform_stamped;
-    try {
-      transform_stamped = context_->tf_buffer.lookupTransform(
-        "map", input.obstacle_pointcloud->header.frame_id, tf2::TimePointZero);
-    } catch (tf2::TransformException & e) {
-      RCLCPP_WARN(get_node_ptr()->get_logger(), "no transform found for pointcloud: %s", e.what());
+  grid_map::GridMap grid;
+  if (!grid_map::GridMapRosConverter::fromMessage(grid_msg, grid)) {
+    RCLCPP_ERROR_THROTTLE(
+      get_node_ptr()->get_logger(), *get_clock(), 5000,
+      "[TM ObstacleStop] failed to convert the obstacle grid message; treating it as unavailable");
+    return std::nullopt;
+  }
+  for (const char * layer : {kPointCountLayer, kMinHeightLayer, kLowMaxHeightLayer}) {
+    if (!grid.exists(layer)) {
+      RCLCPP_ERROR_THROTTLE(
+        get_node_ptr()->get_logger(), *get_clock(), 5000,
+        "[TM ObstacleStop] obstacle grid is missing the '%s' layer; ignoring the grid", layer);
       return std::nullopt;
     }
-
-    Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.transform).cast<float>();
-    autoware_utils::transform_pointcloud(*clustered_points, *clustered_points, isometry);
   }
 
+  PointCloud::Ptr clustered_points;
   {
-    const auto cluster_pointcloud_msg = std::make_shared<sensor_msgs::msg::PointCloud2>();
-    const auto filtered_pointcloud_msg = std::make_shared<sensor_msgs::msg::PointCloud2>();
-    pcl::toROSMsg(*clustered_points, *cluster_pointcloud_msg);
-    pcl::toROSMsg(*filtered_pointcloud, *filtered_pointcloud_msg);
-    cluster_pointcloud_msg->header.stamp = input.obstacle_pointcloud->header.stamp;
-    cluster_pointcloud_msg->header.frame_id = "map";
-    filtered_pointcloud_msg->header.stamp = input.obstacle_pointcloud->header.stamp;
-    filtered_pointcloud_msg->header.frame_id = "map";
-    debug_data_.cluster_points = cluster_pointcloud_msg;
-    debug_data_.filtered_points = filtered_pointcloud_msg;
+    autoware_utils_debug::ScopedTimeTrack stt(
+      "ObstacleStop::get_cells_from_obstacle_grid", *get_time_keeper());
+    clustered_points = get_cells_from_obstacle_grid(grid, input.current_odometry->pose.pose);
+    debug_data_.grid_cell_count = clustered_points->size();
   }
 
   if (input.predicted_objects && !input.predicted_objects->objects.empty()) {
     autoware_utils_debug::ScopedTimeTrack stt(
       "ObstacleStop::filter_pointcloud_by_object", *get_time_keeper());
-    pointcloud_filter_->filter_pointcloud_by_object(clustered_points, *input.predicted_objects);
+    filter_pointcloud_by_object(clustered_points, *input.predicted_objects);
   }
 
   PointCloud::Ptr active_points(new PointCloud);
@@ -418,17 +463,13 @@ std::optional<CollisionPoint> ObstacleStop::check_pointcloud(
 
 void ObstacleStop::publish_debug_string(bool is_safe) const
 {
-  const auto filtered_pcd_size =
-    debug_data_.filtered_points ? debug_data_.filtered_points->data.size() : 0;
-  const auto cluster_pcd_size =
-    debug_data_.cluster_points ? debug_data_.cluster_points->data.size() : 0;
   std::ostringstream ss;
   ss << std::fixed << std::setprecision(2) << std::boolalpha;
   ss << "OBSTACLE STOP MODIFIER: " << "\n";
   ss << "\t\t" << "SAFE: " << is_safe << "\n";
   ss << "\t\t" << "OBJECTS: " << debug_data_.filtered_objects.objects.size() << " --> "
      << debug_data_.target_polygons.size() << "\n";
-  ss << "\t\t" << "POINTCLOUD: " << filtered_pcd_size << " --> " << cluster_pcd_size << " --> "
+  ss << "\t\t" << "OBSTACLE GRID: " << debug_data_.grid_cell_count << " --> "
      << debug_data_.target_pcd_points.size() << "\n";
   if (nearest_collision_point_) {
     ss << "\t\t" << "DISTANCE TO COLLISION: " << nearest_collision_point_->arc_length << " m"
@@ -446,9 +487,6 @@ void ObstacleStop::publish_debug_string(bool is_safe) const
 
 void ObstacleStop::publish_debug_data(const std::string & ns) const
 {
-  if (debug_data_.filtered_points) pub_filtered_pointcloud_->publish(*debug_data_.filtered_points);
-  if (debug_data_.cluster_points) pub_clustered_pointcloud_->publish(*debug_data_.cluster_points);
-
   MarkerArray marker_array;
   const auto ego_z = debug_data_.ego_z;
   const auto white = autoware_utils::create_marker_color(1.0, 1.0, 1.0, 1.0);

@@ -228,65 +228,36 @@ trajectory_modifier_params:
       height_buffer:
         type: double
         default_value: 0.5
-        description: Height buffer to add above ego height [m]
+        description: Height buffer added above ego height to form the z-band top of the obstacle grid gate [m]
         validation:
           bounds<>: [0.0, 10.0]
         read_only: false
-      min_height:
+      min_point_count_cell:
+        type: int
+        default_value: 1
+        description: Per-cell density floor; a grid cell qualifies only if its point_count reaches this many returns
+        validation:
+          bounds<>: [1, 100000]
+        read_only: false
+      obstacle_grid_timeout_sec:
         type: double
-        default_value: 0.2
-        description: Minimum height of pointcloud [m]
+        default_value: 0.5
+        description: Obstacle grid staleness watchdog [s]; a grid older than this reads as unavailable, never as clear
         validation:
           bounds<>: [0.0, 10.0]
         read_only: false
-      voxel_grid_filter:
-        x:
-          type: double
-          default_value: 0.2
-          validation:
-            bounds<>: [0.0, 1.0]
-          read_only: false
-        y:
-          type: double
-          default_value: 0.2
-          validation:
-            bounds<>: [0.0, 1.0]
-          read_only: false
-        z:
-          type: double
-          default_value: 0.2
-          validation:
-            bounds<>: [0.0, 1.0]
-          read_only: false
-        min_size:
-          type: int
-          default_value: 3
-          validation:
-            bounds<>: [1, 100]
-          read_only: false
       clustering:
-        tolerance:
-          type: double
-          default_value: 0.2
-          description: Distance threshold for clustering points [m]
-          validation:
-            bounds<>: [0.0, 1.0]
-          read_only: false
         min_height:
           type: double
           default_value: 0.5
+          description: Per-cell low_max_height floor [m]; the tallest in-band return of a cell must reach this to qualify
           validation:
             bounds<>: [0.0, 1.0]
           read_only: false
         min_size:
           type: int
           default_value: 10
-          validation:
-            bounds<>: [1, 10000]
-          read_only: false
-        max_size:
-          type: int
-          default_value: 10000
+          description: Minimum summed point_count over an 8-connected component of qualifying cells; counts RAW returns (the grid is pre-voxel), so a value tuned for the old post-voxel cluster size may need raising
           validation:
             bounds<>: [1, 10000]
           read_only: false

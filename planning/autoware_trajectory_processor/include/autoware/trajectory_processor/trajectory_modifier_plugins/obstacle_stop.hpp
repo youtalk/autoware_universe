@@ -71,6 +71,11 @@ private:
 
   std::optional<CollisionPoint> nearest_collision_point_;
 
+  // Fail-safe latch for the pointcloud branch (mirrors surround_obstacle_checker's no-start guard):
+  // the last collision emitted from a fresh, valid grid. Re-emitted while the grid is unavailable
+  // so sensor silence HOLDS the active stop instead of releasing the brake.
+  std::optional<CollisionPoint> held_pcd_collision_point_;
+
   DebugData debug_data_;
 
   std::unique_ptr<utils::obstacle_stop::ObjectFilter> object_filter_;
@@ -88,8 +93,16 @@ private:
   void check_obstacles(const TrajectoryPoints & traj_points, const InputData & input);
   std::optional<CollisionPoint> check_predicted_objects(
     const TrajectoryPoints & traj_points, const InputData & input);
-  std::optional<CollisionPoint> check_pointcloud(
-    const TrajectoryPoints & traj_points, const InputData & input);
+
+  // Result of the pointcloud (obstacle-grid) collision query. `available` is false when the
+  // pointcloud stop is enabled but the grid is unavailable (not-yet-received / stale / wrong-frame
+  // / missing-layer); such silence must be HELD as "unknown", never read as "clear".
+  struct PointcloudCheck
+  {
+    std::optional<CollisionPoint> collision;
+    bool available{true};
+  };
+  PointcloudCheck check_pointcloud(const TrajectoryPoints & traj_points, const InputData & input);
 
   /**
    * @brief Extract obstacle points (map frame) from the sensing obstacle grid.

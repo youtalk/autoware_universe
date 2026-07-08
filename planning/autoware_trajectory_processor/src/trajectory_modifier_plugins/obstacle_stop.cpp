@@ -240,7 +240,21 @@ void ObstacleStop::check_obstacles(const TrajectoryPoints & traj_points, const I
 {
   autoware_utils_debug::ScopedTimeTrack st("ObstacleStop::check_obstacles", *get_time_keeper());
   const auto collision_point_objects = check_predicted_objects(traj_points, input);
-  const auto collision_point_pcd = check_pointcloud(traj_points, input);
+
+  // Fail-safe hold (mirrors surround_obstacle_checker's no-start guard): distinguish "grid
+  // available, no obstacle" (release allowed) from "grid unavailable" (not-yet-received / stale /
+  // wrong-frame / missing-layer). While the pointcloud stop is enabled and the grid is unavailable,
+  // HOLD the last active pointcloud collision instead of releasing the brake on sensor silence; a
+  // fresh valid grid re-latches the current evidence (possibly clearing it).
+  const auto pointcloud_check = check_pointcloud(traj_points, input);
+  auto collision_point_pcd = pointcloud_check.collision;
+  if (params_.enable_stop_for_pointcloud) {
+    if (pointcloud_check.available) {
+      held_pcd_collision_point_ = pointcloud_check.collision;
+    } else {
+      collision_point_pcd = held_pcd_collision_point_;
+    }
+  }
 
   auto get_safety_factor = [&](
                              const geometry_msgs::msg::Point & point,
@@ -385,26 +399,31 @@ PointCloud::Ptr ObstacleStop::get_cells_from_obstacle_grid(
   return cells;
 }
 
-std::optional<CollisionPoint> ObstacleStop::check_pointcloud(
+ObstacleStop::PointcloudCheck ObstacleStop::check_pointcloud(
   const TrajectoryPoints & traj_points, const InputData & input)
 {
   autoware_utils_debug::ScopedTimeTrack st("ObstacleStop::check_pointcloud", *get_time_keeper());
-  if (!params_.use_pointcloud || !input.obstacle_grid) {
-    return std::nullopt;
+  // Pointcloud branch disabled: it neither reports obstacles nor blocks clearing -> available.
+  if (!params_.use_pointcloud) {
+    return {std::nullopt, true};
+  }
+  // Grid not yet received: unavailable, never "clear". Silence from a yet-to-arrive grid is held.
+  if (!input.obstacle_grid) {
+    return {std::nullopt, false};
   }
   const auto & grid_msg = *input.obstacle_grid;
 
   // Staleness watchdog: the polling subscriber returns the last received grid forever, and the
   // producer deliberately publishes nothing on its failure paths, so silence must read as
-  // "unavailable", never as "clear". Returning nullopt here also leaves the obstacle tracker
-  // untouched, so a stale frame never ages out an already-tracked obstacle.
+  // "unavailable", never as "clear". Reporting available=false makes the caller HOLD the latched
+  // stop, and skipping update_points leaves the tracker unaged so a brief gap keeps the track.
   const double grid_age_sec = (get_clock()->now() - rclcpp::Time(grid_msg.header.stamp)).seconds();
   if (grid_age_sec > params_.pointcloud.obstacle_grid_timeout_sec) {
     RCLCPP_ERROR_THROTTLE(
       get_node_ptr()->get_logger(), *get_clock(), 5000,
       "[TM ObstacleStop] obstacle grid is stale (%.2f s old > %.2f s); treating it as unavailable",
       grid_age_sec, params_.pointcloud.obstacle_grid_timeout_sec);
-    return std::nullopt;
+    return {std::nullopt, false};
   }
 
   // Contract validation: a grid cannot be cheaply re-framed, so a frame mismatch is a wiring error
@@ -414,7 +433,7 @@ std::optional<CollisionPoint> ObstacleStop::check_pointcloud(
       get_node_ptr()->get_logger(), *get_clock(), 5000,
       "[TM ObstacleStop] obstacle grid frame is '%s', expected 'base_link'; ignoring the grid",
       grid_msg.header.frame_id.c_str());
-    return std::nullopt;
+    return {std::nullopt, false};
   }
 
   grid_map::GridMap grid;
@@ -422,14 +441,14 @@ std::optional<CollisionPoint> ObstacleStop::check_pointcloud(
     RCLCPP_ERROR_THROTTLE(
       get_node_ptr()->get_logger(), *get_clock(), 5000,
       "[TM ObstacleStop] failed to convert the obstacle grid message; treating it as unavailable");
-    return std::nullopt;
+    return {std::nullopt, false};
   }
   for (const char * layer : {kPointCountLayer, kMinHeightLayer, kLowMaxHeightLayer}) {
     if (!grid.exists(layer)) {
       RCLCPP_ERROR_THROTTLE(
         get_node_ptr()->get_logger(), *get_clock(), 5000,
         "[TM ObstacleStop] obstacle grid is missing the '%s' layer; ignoring the grid", layer);
-      return std::nullopt;
+      return {std::nullopt, false};
     }
   }
 
@@ -458,7 +477,7 @@ std::optional<CollisionPoint> ObstacleStop::check_pointcloud(
       traj_points, debug_data_.trajectory_shape, active_points, debug_data_.target_pcd_points);
   }
 
-  return collision_point;
+  return {collision_point, true};
 }
 
 void ObstacleStop::publish_debug_string(bool is_safe) const

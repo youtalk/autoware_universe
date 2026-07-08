@@ -688,6 +688,42 @@ TEST_F(ObstacleStopIntegrationTest, NoStopForStaleGrid)
   EXPECT_FALSE(run_two_frames(*plugin_, trajectory, input));
 }
 
+// Fail-safe hold: once a pointcloud-derived stop is active, a stale / unavailable grid must HOLD
+// the latched stop, never read as "clear" and release the brake (mirrors
+// surround_obstacle_checker's no-start guard).
+TEST_F(ObstacleStopIntegrationTest, HoldsPointcloudStopWhenGridBecomesUnavailable)
+{
+  constexpr double block_x = 15.0;
+
+  // Frames 1-2: a fresh, valid, blocking grid establishes an active pointcloud stop and latches it.
+  auto trajectory = create_straight_trajectory(30.0, 8.0);
+  const auto fresh_grid = std::make_shared<const grid_map_msgs::msg::GridMap>(
+    make_obstacle_grid_msg(14.8, 15.2, 0.0, 0.0, 0.2f, 0.7f, 0.7f, 50.0f, node_->now()));
+  const auto fresh_input =
+    create_input_data(make_odometry(0.0, 0.0, 8.0), make_acceleration(0.0), nullptr, fresh_grid);
+  ASSERT_TRUE(run_two_frames(*plugin_, trajectory, fresh_input));
+
+  // Frame 3: the grid goes stale (1.0 s old > obstacle_grid_timeout_sec 0.5 s) -> unavailable. No
+  // objects, so the only possible stop is the held pointcloud one. A fresh full-length trajectory
+  // isolates the assertion from the truncated trajectory left by the prior frames.
+  auto held_trajectory = create_straight_trajectory(30.0, 8.0);
+  const auto stale_stamp = node_->now() - rclcpp::Duration::from_seconds(1.0);
+  const auto stale_grid = std::make_shared<const grid_map_msgs::msg::GridMap>(
+    make_obstacle_grid_msg(14.8, 15.2, 0.0, 0.0, 0.2f, 0.7f, 0.7f, 50.0f, stale_stamp));
+  const auto stale_input =
+    create_input_data(make_odometry(0.0, 0.0, 8.0), make_acceleration(0.0), nullptr, stale_grid);
+
+  // On the unfixed code the stale grid returns "no collision", check_obstacles overwrites
+  // nearest_collision_point_ with nullopt, and the active stop VANISHES (returns false). The held
+  // latch must keep it.
+  const bool stop_held = plugin_->modify_trajectory(held_trajectory, stale_input);
+
+  EXPECT_TRUE(stop_held);
+  ASSERT_FALSE(held_trajectory.empty());
+  EXPECT_FLOAT_EQ(held_trajectory.back().longitudinal_velocity_mps, 0.0F);
+  EXPECT_LT(held_trajectory.back().pose.position.x, block_x);
+}
+
 TEST_F(ObstacleStopIntegrationTest, MissingRequiredLayerIsRejectedWithoutThrow)
 {
   // Arrange: a grid without the low_max_height layer -> intake validation rejects it.

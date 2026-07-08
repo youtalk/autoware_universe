@@ -695,4 +695,67 @@ TEST_F(TestAEB, useImuPathFalseIgnoresKinematicState)
   EXPECT_EQ(aeb_node_->angular_velocity_ptr_, nullptr);
 }
 
+// The obstacle-grid intake in fetchLatestData accepts a FRESH grid (populates obstacle_grid_ptr_)
+// and the staleness watchdog REJECTS a grid older than obstacle_grid_timeout_sec_ — the polling
+// subscriber returns the last grid forever and the producer stays silent on its failure paths, so
+// an aged grid must read as "unavailable", never as "clear". Independent oracle: the age is
+// hand-set through the message header stamp and compared against the pinned package default.
+TEST_F(TestAEB, obstacleGridStalenessWatchdog)
+{
+  ASSERT_DOUBLE_EQ(aeb_node_->obstacle_grid_timeout_sec_, 0.5);  // pin the calibrated default
+  aeb_node_->check_autoware_state_ = false;
+  aeb_node_->use_pointcloud_data_ = true;
+  aeb_node_->use_predicted_object_data_ = false;  // isolate the obstacle-grid detection method
+  aeb_node_->use_predicted_trajectory_ = false;
+  aeb_node_->use_imu_path_ = true;
+
+  // Fresh grid (stamp = publish time): age ~0 < 0.5 s -> accepted; fetchLatestData succeeds and
+  // obstacle_grid_ptr_ is populated.
+  const auto publish_fresh = [&]() {
+    const auto header = get_header("base_link", pub_sub_node_->now());
+    pub_sub_node_->pub_velocity_->publish(make_velocity_report_msg(header, 0.0, 3.0, 0.0));
+    pub_sub_node_->pub_kinematic_state_->publish(make_odometry_message(header, 0.05));
+    auto grid = make_obstacle_grid_msg(5.1, 5.9, -0.3, 0.3, 0.2f, 1.1f, 0.9f, 5.0f);
+    grid.header.stamp = pub_sub_node_->now();
+    pub_sub_node_->pub_obstacle_grid_->publish(grid);
+  };
+  deliver(pub_sub_node_, aeb_node_, publish_fresh);
+  ASSERT_TRUE(aeb_node_->fetchLatestData());
+  ASSERT_NE(aeb_node_->obstacle_grid_ptr_, nullptr);
+
+  // Stale grid (stamp = 5 s in the past): age 5 s > 0.5 s -> watchdog trips; fetchLatestData fails
+  // even though a grid message is present, so a frozen grid can never be mistaken for a clear road.
+  const auto publish_stale = [&]() {
+    const auto header = get_header("base_link", pub_sub_node_->now());
+    pub_sub_node_->pub_velocity_->publish(make_velocity_report_msg(header, 0.0, 3.0, 0.0));
+    pub_sub_node_->pub_kinematic_state_->publish(make_odometry_message(header, 0.05));
+    auto grid = make_obstacle_grid_msg(5.1, 5.9, -0.3, 0.3, 0.2f, 1.1f, 0.9f, 5.0f);
+    grid.header.stamp = rclcpp::Time(pub_sub_node_->now()) - rclcpp::Duration::from_seconds(5.0);
+    pub_sub_node_->pub_obstacle_grid_->publish(grid);
+  };
+  deliver(pub_sub_node_, aeb_node_, publish_stale);
+  EXPECT_FALSE(aeb_node_->fetchLatestData());
+}
+
+// Intake guard: with the pointcloud detection method enabled and no grid published at all,
+// fetchLatestData fails on the missing-grid guard (distinct from the staleness path: a missing
+// grid never reaches the age check).
+TEST_F(TestAEB, missingObstacleGridTripsPointcloudGuard)
+{
+  aeb_node_->check_autoware_state_ = false;
+  aeb_node_->use_pointcloud_data_ = true;
+  aeb_node_->use_predicted_object_data_ = false;
+  aeb_node_->use_predicted_trajectory_ = false;
+  aeb_node_->use_imu_path_ = true;
+
+  const auto publish_without_grid = [&]() {
+    const auto header = get_header("base_link", pub_sub_node_->now());
+    pub_sub_node_->pub_velocity_->publish(make_velocity_report_msg(header, 0.0, 3.0, 0.0));
+    pub_sub_node_->pub_kinematic_state_->publish(make_odometry_message(header, 0.05));
+    // obstacle grid deliberately withheld.
+  };
+  deliver(pub_sub_node_, aeb_node_, publish_without_grid);
+  EXPECT_FALSE(aeb_node_->fetchLatestData());
+}
+
 }  // namespace autoware::motion::control::autonomous_emergency_braking::test

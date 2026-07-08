@@ -1,0 +1,210 @@
+// Copyright 2026 The Autoware Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef AUTOWARE__COMPONENT_INTERFACE_ADMISSION__ADMISSION_RULE_HPP_
+#define AUTOWARE__COMPONENT_INTERFACE_ADMISSION__ADMISSION_RULE_HPP_
+
+#include "autoware/component_interface_admission/records.hpp"
+
+#include <cstdint>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+namespace autoware::component_interface_admission
+{
+
+// Admission verdict codes. An enum-backed uint16_t constant set whose numeric values are chosen to
+// match the eventual rosidl message binding, so that the future message mapping is mechanical.
+//
+// This code is designed so it can later be raised as a distinct error code in Autoware's
+// system-wide diagnostics, under a reserved namespace for interface-compatibility errors, reusing
+// the same code space, off-wire name derivation, and minimal-risk-maneuver (MRM) wiring as any
+// other Autoware error. accepted == (code == ACCEPTED); the human-readable reason is derivable
+// from the code.
+enum Verdict : std::uint16_t {
+  ACCEPTED = 0,
+  MAJOR_MISMATCH = 1,
+  MINOR_MISMATCH = 2,
+  // version-compatible, but a remap left provider / consumer on disjoint wire topics
+  TOPIC_MISMATCH = 3,
+  // deploy-time only: a required interface has no provider in the composed set. The runtime
+  // observe-mode evaluate() never emits this — a provider may simply not have started yet.
+  NO_PROVIDER = 4,
+};
+
+// One consumer <- provider interface pairing verdict.
+struct AdmissionResult
+{
+  std::string consumer_node;
+  std::string interface_name;
+  std::string provider_node;
+  std::uint16_t code{ACCEPTED};
+};
+
+// Runtime admission (the shared rule at its runtime trigger). For each required interface, find a
+// provider of the same interface_name and apply the two-layer match:
+//   - version-ok AND resolved_name coincide      -> ACCEPTED (the actually-wired provider)
+//   - version-ok but resolved_name disjoint       -> TOPIC_MISMATCH (remap false-accept caught)
+//   - MAJOR in range but min_minor unmet           -> MINOR_MISMATCH
+//   - otherwise                                    -> MAJOR_MISMATCH
+// A required interface with no provider is SKIPPED (not reported): under the runtime trigger the
+// provider may simply not have started yet, so absence is not yet a failure.
+inline std::vector<AdmissionResult> evaluate(const std::vector<InterfaceManifest> & manifests)
+{
+  struct ProviderEntry
+  {
+    std::string node;
+    ProvidedInterface p;
+  };
+  std::unordered_map<std::string, std::vector<ProviderEntry>> providers;
+  for (const auto & m : manifests) {
+    for (const auto & p : m.provided) {
+      providers[p.interface_name].push_back({m.node_name, p});
+    }
+  }
+
+  std::vector<AdmissionResult> results;
+  for (const auto & m : manifests) {
+    for (const auto & r : m.required) {
+      const auto it = providers.find(r.interface_name);
+      if (it == providers.end() || it->second.empty()) {
+        continue;  // no provider yet — nothing to admit
+      }
+
+      const ProviderEntry * wired = nullptr;             // version-ok AND same resolved wire topic
+      const ProviderEntry * version_ok_other = nullptr;  // version-ok but disjoint wire topic
+      for (const auto & entry : it->second) {
+        const bool major_ok =
+          r.accept_major_min <= entry.p.major && entry.p.major <= r.accept_major_max;
+        const bool minor_ok = (r.min_minor == 0) || (entry.p.minor >= r.min_minor);
+        if (major_ok && minor_ok) {
+          if (entry.p.resolved_name == r.resolved_name) {
+            wired = &entry;
+            break;
+          }
+          // Lowest node name wins, so the reported provider does not depend on the order the
+          // manifests were passed to manifest_admit.
+          if (version_ok_other == nullptr || entry.node < version_ok_other->node) {
+            version_ok_other = &entry;
+          }
+        }
+      }
+
+      AdmissionResult res;
+      res.consumer_node = m.node_name;
+      res.interface_name = r.interface_name;
+      if (wired != nullptr) {
+        res.code = ACCEPTED;
+        res.provider_node = wired->node;
+      } else if (version_ok_other != nullptr) {
+        // version-compatible, but a remap left the wire topics disjoint — the false-accept that
+        // logical-name-only admission (matching on Spec::name alone) would have missed.
+        res.code = TOPIC_MISMATCH;
+        res.provider_node = version_ok_other->node;
+      } else {
+        // No provider satisfied both bounds. Blame the one the operator can act on, by a stable
+        // total order rather than registration order: the provider on the consumer's wire topic
+        // first, then one whose MAJOR is already in range (the actionable MINOR_MISMATCH), then
+        // the lowest node name. Manifest/argv order must not change the verdict.
+        const auto rank = [&r](const ProviderEntry & e) {
+          const bool on_wire = e.p.resolved_name == r.resolved_name;
+          const bool major_in_range =
+            r.accept_major_min <= e.p.major && e.p.major <= r.accept_major_max;
+          return std::make_tuple(!on_wire, !major_in_range, e.node);
+        };
+        const ProviderEntry * blame = &it->second.front();
+        for (const auto & entry : it->second) {
+          if (rank(entry) < rank(*blame)) {
+            blame = &entry;
+          }
+        }
+        res.provider_node = blame->node;
+        const bool major_in_range =
+          r.accept_major_min <= blame->p.major && blame->p.major <= r.accept_major_max;
+        res.code = major_in_range ? MINOR_MISMATCH : MAJOR_MISMATCH;
+      }
+      results.push_back(res);
+    }
+  }
+  return results;
+}
+
+// Deploy-time admission (the same shared rule at its deploy-time trigger). Because the deploy image
+// set is complete (unlike the runtime observe mode, where a provider may not have started yet), it
+// runs the base evaluate() and additionally reports a required interface with NO provider anywhere
+// in the set as NO_PROVIDER. The base evaluate() is left untouched by design; this layer only adds
+// the extra verdict the complete-set semantics allow.
+inline std::vector<AdmissionResult> evaluate_deploy(
+  const std::vector<InterfaceManifest> & manifests)
+{
+  auto results = evaluate(manifests);
+
+  std::unordered_set<std::string> provided_names;
+  for (const auto & m : manifests) {
+    for (const auto & p : m.provided) {
+      provided_names.insert(p.interface_name);
+    }
+  }
+  for (const auto & m : manifests) {
+    for (const auto & r : m.required) {
+      if (provided_names.find(r.interface_name) == provided_names.end()) {
+        AdmissionResult res;
+        res.consumer_node = m.node_name;
+        res.interface_name = r.interface_name;
+        res.code = NO_PROVIDER;
+        results.push_back(res);
+      }
+    }
+  }
+  return results;
+}
+
+// The human-readable reason is derived from the verdict code off-wire — it is not carried on
+// AdmissionResult (the code is the single source of identity, matching the future error-code
+// reuse described above, not an existing Autoware-wide mechanism today). Covers both the runtime
+// and the deploy-only (NO_PROVIDER) codes.
+inline const char * verdict_text(std::uint16_t code)
+{
+  switch (code) {
+    case ACCEPTED:
+      return "accepted";
+    case MAJOR_MISMATCH:
+      return "MAJOR mismatch";
+    case MINOR_MISMATCH:
+      return "MINOR mismatch";
+    case TOPIC_MISMATCH:
+      return "resolved-topic mismatch (remap)";
+    case NO_PROVIDER:
+      return "required interface has no provider in the set";
+    default:
+      return "unknown";
+  }
+}
+
+inline bool any_rejected(const std::vector<AdmissionResult> & results)
+{
+  for (const auto & r : results) {
+    if (r.code != ACCEPTED) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace autoware::component_interface_admission
+
+#endif  // AUTOWARE__COMPONENT_INTERFACE_ADMISSION__ADMISSION_RULE_HPP_

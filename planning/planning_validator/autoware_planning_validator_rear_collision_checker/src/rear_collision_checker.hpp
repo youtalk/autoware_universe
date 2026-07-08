@@ -104,6 +104,12 @@ private:
   std::shared_ptr<autoware_utils::TimeKeeper> time_keeper_;
 
   std::map<lanelet::Id, PointCloudObject> history_;
+
+  // Set true (and reset each validate()) when the rear check is active but the obstacle grid is
+  // unavailable (missing / stale / contract-violating / TF-fails); drives set_diag_status to ERROR
+  // so data-unavailability is never republished as a spurious "clear". Mirrors
+  // autoware_obstacle_collision_checker's obstacle_grid_unavailable_.
+  bool grid_unavailable_{false};
 };
 
 }  // namespace autoware::planning_validator

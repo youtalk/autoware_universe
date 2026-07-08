@@ -92,6 +92,7 @@ void RearCollisionChecker::validate()
   const auto start_time = clock_->now();
 
   DebugData debug_data;
+  grid_unavailable_ = false;
 
   context_->validation_status->is_valid_rear_collision_check = is_safe(debug_data);
 
@@ -117,6 +118,14 @@ void RearCollisionChecker::setup_diag()
 void RearCollisionChecker::set_diag_status(
   DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg) const
 {
+  // Fail-safe on silence: an unavailable obstacle grid (missing / stale / contract-violating /
+  // TF-fails) while the rear check is active must surface a distinct ERROR, never the OK a genuine
+  // clear reports. Mirrors autoware_obstacle_collision_checker.
+  if (grid_unavailable_) {
+    stat.summary(DiagnosticStatus::ERROR, "obstacle grid is unavailable");
+    return;
+  }
+
   if (is_ok) {
     stat.summary(DiagnosticStatus::OK, "validated.");
     return;
@@ -648,6 +657,7 @@ bool RearCollisionChecker::is_safe(DebugData & debug)
   if (!context_->data->obstacle_grid) {
     RCLCPP_ERROR_THROTTLE(
       logger_, *clock_, 5000, "obstacle grid is not available; skipping rear collision check.");
+    grid_unavailable_ = true;
     return true;
   }
   const auto grid_age = (now - rclcpp::Time(context_->data->obstacle_grid->header.stamp)).seconds();
@@ -655,6 +665,7 @@ bool RearCollisionChecker::is_safe(DebugData & debug)
     RCLCPP_ERROR_THROTTLE(
       logger_, *clock_, 5000, "obstacle grid is stale (age %.2f s); skipping rear collision check.",
       grid_age);
+    grid_unavailable_ = true;
     return true;
   }
 
@@ -671,6 +682,7 @@ bool RearCollisionChecker::is_safe(DebugData & debug)
   const auto opt_obstacle_pointcloud =
     extract_obstacle_grid_points(*context_->data->obstacle_grid, debug);
   if (!opt_obstacle_pointcloud) {
+    grid_unavailable_ = true;
     return true;
   }
   const auto & obstacle_pointcloud = opt_obstacle_pointcloud.value();

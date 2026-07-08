@@ -59,7 +59,7 @@ public:
   : interface_(interface)
   {
     service_ = interface_->node->create_service<typename SpecT::Service>(
-      SpecT::name, wrap(callback), rmw_qos_profile_services_default, group);
+      SpecT::name, wrap(callback), rclcpp::ServicesQoS(), group);
   }
 
   /// Create a service callback with logging added.
@@ -84,6 +84,9 @@ public:
     };
     return wrapped;
   }
+
+  /// The remap-resolved fully-qualified service name (section 3.4 resolved_name).
+  const char * get_service_name() const { return service_->get_service_name(); }
 
 private:
   RCLCPP_DISABLE_COPY(Service)

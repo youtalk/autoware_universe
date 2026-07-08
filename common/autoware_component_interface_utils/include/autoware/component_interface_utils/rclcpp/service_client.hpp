@@ -43,7 +43,7 @@ public:
   : interface_(interface)
   {
     client_ = interface->node->create_client<typename SpecT::Service>(
-      SpecT::name, rmw_qos_profile_services_default, group);
+      SpecT::name, rclcpp::ServicesQoS(), group);
   }
 
   /// Send request.
@@ -88,6 +88,9 @@ public:
 
   /// Check if the service is ready.
   bool service_is_ready() const { return client_->service_is_ready(); }
+
+  /// The remap-resolved fully-qualified service name (section 3.4 resolved_name).
+  const char * get_service_name() const { return client_->get_service_name(); }
 
 private:
   RCLCPP_DISABLE_COPY(Client)

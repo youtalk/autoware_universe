@@ -38,6 +38,9 @@ public:
   /// Publish a message.
   void publish(const typename SpecT::Message & msg) { publisher_->publish(msg); }
 
+  /// The remap-resolved fully-qualified topic name (section 3.4 resolved_name).
+  const char * get_topic_name() const { return publisher_->get_topic_name(); }
+
 private:
   RCLCPP_DISABLE_COPY(Publisher)
   typename WrapType::SharedPtr publisher_;

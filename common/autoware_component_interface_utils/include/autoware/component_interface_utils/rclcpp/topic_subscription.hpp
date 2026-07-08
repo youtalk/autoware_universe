@@ -71,6 +71,9 @@ public:
     return true;
   }
 
+  /// The remap-resolved fully-qualified topic name (section 3.4 resolved_name).
+  const char * get_topic_name() const { return subscription_->get_topic_name(); }
+
 private:
   RCLCPP_DISABLE_COPY(Subscription)
   typename WrapType::SharedPtr subscription_;

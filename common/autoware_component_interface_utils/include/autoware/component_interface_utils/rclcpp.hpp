@@ -15,6 +15,8 @@
 #ifndef AUTOWARE__COMPONENT_INTERFACE_UTILS__RCLCPP_HPP_
 #define AUTOWARE__COMPONENT_INTERFACE_UTILS__RCLCPP_HPP_
 
+#include <autoware/component_interface_admission/records.hpp>
+#include <autoware/component_interface_specs/version.hpp>
 #include <autoware/component_interface_utils/rclcpp/create_interface.hpp>
 #include <autoware/component_interface_utils/rclcpp/interface.hpp>
 #include <autoware/component_interface_utils/rclcpp/service_client.hpp>
@@ -46,6 +48,15 @@ private:
     const typename SharedPtrT::element_type::SpecType::Service::Request::SharedPtr,
     const typename SharedPtrT::element_type::SpecType::Service::Response::SharedPtr);
 
+  // The default consumer acceptance range is the single MAJOR the node was built against (the
+  // owner spec version it compiled against). Widen it explicitly during a migration window.
+  template <class SpecT>
+  static autoware::component_interface_specs::accept_major default_accept_major()
+  {
+    const auto version = autoware::component_interface_specs::spec_version<SpecT>();
+    return {version.major, version.major};
+  }
+
 public:
   /// Constructor.
   explicit NodeAdaptor(rclcpp::Node * node) { interface_ = std::make_shared<NodeInterface>(node); }
@@ -56,6 +67,7 @@ public:
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
     cli = create_client_impl<SpecT>(interface_, group);
+    interface_->register_required_service<SpecT>(cli->get_service_name());
   }
 
   /// Create a service wrapper for logging.
@@ -64,6 +76,7 @@ public:
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
     srv = create_service_impl<SpecT>(interface_, std::forward<CallbackT>(callback), group);
+    interface_->register_provided_service<SpecT>(srv->get_service_name());
   }
 
   /// Create a publisher using traits like services.
@@ -72,6 +85,7 @@ public:
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
     pub = create_publisher_impl<SpecT>(interface_->node);
+    interface_->register_provided<SpecT>(pub->get_topic_name());
   }
 
   /// Create a subscription using traits like services.
@@ -80,6 +94,56 @@ public:
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
     sub = create_subscription_impl<SpecT>(interface_->node, std::forward<CallbackT>(callback));
+    interface_->register_required<SpecT>(default_accept_major<SpecT>(), sub->get_topic_name());
+  }
+
+  /// Create a publisher and register it as a provided interface (section 4.3, provider role).
+  template <AUTOWARE_COMPONENT_INTERFACE_UTILS_TOPIC_SPEC S>
+  typename Publisher<S>::SharedPtr create_publisher() const
+  {
+    auto publisher = create_publisher_impl<S>(interface_->node);
+    interface_->register_provided<S>(publisher->get_topic_name());
+    return publisher;
+  }
+
+  /// Create a subscription and register it as a required interface (section 4.3, consumer role).
+  /// The acceptance range defaults to the single MAJOR built against; widen it with accept_major.
+  template <AUTOWARE_COMPONENT_INTERFACE_UTILS_TOPIC_SPEC S, class CallbackT>
+  typename Subscription<S>::SharedPtr create_subscription(
+    CallbackT && callback,
+    autoware::component_interface_specs::accept_major accept = default_accept_major<S>()) const
+  {
+    auto subscription =
+      create_subscription_impl<S>(interface_->node, std::forward<CallbackT>(callback));
+    interface_->register_required<S>(accept, subscription->get_topic_name());
+    return subscription;
+  }
+
+  /// Create a service server and register it as a provided interface (section 4.3, provider role).
+  template <AUTOWARE_COMPONENT_INTERFACE_UTILS_SERVICE_SPEC S, class CallbackT>
+  typename Service<S>::SharedPtr create_service(
+    CallbackT && callback, CallbackGroup group = nullptr) const
+  {
+    auto service = create_service_impl<S>(interface_, std::forward<CallbackT>(callback), group);
+    interface_->register_provided_service<S>(service->get_service_name());
+    return service;
+  }
+
+  /// Create a service client and register it as a required interface (section 4.3, consumer role).
+  template <AUTOWARE_COMPONENT_INTERFACE_UTILS_SERVICE_SPEC S>
+  typename Client<S>::SharedPtr create_client(CallbackGroup group = nullptr) const
+  {
+    auto client = create_client_impl<S>(interface_, group);
+    interface_->register_required_service<S>(client->get_service_name());
+    return client;
+  }
+
+  /// The interface manifest accumulated from the create_* / init_* calls on this node. See
+  /// NodeInterface::manifest(): the runtime broadcast / admission checker are DEFERRED to Stage 2
+  /// (component-interface-versioning.md section 0.5), so the manifest is inert today.
+  const autoware::component_interface_admission::InterfaceManifest & manifest() const
+  {
+    return interface_->manifest();
   }
 
   /// Relay message.

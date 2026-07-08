@@ -182,6 +182,29 @@ TEST(QualifyingCellCorners, NaNCountNeverQualifies)
   EXPECT_TRUE(qualifying_cell_corners(grid, 1U, kFloor, kZBandTop).empty());
 }
 
+// A cell that clears the density gate but whose low_max_height is NaN is rejected: the tallest
+// in-band return is unknown, so the floor gate cannot be satisfied. This is distinct from
+// BelowFloorRejected (a finite low_max below the floor); here the isnan(low_max) guard fires.
+TEST(QualifyingCellCorners, NaNLowMaxHeightRejected)
+{
+  auto grid = make_grid();
+  set_cell(grid, grid_map::Index(1, 1), 5.0F, 0.2F, kNaN);
+
+  EXPECT_TRUE(qualifying_cell_corners(grid, 1U, kFloor, kZBandTop).empty());
+}
+
+// A cell that clears both the density gate and the finite in-band low_max_height floor but whose
+// min_height is NaN is rejected: the lowest return is unknown, so the band-top gate cannot be
+// satisfied. Distinct from OverheadOnlyRejectedByCeiling (a finite min above the top); here the
+// isnan(min_height) guard fires.
+TEST(QualifyingCellCorners, NaNMinHeightRejected)
+{
+  auto grid = make_grid();
+  set_cell(grid, grid_map::Index(1, 1), 5.0F, kNaN, 1.5F);
+
+  EXPECT_TRUE(qualifying_cell_corners(grid, 1U, kFloor, kZBandTop).empty());
+}
+
 // An all-NaN grid (empty grid / fresh heartbeat) yields no corners.
 TEST(QualifyingCellCorners, AllNaNGridYieldsNothing)
 {

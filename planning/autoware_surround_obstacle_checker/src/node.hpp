@@ -85,6 +85,10 @@ private:
 
   // ros
   rclcpp::TimerBase::SharedPtr timer_;
+  // Cached clock for throttled logging from const methods. Dereferencing this shared_ptr yields a
+  // non-const rclcpp::Clock &, which the RCLCPP_*_THROTTLE macros require; the const get_clock()
+  // overload would instead return a ConstSharedPtr whose Clock::now() is non-const on Humble.
+  rclcpp::Clock::SharedPtr clock_;
 
   // publisher and subscriber
   autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{

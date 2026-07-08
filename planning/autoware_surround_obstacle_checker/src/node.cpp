@@ -37,7 +37,7 @@ namespace autoware::surround_obstacle_checker
 using autoware_perception_msgs::msg::ObjectClassification;
 
 SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptions & node_options)
-: Node("surround_obstacle_checker_node", node_options)
+: Node("surround_obstacle_checker_node", node_options), clock_(this->get_clock())
 {
   label_map_ = {
     {ObjectClassification::UNKNOWN, "unknown"},
@@ -287,7 +287,7 @@ SurroundObstacleCheckerNode::toObstacleGridPointCloud() const
   const auto & msg = *obstacle_grid_ptr_;
   if (msg.header.frame_id != "base_link") {
     RCLCPP_ERROR_THROTTLE(
-      get_logger(), *get_clock(), 5000 /* ms */,
+      get_logger(), *clock_, 5000 /* ms */,
       "obstacle grid frame is '%s', expected 'base_link'; treating it as unavailable",
       msg.header.frame_id.c_str());
     return std::nullopt;
@@ -295,7 +295,7 @@ SurroundObstacleCheckerNode::toObstacleGridPointCloud() const
   grid_map::GridMap grid;
   if (!grid_map::GridMapRosConverter::fromMessage(msg, grid)) {
     RCLCPP_ERROR_THROTTLE(
-      get_logger(), *get_clock(), 5000 /* ms */,
+      get_logger(), *clock_, 5000 /* ms */,
       "failed to convert the obstacle grid message; treating it as unavailable");
     return std::nullopt;
   }
@@ -304,7 +304,7 @@ SurroundObstacleCheckerNode::toObstacleGridPointCloud() const
   for (const char * layer : {"point_count", "max_height"}) {
     if (!grid.exists(layer)) {
       RCLCPP_ERROR_THROTTLE(
-        get_logger(), *get_clock(), 5000 /* ms */,
+        get_logger(), *clock_, 5000 /* ms */,
         "obstacle grid is missing the '%s' layer; treating it as unavailable", layer);
       return std::nullopt;
     }
@@ -315,7 +315,7 @@ SurroundObstacleCheckerNode::toObstacleGridPointCloud() const
   const double grid_age_sec = (this->now() - rclcpp::Time(msg.header.stamp)).seconds();
   if (grid_age_sec > param.pointcloud.obstacle_grid_timeout_sec) {
     RCLCPP_ERROR_THROTTLE(
-      get_logger(), *get_clock(), 5000 /* ms */,
+      get_logger(), *clock_, 5000 /* ms */,
       "obstacle grid is stale (%.2f s old > %.2f s); treating it as unavailable", grid_age_sec,
       param.pointcloud.obstacle_grid_timeout_sec);
     return std::nullopt;

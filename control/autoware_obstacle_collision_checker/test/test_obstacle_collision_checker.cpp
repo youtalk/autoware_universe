@@ -331,6 +331,21 @@ TEST(test_obstacle_collision_checker, extractGridMissingLayer)
   EXPECT_FALSE(out.has_value());
 }
 
+TEST(test_obstacle_collision_checker, extractGridConversionFailure)
+{
+  // A grid_map message whose layer count disagrees with its data-array count is malformed:
+  // GridMapRosConverter::fromMessage rejects it (returns false, does not throw), and the extractor
+  // must map that failed conversion to nullopt ("unavailable", never "clear"). Corrupt a valid,
+  // occupied base_link grid by appending a phantom layer name so layers.size() != data.size().
+  auto grid = make_empty_grid(2.0, 0.5);
+  occupy_cell(grid, 0.25, 0.25, 5.0f, 1.0f);
+  auto msg = grid_to_msg(grid);
+  msg.layers.push_back("ghost");  // layers now outnumber the data arrays -> conversion fails
+  std::optional<sensor_msgs::msg::PointCloud2> out;
+  EXPECT_NO_THROW({ out = extract_grid_obstacle_pointcloud(msg); });
+  EXPECT_FALSE(out.has_value());
+}
+
 TEST(test_obstacle_collision_checker, extractGridHeartbeatIsEmptyNotViolation)
 {
   // All-NaN grid with a valid frame and layers is the "alive, nothing detected" heartbeat: it must

@@ -758,4 +758,56 @@ TEST_F(TestAEB, missingObstacleGridTripsPointcloudGuard)
   EXPECT_FALSE(aeb_node_->fetchLatestData());
 }
 
+// The kinematic_state yaw source (topic ~/input/kinematic_state) has no producer-side heartbeat
+// guarantee, and the Latest polling subscriber returns the last Odometry forever, so a frozen or
+// diverged localization would feed a stale yaw rate into the integrated ego-path prediction
+// indefinitely. A kinematic_state older than kinematic_state_timeout_sec_ must make the imu-path
+// yaw source read as UNAVAILABLE (angular_velocity_ptr_ reset to null so the imu path is skipped),
+// never as a usable estimate. Independent oracle: the age is hand-set through the Odometry header
+// stamp and compared against the pinned package default; a second (predicted-trajectory) path is
+// supplied so fetchLatestData can still succeed and the assertion isolates the yaw source alone.
+TEST_F(TestAEB, kinematicStateStalenessWatchdog)
+{
+  ASSERT_DOUBLE_EQ(aeb_node_->kinematic_state_timeout_sec_, 0.5);  // pin the calibrated default
+  aeb_node_->check_autoware_state_ = false;
+  aeb_node_->use_pointcloud_data_ = false;
+  aeb_node_->use_predicted_object_data_ = true;  // satisfies the object-detection-method gate
+  aeb_node_->use_predicted_trajectory_ = true;   // yaw-independent second path -> fetch can succeed
+  aeb_node_->use_imu_path_ = true;
+
+  constexpr double yaw_rate = 0.05;
+
+  // Fresh kinematic_state (stamp = publish time): age ~0 < 0.5 s -> yaw source accepted and
+  // angular_velocity_ptr_ is populated with the published yaw rate.
+  const auto publish_fresh = [&]() {
+    const auto header = get_header("base_link", pub_sub_node_->now());
+    pub_sub_node_->pub_velocity_->publish(make_velocity_report_msg(header, 0.0, 3.0, 0.0));
+    pub_sub_node_->pub_predicted_objects_->publish(PredictedObjects{});
+    pub_sub_node_->pub_predicted_traj_->publish(Trajectory{});
+    pub_sub_node_->pub_kinematic_state_->publish(make_odometry_message(header, yaw_rate));
+  };
+  deliver(pub_sub_node_, aeb_node_, publish_fresh);
+  ASSERT_TRUE(aeb_node_->fetchLatestData());
+  ASSERT_NE(aeb_node_->angular_velocity_ptr_, nullptr);
+  ASSERT_DOUBLE_EQ(aeb_node_->angular_velocity_ptr_->z, yaw_rate);
+
+  // Stale kinematic_state (stamp = 5 s in the past): age 5 s > 0.5 s -> watchdog trips; the yaw
+  // source is treated as unavailable so angular_velocity_ptr_ is reset to null and the imu path is
+  // skipped this cycle. fetchLatestData still SUCCEEDS because the predicted trajectory supplies a
+  // second, yaw-independent path -> a stale twist is never integrated into the ego-path prediction.
+  const auto publish_stale = [&]() {
+    const auto header = get_header("base_link", pub_sub_node_->now());
+    pub_sub_node_->pub_velocity_->publish(make_velocity_report_msg(header, 0.0, 3.0, 0.0));
+    pub_sub_node_->pub_predicted_objects_->publish(PredictedObjects{});
+    pub_sub_node_->pub_predicted_traj_->publish(Trajectory{});
+    const auto stale_stamp =
+      rclcpp::Time(pub_sub_node_->now()) - rclcpp::Duration::from_seconds(5.0);
+    const auto stale_header = get_header("base_link", stale_stamp);
+    pub_sub_node_->pub_kinematic_state_->publish(make_odometry_message(stale_header, yaw_rate));
+  };
+  deliver(pub_sub_node_, aeb_node_, publish_stale);
+  EXPECT_TRUE(aeb_node_->fetchLatestData());
+  EXPECT_EQ(aeb_node_->angular_velocity_ptr_, nullptr);  // stale yaw must NOT feed prediction
+}
+
 }  // namespace autoware::motion::control::autonomous_emergency_braking::test

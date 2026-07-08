@@ -166,6 +166,7 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   minimum_cluster_size_ = declare_parameter<int>("minimum_cluster_size");
   min_point_count_cell_ = declare_parameter<int>("min_point_count_cell");
   obstacle_grid_timeout_sec_ = declare_parameter<double>("obstacle_grid_timeout_sec");
+  kinematic_state_timeout_sec_ = declare_parameter<double>("kinematic_state_timeout_sec");
 
   imu_prediction_time_horizon_ = declare_parameter<double>("imu_prediction_time_horizon");
   imu_prediction_time_interval_ = declare_parameter<double>("imu_prediction_time_interval");
@@ -225,6 +226,7 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
   update_param<int>(parameters, "minimum_cluster_size", minimum_cluster_size_);
   update_param<int>(parameters, "min_point_count_cell", min_point_count_cell_);
   update_param<double>(parameters, "obstacle_grid_timeout_sec", obstacle_grid_timeout_sec_);
+  update_param<double>(parameters, "kinematic_state_timeout_sec", kinematic_state_timeout_sec_);
 
   update_param<double>(parameters, "imu_prediction_time_horizon", imu_prediction_time_horizon_);
   update_param<double>(parameters, "imu_prediction_time_interval", imu_prediction_time_interval_);
@@ -300,12 +302,28 @@ bool AEB::fetchLatestData()
   const bool has_imu_path = std::invoke([&]() {
     if (!use_imu_path_) return false;
     // The yaw rate is read from the localization-fused twist of /localization/kinematic_state,
-    // which is already expressed in base_link, so no TF transform is applied here. As with the
-    // legacy IMU source, angular_velocity_ptr_ is not reset when this cycle's message is absent,
-    // preserving the previous staleness behavior.
+    // which is already expressed in base_link, so no TF transform is applied here.
     const auto kinematic_state_ptr = sub_kinematic_state_->take_data();
     if (!kinematic_state_ptr) {
       return missing("kinematic state");
+    }
+    // Staleness watchdog (mirrors the obstacle-grid watchdog above): the polling subscriber returns
+    // the last received Odometry forever, so a frozen or diverged localization would otherwise feed
+    // a stale yaw rate into the integrated ego-path prediction indefinitely -- the "wrong odometry"
+    // failure mode this cross-check is meant to guard against. A stale twist must read as "yaw
+    // source unavailable": reset angular_velocity_ptr_ so the downstream (!angular_velocity_ptr_)
+    // guard skips the imu path this cycle. Never fall back to a usable or zero-yaw (straight-line)
+    // estimate, which would be anti-conservative.
+    const double kinematic_state_age_sec =
+      (this->now() - rclcpp::Time(kinematic_state_ptr->header.stamp)).seconds();
+    if (kinematic_state_age_sec > kinematic_state_timeout_sec_) {
+      RCLCPP_ERROR_THROTTLE(
+        get_logger(), *get_clock(), 5000,
+        "[AEB]: kinematic state is stale (%.2f s old > %.2f s); skipping the imu-path collision "
+        "check this cycle",
+        kinematic_state_age_sec, kinematic_state_timeout_sec_);
+      angular_velocity_ptr_.reset();
+      return false;
     }
     angular_velocity_ptr_ = std::make_shared<Vector3>();
     angular_velocity_ptr_->z = kinematic_state_ptr->twist.twist.angular.z;

@@ -552,6 +552,7 @@ public:
   int minimum_cluster_size_;          // min summed point_count per 8-connected cell component
   int min_point_count_cell_;          // per-cell density floor [returns]
   double obstacle_grid_timeout_sec_;  // grid staleness watchdog [s]; stale = unavailable
+  double kinematic_state_timeout_sec_;  // imu-path yaw-source staleness watchdog [s]; stale = skip
   double imu_prediction_time_horizon_;
   double imu_prediction_time_interval_;
   double mpc_prediction_time_horizon_;

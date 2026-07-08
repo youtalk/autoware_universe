@@ -34,6 +34,14 @@ if(BUILD_TESTING)
   target_link_libraries(test_grid_coverage
     ${PROJECT_NAME}
   )
+
+  ament_auto_add_gtest(test_${PROJECT_NAME}_node
+    test/test_obstacle_grid_extractor_node.cpp
+  )
+  target_include_directories(test_${PROJECT_NAME}_node PRIVATE src)
+  target_link_libraries(test_${PROJECT_NAME}_node
+    ${PROJECT_NAME}
+  )
 endif()
 
 ament_auto_package(

@@ -198,6 +198,22 @@ TEST(ValidateObstacleGrid, MissingMaxHeightLayerRejected)
   EXPECT_FALSE(validate_obstacle_grid(msg).has_value());
 }
 
+TEST(ValidateObstacleGrid, UnconvertibleMessageRejected)
+{
+  // Frame is base_link so the frame guard passes and the failure must come from the conversion
+  // guard: a valid column-major grid_map message labels its first data dimension "column_index",
+  // matching grid_map::Matrix's column-major storage. Relabeling it "row_index" makes
+  // GridMapRosConverter::fromMessage() report a storage-order mismatch and return false, so
+  // validate_obstacle_grid must reject the message as unavailable (never fall through to a layer
+  // read). This is the "unconvertible message" contract violation.
+  const auto grid = make_empty_grid();
+  grid_map_msgs::msg::GridMap msg = to_message(grid);
+  ASSERT_FALSE(msg.data.empty());
+  ASSERT_FALSE(msg.data.front().layout.dim.empty());
+  msg.data.front().layout.dim.front().label = "row_index";
+  EXPECT_FALSE(validate_obstacle_grid(msg).has_value());
+}
+
 // --- nearest_of (pointcloud-vs-object merge tie-break) ------------------------------------------
 
 TEST(NearestOf, BothNulloptReturnsNullopt)

@@ -33,6 +33,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -86,6 +87,14 @@ void IntersectionCollisionChecker::setup_diag()
 void IntersectionCollisionChecker::set_diag_status(
   DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg) const
 {
+  // Fail-safe on silence: an unavailable obstacle grid (missing / stale / contract-violating /
+  // TF-fails) while the check is active must surface a distinct ERROR, never the OK/"validated"
+  // that a genuine clear would report. Mirrors autoware_obstacle_collision_checker.
+  if (grid_unavailable_) {
+    stat.summary(DiagnosticStatus::ERROR, "obstacle grid is unavailable");
+    return;
+  }
+
   if (is_ok) {
     stat.summary(DiagnosticStatus::OK, "validated.");
     return;
@@ -106,8 +115,22 @@ void IntersectionCollisionChecker::set_diag_status(
 
 bool IntersectionCollisionChecker::is_data_ready(std::string & msg)
 {
+  // Only route readiness (a benign, expected waiting state) gates whether the check runs at all.
+  // Obstacle-grid availability is NOT checked here: it is safety-relevant only once the check is
+  // active (turning), and is handled by is_grid_available() inside is_safe() so a missing grid
+  // producer does not force the whole check to abstain while driving straight.
+  if (!context_->data->route_handler->isHandlerReady()) {
+    msg = "Route handler is not ready.";
+    return false;
+  }
+
+  return true;
+}
+
+bool IntersectionCollisionChecker::is_grid_available(std::string & msg) const
+{
   if (!context_->data->obstacle_grid) {
-    msg = "Obstacle grid is not available.";
+    msg = "obstacle grid is not available";
     return false;
   }
 
@@ -115,16 +138,7 @@ bool IntersectionCollisionChecker::is_data_ready(std::string & msg)
   const auto grid_age =
     (clock_->now() - rclcpp::Time(context_->data->obstacle_grid->header.stamp)).seconds();
   if (grid_age > p.pointcloud.grid_timeout_sec) {
-    // A stale grid must read as data-unavailable (fail-safe), never as a spurious "clear".
-    RCLCPP_ERROR_THROTTLE(
-      logger_, *clock_, 5000, "Obstacle grid is stale (age %.2f s); skipping collision check.",
-      grid_age);
-    msg = "Obstacle grid is stale.";
-    return false;
-  }
-
-  if (!context_->data->route_handler->isHandlerReady()) {
-    msg = "Route handler is not ready.";
+    msg = "obstacle grid is stale";
     return false;
   }
 
@@ -134,6 +148,7 @@ bool IntersectionCollisionChecker::is_data_ready(std::string & msg)
 void IntersectionCollisionChecker::validate()
 {
   context_->validation_status->is_valid_intersection_collision_check = true;
+  grid_unavailable_ = false;
 
   params_ = param_listener_->get_params();
   const auto & p = params_.icc_parameters;
@@ -176,10 +191,32 @@ bool IntersectionCollisionChecker::is_safe(DebugData & debug_data)
     return true;
   }
 
-  const auto filtered_pointcloud =
+  // Active at a relevant turn: the obstacle grid is now safety-relevant. A missing or stale grid
+  // must escalate as data-unavailable (diagnostic ERROR via grid_unavailable_), never read as a
+  // clear intersection.
+  std::string grid_msg;
+  if (!is_grid_available(grid_msg)) {
+    grid_unavailable_ = true;
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "%s; abstaining from intersection collision check.",
+      grid_msg.c_str());
+    debug_data.text = grid_msg;
+    return true;
+  }
+
+  // A contract failure (wrong frame / undecodable / missing layer / missing map<-base_link TF)
+  // yields std::nullopt: data-unavailable, distinct from a decoded-but-empty grid (a genuine
+  // clear).
+  const auto opt_filtered_pointcloud =
     extract_obstacle_grid_points(*context_->data->obstacle_grid, debug_data);
+  if (!opt_filtered_pointcloud) {
+    grid_unavailable_ = true;
+    debug_data.text = "obstacle grid unavailable (contract/TF failure)";
+    return true;
+  }
+  const auto & filtered_pointcloud = *opt_filtered_pointcloud;
   if (filtered_pointcloud->empty()) {
-    debug_data.text = "no qualifying obstacle grid cells";
+    debug_data.text = "no qualifying obstacle grid cells";  // decoded fine, zero cells => clear
     return true;
   }
 
@@ -306,32 +343,31 @@ Direction IntersectionCollisionChecker::get_turn_direction(
   return Direction::NONE;
 }
 
-PointCloud::Ptr IntersectionCollisionChecker::extract_obstacle_grid_points(
+std::optional<PointCloud::Ptr> IntersectionCollisionChecker::extract_obstacle_grid_points(
   const grid_map_msgs::msg::GridMap & msg, DebugData & debug_data) const
 {
   PointCloud::Ptr map_points(new PointCloud);
 
-  // Intake contract validation. The grid is produced in base_link with layers point_count,
-  // min_height and low_max_height; any violation is treated as data-unavailable (empty output),
-  // never as a spurious "clear".
-  if (msg.header.frame_id != "base_link") {
-    RCLCPP_ERROR_THROTTLE(
-      logger_, *clock_, 5000, "obstacle grid frame_id is '%s', expected 'base_link'; skipping.",
-      msg.header.frame_id.c_str());
-    return map_points;
-  }
-
+  // Intake contract validation via the pure decode+validate seam. Any contract violation returns
+  // std::nullopt (data-unavailable), never a spurious "clear"; a decoded-but-empty grid returns an
+  // empty cloud value below.
   grid_map::GridMap grid;
-  if (!grid_map::GridMapRosConverter::fromMessage(msg, grid)) {
-    RCLCPP_ERROR_THROTTLE(logger_, *clock_, 5000, "failed to decode obstacle grid; skipping.");
-    return map_points;
+  switch (collision_checker_utils::decode_obstacle_grid(msg, grid)) {
+    case collision_checker_utils::GridContractStatus::kWrongFrame:
+      RCLCPP_ERROR_THROTTLE(
+        logger_, *clock_, 5000, "obstacle grid frame_id is '%s', expected 'base_link'; skipping.",
+        msg.header.frame_id.c_str());
+      return std::nullopt;
+    case collision_checker_utils::GridContractStatus::kUndecodable:
+      RCLCPP_ERROR_THROTTLE(logger_, *clock_, 5000, "failed to decode obstacle grid; skipping.");
+      return std::nullopt;
+    case collision_checker_utils::GridContractStatus::kMissingLayer:
+      RCLCPP_ERROR_THROTTLE(
+        logger_, *clock_, 5000, "obstacle grid is missing required layers; skipping.");
+      return std::nullopt;
+    case collision_checker_utils::GridContractStatus::kOk:
+      break;
   }
-  if (!grid.exists("point_count") || !grid.exists("min_height") || !grid.exists("low_max_height")) {
-    RCLCPP_ERROR_THROTTLE(
-      logger_, *clock_, 5000, "obstacle grid is missing required layers; skipping.");
-    return map_points;
-  }
-  grid.convertToDefaultStartIndex();
 
   const auto & p = params_.icc_parameters;
   const double height_floor = p.pointcloud.min_height;
@@ -360,8 +396,9 @@ PointCloud::Ptr IntersectionCollisionChecker::extract_obstacle_grid_points(
     transform_stamped = context_->tf_buffer.lookupTransform(
       "map", msg.header.frame_id, msg.header.stamp, rclcpp::Duration::from_seconds(0.1));
   } catch (tf2::TransformException & e) {
-    RCLCPP_WARN(logger_, "no transform found for obstacle grid: %s", e.what());
-    return PointCloud::Ptr(new PointCloud);
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "no transform found for obstacle grid: %s; skipping.", e.what());
+    return std::nullopt;
   }
 
   const Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.transform).cast<float>();

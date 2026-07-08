@@ -22,6 +22,7 @@
 #include <autoware_lanelet2_extension/regulatory_elements/Forward.hpp>
 #include <autoware_utils/geometry/boost_geometry.hpp>
 #include <autoware_utils/ros/marker_helper.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 
 #include <std_msgs/msg/color_rgba.hpp>
 
@@ -504,6 +505,22 @@ MarkerArray get_objects_marker_array(const DebugData & debug_data)
   }
 
   return marker_array;
+}
+
+GridContractStatus decode_obstacle_grid(
+  const grid_map_msgs::msg::GridMap & msg, grid_map::GridMap & out_grid)
+{
+  if (msg.header.frame_id != "base_link") return GridContractStatus::kWrongFrame;
+  if (!grid_map::GridMapRosConverter::fromMessage(msg, out_grid)) {
+    return GridContractStatus::kUndecodable;
+  }
+  if (
+    !out_grid.exists("point_count") || !out_grid.exists("min_height") ||
+    !out_grid.exists("low_max_height")) {
+    return GridContractStatus::kMissingLayer;
+  }
+  out_grid.convertToDefaultStartIndex();
+  return GridContractStatus::kOk;
 }
 
 std::vector<geometry_msgs::msg::Point> qualifying_cell_corners(

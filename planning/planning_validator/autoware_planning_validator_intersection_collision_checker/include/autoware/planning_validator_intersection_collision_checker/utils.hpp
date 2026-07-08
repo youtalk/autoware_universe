@@ -24,6 +24,7 @@
 
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 
 #include <lanelet2_core/Forward.h>
 #include <lanelet2_core/LaneletMap.h>
@@ -58,6 +59,18 @@ void set_left_turn_target_lanelets(
 
 MarkerArray get_lanelets_marker_array(const DebugData & debug_data);
 MarkerArray get_objects_marker_array(const DebugData & debug_data);
+
+/// Outcome of decoding + validating the obstacle-grid intake contract. Any non-kOk value is a
+/// contract violation that the caller must treat as data-unavailable (never as a spurious "clear").
+enum class GridContractStatus { kOk, kWrongFrame, kUndecodable, kMissingLayer };
+
+/// Decodes and validates the obstacle-grid intake contract (base_link frame; point_count /
+/// min_height / low_max_height layers present). On kOk, @p out_grid holds the decoded grid with the
+/// default start index. Pure and node-free (no clock / tf / logger), so a contract failure is
+/// always distinguishable from a decoded-but-empty grid (a genuine clear); the caller logs and
+/// abstains.
+GridContractStatus decode_obstacle_grid(
+  const grid_map_msgs::msg::GridMap & msg, grid_map::GridMap & out_grid);
 
 /// Returns the four corner points (in the grid's own frame, i.e. base_link) of every obstacle-grid
 /// cell that qualifies as a real in-band obstacle. A cell qualifies iff:

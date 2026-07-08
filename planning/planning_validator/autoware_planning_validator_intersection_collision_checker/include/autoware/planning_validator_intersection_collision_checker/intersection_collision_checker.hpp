@@ -27,6 +27,7 @@
 #include <pcl/point_types.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -50,6 +51,11 @@ public:
 private:
   bool is_data_ready(std::string & msg);
 
+  // Obstacle-grid availability watchdog (null / stale), evaluated only once the collision check is
+  // active (turning at a relevant lanelet), so a missing grid producer does not false-trip while
+  // driving straight.
+  bool is_grid_available(std::string & msg) const;
+
   [[nodiscard]] bool is_safe(DebugData & debug_data);
 
   [[nodiscard]] EgoTrajectory get_ego_trajectory() const;
@@ -60,10 +66,11 @@ private:
     const lanelet::ConstLanelets & trajectory_lanelets) const;
 
   // Extracts the qualifying obstacle-grid cells' corner points, transformed into the map frame.
-  // Returns an empty cloud on any grid-contract failure (wrong frame, undecodable message, missing
-  // required layers, or missing map<-base_link transform), so a contract violation reads as
-  // data-unavailable and never as a spurious "clear".
-  PointCloud::Ptr extract_obstacle_grid_points(
+  // Returns std::nullopt on any grid-contract failure (wrong frame, undecodable message, missing
+  // required layers, or missing map<-base_link transform) so a contract violation reads as
+  // data-unavailable, distinct from a decoded-but-empty grid (a genuine "clear", returned as an
+  // empty cloud value).
+  std::optional<PointCloud::Ptr> extract_obstacle_grid_points(
     const grid_map_msgs::msg::GridMap & msg, DebugData & debug_data) const;
 
   void get_points_within(
@@ -104,6 +111,12 @@ private:
   rclcpp::Publisher<StringStamped>::SharedPtr pub_string_;
 
   intersection_collision_checker_node::Params params_;
+
+  // Set true (and reset each validate()) when the collision check is active but the obstacle grid
+  // is unavailable (missing / stale / contract-violating / TF-fails); drives set_diag_status to
+  // ERROR so data-unavailability is never republished as a spurious "clear". Mirrors
+  // autoware_obstacle_collision_checker's obstacle_grid_unavailable_.
+  bool grid_unavailable_{false};
 
   PCDObjectsMap history_;
   mutable TargetLaneletsMap target_lanelets_map_;

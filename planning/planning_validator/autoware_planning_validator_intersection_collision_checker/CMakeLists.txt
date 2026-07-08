@@ -33,6 +33,7 @@ target_link_libraries(${PROJECT_NAME}
 if(BUILD_TESTING)
   ament_auto_add_gtest(test_${PROJECT_NAME}
     test/test_qualifying_cell_corners.cpp
+    test/test_obstacle_grid_contract.cpp
   )
   target_link_libraries(test_${PROJECT_NAME}
     ${PROJECT_NAME}

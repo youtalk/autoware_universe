@@ -757,3 +757,65 @@ TEST_F(ObstacleStopIntegrationTest, ShippedGridGateDefaultsArePinned)
   EXPECT_DOUBLE_EQ(defaults.obstacle_stop.pointcloud.obstacle_grid_timeout_sec, 0.5);
   EXPECT_DOUBLE_EQ(defaults.obstacle_stop.pointcloud.clustering.min_height, 0.5);
 }
+
+TEST_F(ObstacleStopIntegrationTest, GridPointsInsideOverlappingObjectAreFiltered)
+{
+  // Arrange: the same fully blocking grid that stops in StopInsertedForBlockingObstacleGrid, but a
+  // predicted CAR (2 m x 2 m, AABB half-extent 1 m + 0.1 m margin = 1.1 m) sits ON the block at
+  // (15, 0). The pointcloud branch's filter_pointcloud_by_object must drop every grid cell center
+  // (|rel| <= 0.2 m < 1.1 m, inside the expanded footprint) to avoid double-counting the object, so
+  // no pointcloud collision survives. use_objects=false isolates this from the object stop branch,
+  // making the disappearance of the stop attributable solely to the dedup filter.
+  params_.obstacle_stop.use_objects = false;
+  plugin_->update_params(params_);
+  auto trajectory = create_straight_trajectory(30.0, 8.0);
+  const auto grid = std::make_shared<const grid_map_msgs::msg::GridMap>(
+    make_obstacle_grid_msg(14.8, 15.2, 0.0, 0.0, 0.2f, 0.7f, 0.7f, 50.0f, node_->now()));
+  const auto overlapping_object = make_blocking_car(15.0, 0.0);
+  const auto input = create_input_data(
+    make_odometry(0.0, 0.0, 8.0), make_acceleration(0.0), overlapping_object, grid);
+
+  // Act & Assert
+  EXPECT_FALSE(run_two_frames(*plugin_, trajectory, input));
+}
+
+TEST_F(ObstacleStopIntegrationTest, GridPointsOutsideObjectSurviveFiltering)
+{
+  // Arrange: same blocking grid at y=0, but the predicted CAR is 10 m to the side at (15, 10).
+  // Every grid cell center is |rel_y| = 10 m > y_th 1.1 m, so filter_pointcloud_by_object's AABB
+  // pre-check rejects removal and keeps the points; the pointcloud branch still stops. Contrast
+  // with the overlapping case above -- proving the filter removes only points inside an object
+  // footprint.
+  constexpr double block_x = 15.0;
+  params_.obstacle_stop.use_objects = false;
+  plugin_->update_params(params_);
+  auto trajectory = create_straight_trajectory(30.0, 8.0);
+  const auto grid = std::make_shared<const grid_map_msgs::msg::GridMap>(
+    make_obstacle_grid_msg(14.8, 15.2, 0.0, 0.0, 0.2f, 0.7f, 0.7f, 50.0f, node_->now()));
+  const auto object_beside_path = make_blocking_car(15.0, 10.0);
+  const auto input = create_input_data(
+    make_odometry(0.0, 0.0, 8.0), make_acceleration(0.0), object_beside_path, grid);
+
+  // Act & Assert
+  ASSERT_TRUE(run_two_frames(*plugin_, trajectory, input));
+  EXPECT_LT(trajectory.back().pose.position.x, block_x);
+}
+
+TEST_F(ObstacleStopIntegrationTest, NoStopWhenPerCellCountBelowMinPointCount)
+{
+  // Arrange: raise the per-cell return gate min_point_count_cell to 6 while each of three
+  // contiguous cells carries point_count 5. The summed point_count 15 would clear min_size 10 and
+  // the height band qualifies, so only the per-cell count gate (cnt >= min_point_count_cell) can
+  // reject them -- every cell fails 5 >= 6, no cell qualifies, no component forms, no stop. This
+  // isolates the per-cell count gate from the component-sum min_size gate.
+  params_.obstacle_stop.pointcloud.min_point_count_cell = 6;
+  plugin_->update_params(params_);
+  auto trajectory = create_straight_trajectory(30.0, 8.0);
+  const auto grid = std::make_shared<const grid_map_msgs::msg::GridMap>(
+    make_obstacle_grid_msg(14.8, 15.2, 0.0, 0.0, 0.2f, 0.7f, 0.7f, 5.0f, node_->now()));
+  const auto input =
+    create_input_data(make_odometry(0.0, 0.0, 8.0), make_acceleration(0.0), nullptr, grid);
+
+  // Act & Assert
+  EXPECT_FALSE(run_two_frames(*plugin_, trajectory, input));
+}

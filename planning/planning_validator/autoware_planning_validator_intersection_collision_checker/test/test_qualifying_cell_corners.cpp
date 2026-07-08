@@ -161,4 +161,27 @@ TEST(QualifyingCellCorners, MissingRequiredLayerYieldsNothing)
   EXPECT_TRUE(qualifying_cell_corners(grid, 1U, kFloor, kZBandTop).empty());
 }
 
+// A dense cell whose low_max_height layer is NaN (populated count, no valid tallest-return height)
+// is rejected by the finiteness guard, not admitted as an in-band obstacle. This exercises the
+// isnan(low_max) branch, which is distinct from the all-NaN case (there the density gate short-
+// circuits before low_max is ever read).
+TEST(QualifyingCellCorners, NanLowMaxHeightRejected)
+{
+  auto grid = make_grid();
+  set_cell(grid, grid_map::Index(1, 1), 5.0F, 0.3F, kNaN);
+
+  EXPECT_TRUE(qualifying_cell_corners(grid, 1U, kFloor, kZBandTop).empty());
+}
+
+// A dense cell that clears the floor (finite in-band low_max_height) but whose min_height layer is
+// NaN is rejected by the ceiling-side finiteness guard. This exercises the isnan(min_height)
+// branch, reached only after both the density and floor gates pass.
+TEST(QualifyingCellCorners, NanMinHeightRejected)
+{
+  auto grid = make_grid();
+  set_cell(grid, grid_map::Index(1, 1), 5.0F, kNaN, 1.5F);
+
+  EXPECT_TRUE(qualifying_cell_corners(grid, 1U, kFloor, kZBandTop).empty());
+}
+
 }  // namespace autoware::planning_validator::collision_checker_utils

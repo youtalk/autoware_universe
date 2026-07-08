@@ -93,6 +93,21 @@ public:
     return {result.nearest_obstacle, obstacle_grid_pointcloud.has_value()};
   }
 
+  // Same as runPointCloudCheck but with no grid ever received: obstacle_grid_ptr_ stays null.
+  // Exercises the not-yet-received guard (distinct from the disabled-check path).
+  static IntakeResult runPointCloudCheckNoGrid(
+    const std::shared_ptr<SurroundObstacleCheckerNode> & node)
+  {
+    node->odometry_ptr_ =
+      std::make_shared<nav_msgs::msg::Odometry>(autoware::test_utils::makeInitialPose());
+    node->obstacle_grid_ptr_ = nullptr;
+    const auto obstacle_grid_pointcloud = node->toObstacleGridPointCloud();
+    node->proximity_checker_->update_parameters(node->toProximityCheckerParameters());
+    const auto result = node->proximity_checker_->check(
+      node->toProximityCheckerInputs(obstacle_grid_pointcloud), 1e-3);
+    return {result.nearest_obstacle, obstacle_grid_pointcloud.has_value()};
+  }
+
   auto isStopRequired(
     const std::shared_ptr<SurroundObstacleCheckerNode> & node, const bool is_obstacle_found,
     const bool is_vehicle_stopped, const State & state,
@@ -126,7 +141,7 @@ static grid_map_msgs::msg::GridMap toFreshMsg(
   return *msg;
 }
 
-// ---- Intake contract (degenerate pins), exercised through getNearestObstacleByPointCloud ----
+// ---- Intake contract (degenerate pins), exercised through toObstacleGridPointCloud ----
 
 TEST_F(SurroundObstacleCheckerNodeTest, IntakeDisabledCheckNeverBlocks)
 {
@@ -140,6 +155,19 @@ TEST_F(SurroundObstacleCheckerNodeTest, IntakeDisabledCheckNeverBlocks)
   const auto result = runPointCloudCheck(node, toFreshMsg(grid, node));
   EXPECT_FALSE(result.nearest_obstacle.has_value());
   EXPECT_TRUE(result.grid_available);
+}
+
+TEST_F(SurroundObstacleCheckerNodeTest, IntakeNoGridYetIsUnavailable)
+{
+  // enable_check=true but no grid has ever arrived (obstacle_grid_ptr_ null): the intake must be
+  // held as UNAVAILABLE (fail-safe "unknown"), never read as clear. This is the semantic opposite
+  // of the disabled-check path (IntakeDisabledCheckNeverBlocks), which is available + clear:
+  //   no grid, check enabled   -> {no obstacle, grid_available = false}
+  //   check disabled           -> {no obstacle, grid_available = true}
+  auto node = makeNode(/*enable_pointcloud=*/true);
+  const auto result = runPointCloudCheckNoGrid(node);
+  EXPECT_FALSE(result.nearest_obstacle.has_value());
+  EXPECT_FALSE(result.grid_available);
 }
 
 TEST_F(SurroundObstacleCheckerNodeTest, IntakeEmptyHeartbeatIsClearNotObstacle)

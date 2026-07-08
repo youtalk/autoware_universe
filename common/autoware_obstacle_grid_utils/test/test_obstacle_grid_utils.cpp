@@ -111,6 +111,18 @@ TEST(ObstacleGridUtils, GateRejectsBelowHeight)
   EXPECT_FALSE(qualifies_at(make_grid(2.1, 1.1, 50, 0.0, 0.1), 2.1, 1.1, Gate{10u, 0.3}));
 }
 
+TEST(ObstacleGridUtils, GateRejectsNanHeightEvenWhenCountPasses)
+{
+  // A cell whose point_count clears the count gate but whose max_height is NaN (a heartbeat cell
+  // that was never populated with a height) must fail the height guard rather than qualify.
+  auto g = make_empty_grid();
+  grid_map::Index idx;
+  g.getIndex(grid_map::Position(2.1, 1.1), idx);
+  g.at("point_count", idx) = 50.0f;  // count 50 >= gate 10 -> passes the count gate
+  // max_height(idx) is left NaN by make_empty_grid; the !isnan(max_height) guard must reject.
+  EXPECT_FALSE(cell_qualifies(g, idx, Gate{10u, 0.0}));
+}
+
 TEST(ObstacleGridUtils, CellsInPolygonCollectsQualifyingCells)
 {
   const auto g = make_grid(2.1, 0.1, 40, 0.5, 1.5);
@@ -302,6 +314,24 @@ TEST(ObstacleGridUtils, ConnectedComponentsDuplicateIndexCountedOnce)
   ASSERT_EQ(comps.size(), 1u);
   EXPECT_EQ(comps[0].cells.size(), 1u);
   EXPECT_NEAR(comps[0].point_sum, 25.0, 1e-6);
+}
+
+TEST(ObstacleGridUtils, ConnectedComponentsSkipsNanPointCountInSum)
+{
+  // A supplied cell whose point_count is NaN must be skipped from point_sum rather than poisoning
+  // it: the component is still formed (both cells reported) but the sum stays finite. Without the
+  // isnan guard the sum would be NaN and the real cluster's point total would be lost.
+  auto g = make_empty_grid();
+  const grid_map::Index a(10, 10);
+  const grid_map::Index b(10, 11);  // 4-adjacent to a -> one component
+  set_cell(g, a, 20);
+  g.at("max_height", b) = 1.5f;  // populate heights but leave point_count(b) NaN
+  g.at("min_height", b) = 0.5f;
+  const auto comps = connected_components(g, {a, b});
+  ASSERT_EQ(comps.size(), 1u);
+  EXPECT_EQ(comps[0].cells.size(), 2u);          // both cells belong to the component
+  EXPECT_FALSE(std::isnan(comps[0].point_sum));  // NaN contribution did not poison the sum
+  EXPECT_NEAR(comps[0].point_sum, 20.0, 1e-6);   // only a's 20 counts; b's NaN skipped
 }
 
 TEST(ObstacleGridUtils, ConnectedComponentsMergeAcrossBufferWrapSeam)

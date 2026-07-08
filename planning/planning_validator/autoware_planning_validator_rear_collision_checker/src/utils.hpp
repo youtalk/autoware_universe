@@ -19,7 +19,11 @@
 
 #include <autoware/planning_validator/types.hpp>
 #include <autoware/route_handler/route_handler.hpp>
+#include <grid_map_core/grid_map_core.hpp>
 
+#include <geometry_msgs/msg/point.hpp>
+
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -64,6 +68,22 @@ auto get_current_lanes(
 
 auto get_obstacle_points(const lanelet::BasicPolygons3d & polygons, const PointCloud & points)
   -> PointCloud::Ptr;
+
+/// Returns the four corner points (in the grid's own frame, i.e. base_link) of every obstacle-grid
+/// cell that qualifies as a real in-band obstacle. A cell qualifies iff:
+///   - it holds at least @p min_point_count_cell raw returns (point_count layer, pre-voxel count),
+///     AND
+///   - its tallest in-band return low_max_height is finite and >= @p height_floor (rejects ground
+///     residue; because the floor is on low_max_height rather than max_height, an overhead gantry
+///     that merely shares a cell with ground residue is rejected), AND
+///   - its lowest return min_height is finite and <= @p z_band_top (rejects a purely-overhead cell
+///     whose lowest return is already above the ego height band).
+/// The emitted z of every corner is the cell's low_max_height. Corners (not the center) are emitted
+/// so that per-lanelet polygon membership stays edge-conservative. The function is pure and
+/// transform-free; the caller applies the single base_link->map transform.
+auto qualifying_cell_corners(
+  const grid_map::GridMap & grid, std::uint32_t min_point_count_cell, double height_floor,
+  double z_band_top) -> std::vector<geometry_msgs::msg::Point>;
 
 auto get_previous_polygons_with_lane_recursively(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,

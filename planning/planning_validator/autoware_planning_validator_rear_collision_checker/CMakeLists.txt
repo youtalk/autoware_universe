@@ -30,4 +30,14 @@ target_link_libraries(${PROJECT_NAME}
   rear_collision_checker_node_parameters
 )
 
+if(BUILD_TESTING)
+  ament_auto_add_gtest(test_${PROJECT_NAME}
+    test/test_qualifying_cell_corners.cpp
+  )
+  target_include_directories(test_${PROJECT_NAME} PRIVATE src)
+  target_link_libraries(test_${PROJECT_NAME}
+    ${PROJECT_NAME}
+  )
+endif()
+
 ament_auto_package(INSTALL_TO_SHARE config)

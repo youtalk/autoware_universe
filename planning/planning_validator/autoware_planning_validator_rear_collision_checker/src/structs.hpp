@@ -121,17 +121,12 @@ struct DebugData
 
   DetectionAreas detection_areas;
 
-  sensor_msgs::msg::PointCloud2::SharedPtr cluster_points;
-
-  sensor_msgs::msg::PointCloud2::SharedPtr voxel_points;
+  // Qualifying obstacle-grid cell corner points, transformed to the map frame (RViz debug).
+  sensor_msgs::msg::PointCloud2::SharedPtr grid_points;
 
   Behavior turn_behavior{Behavior::NONE};
 
   Behavior shift_behavior{Behavior::NONE};
-
-  std::vector<autoware_utils_geometry::Polygon3d> hull_polygons;
-
-  std::vector<size_t> pointcloud_nums{};
 
   std::string text{"-"};
 

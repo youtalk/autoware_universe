@@ -21,8 +21,11 @@
 #include <autoware_utils/system/time_keeper.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <grid_map_msgs/msg/grid_map.hpp>
+
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace autoware::planning_validator
@@ -41,16 +44,23 @@ public:
 private:
   void fill_velocity(PointCloudObject & pointcloud_object);
 
-  auto filter_pointcloud(DebugData & debug) const -> PointCloud::Ptr;
-
-  auto get_clustered_pointcloud(const PointCloud::Ptr in, DebugData & debug) const
-    -> PointCloud::Ptr;
+  // Extracts the qualifying obstacle-grid cells' corner points, transformed into the map frame.
+  // Returns std::nullopt on any grid-contract failure (wrong frame, undecodable message, missing
+  // required layers, or missing map<-base_link transform), each logged with a throttled ERROR, so
+  // the caller can abstain on data-unavailability rather than reading it as a spurious "clear". A
+  // successfully decoded grid returns a (possibly empty) cloud: an empty cloud then means the scene
+  // is genuinely clear (no qualifying cell), which is distinct from unavailability. The versioned
+  // component-interface binding attaches to the parent grid subscription in a later step; today it
+  // is a plain polling input.
+  auto extract_obstacle_grid_points(const grid_map_msgs::msg::GridMap & msg, DebugData & debug)
+    const -> std::optional<PointCloud::Ptr>;
 
   auto get_pointcloud_object(
     const rclcpp::Time & now, const PointCloud::Ptr & pointcloud_ptr,
-    const DetectionAreas & detection_areas, DebugData & debug) -> std::optional<PointCloudObject>;
+    const DetectionAreas & detection_areas) -> std::optional<PointCloudObject>;
 
   auto get_pointcloud_objects(
+    const double grid_rear_extent,
     const std::function<std::pair<double, double>()> & func_range_calculation,
     const std::function<PointCloudObjects(const double, const double)> & func_object_filtering,
     const std::function<void(PointCloudObjects &)> & func_safety_check) -> PointCloudObjects;
@@ -78,9 +88,7 @@ private:
   void set_diag_status(
     DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg) const;
 
-  rclcpp::Publisher<PointCloud2>::SharedPtr pub_voxel_pointcloud_;
-
-  rclcpp::Publisher<PointCloud2>::SharedPtr pub_cluster_pointcloud_;
+  rclcpp::Publisher<PointCloud2>::SharedPtr pub_grid_points_;
 
   rclcpp::Publisher<StringStamped>::SharedPtr pub_string_;
 

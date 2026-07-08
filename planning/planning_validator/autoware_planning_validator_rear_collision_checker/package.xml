@@ -23,6 +23,7 @@
   <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_lanelet2_utils</depend>
   <depend>autoware_motion_utils</depend>
+  <depend>autoware_obstacle_grid_utils</depend>
   <depend>autoware_planning_factor_interface</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_planning_test_manager</depend>
@@ -35,6 +36,9 @@
   <depend>diagnostic_msgs</depend>
   <depend>eigen</depend>
   <depend>generate_parameter_library</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
@@ -48,6 +52,7 @@
   <depend>tier4_planning_msgs</depend>
   <depend>visualization_msgs</depend>
 
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

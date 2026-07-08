@@ -24,6 +24,7 @@
 #include <autoware_utils/ros/parameter.hpp>
 #include <autoware_utils/ros/update_param.hpp>
 #include <autoware_utils/transform/transforms.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <magic_enum.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
@@ -31,17 +32,12 @@
 #include <autoware_internal_planning_msgs/msg/safety_factor_array.hpp>
 
 #include <lanelet2_core/geometry/Lanelet.h>
-#include <pcl/filters/crop_hull.h>
-#include <pcl/filters/extract_indices.h>
-#include <pcl/filters/passthrough.h>
-#include <pcl/filters/voxel_grid.h>
 #include <pcl/point_types.h>
-#include <pcl/registration/gicp.h>
-#include <pcl/segmentation/extract_clusters.h>
-#include <pcl/surface/convex_hull.h>
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <algorithm>
+#include <cstdint>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -73,11 +69,8 @@ void RearCollisionChecker::init(
   param_listener_ = std::make_unique<rear_collision_checker_node::ParamListener>(
     node.get_node_parameters_interface());
 
-  pub_cluster_pointcloud_ =
-    node.create_publisher<PointCloud2>("~/rear_collision_checker/debug/cluster_points", 1);
-
-  pub_voxel_pointcloud_ =
-    node.create_publisher<PointCloud2>("~/rear_collision_checker/debug/voxel_points", 1);
+  pub_grid_points_ =
+    node.create_publisher<PointCloud2>("~/rear_collision_checker/debug/obstacle_grid_points", 1);
 
   pub_string_ = node.create_publisher<StringStamped>("~/rear_collision_checker/debug/state", 1);
 
@@ -223,163 +216,90 @@ void RearCollisionChecker::fill_velocity(PointCloudObject & pointcloud_object)
   update_history(pointcloud_object);
 }
 
-auto RearCollisionChecker::filter_pointcloud(DebugData & debug) const -> PointCloud::Ptr
+auto RearCollisionChecker::extract_obstacle_grid_points(
+  const grid_map_msgs::msg::GridMap & msg, DebugData & debug) const
+  -> std::optional<PointCloud::Ptr>
 {
   autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
+  auto map_points = std::make_shared<PointCloud>();
+
+  // Intake contract validation. The grid is produced in base_link with layers point_count,
+  // min_height and low_max_height; any violation is treated as data-unavailable (std::nullopt) so
+  // the caller abstains, never as a spurious "clear".
+  if (msg.header.frame_id != "base_link") {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "obstacle grid frame_id is '%s', expected 'base_link'; skipping.",
+      msg.header.frame_id.c_str());
+    return std::nullopt;
+  }
+
+  grid_map::GridMap grid;
+  if (!grid_map::GridMapRosConverter::fromMessage(msg, grid)) {
+    RCLCPP_ERROR_THROTTLE(logger_, *clock_, 5000, "failed to decode obstacle grid; skipping.");
+    return std::nullopt;
+  }
+  if (!grid.exists("point_count") || !grid.exists("min_height") || !grid.exists("low_max_height")) {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "obstacle grid is missing required layers; skipping.");
+    return std::nullopt;
+  }
+  grid.convertToDefaultStartIndex();
 
   const auto p = param_listener_->get_params().common.pointcloud;
+  const double height_floor = p.grid.z_floor;
+  const double z_band_top = context_->vehicle_info.vehicle_height_m + p.grid.z_band_top_offset;
 
-  auto output = std::make_shared<PointCloud>();
+  // Per-cell z-band gate + edge-conservative corner emission (base_link frame). Height gating uses
+  // direct layer reads (low_max_height floor, min_height band-top) rather than the max_height-based
+  // shared Gate, so an overhead structure that shares a cell with ground residue is rejected.
+  const auto corners = utils::qualifying_cell_corners(
+    grid, static_cast<std::uint32_t>(p.grid.min_point_count_cell), height_floor, z_band_top);
+  if (corners.empty()) return map_points;
 
-  if (context_->data->obstacle_pointcloud->data.empty()) {
-    return output;
+  auto base_link_points = std::make_shared<PointCloud>();
+  base_link_points->reserve(corners.size());
+  for (const auto & corner : corners) {
+    base_link_points->push_back(
+      pcl::PointXYZ(
+        static_cast<float>(corner.x), static_cast<float>(corner.y), static_cast<float>(corner.z)));
   }
 
-  {
-    pcl::fromROSMsg(*context_->data->obstacle_pointcloud, *output);
-    debug.pointcloud_nums.push_back(output->size());
+  // Single map<-base_link transform: the detection lanelets, centerlines and arc coordinates are
+  // all in map, so the downstream projection pipeline stays unchanged. A missing/old transform at
+  // the grid stamp reads as data-unavailable (std::nullopt) so the caller abstains, never as a
+  // clear; it is logged with the same throttled ERROR as the other contract failures.
+  geometry_msgs::msg::TransformStamped transform_stamped;
+  try {
+    transform_stamped = context_->tf_buffer.lookupTransform(
+      "map", msg.header.frame_id, msg.header.stamp, rclcpp::Duration::from_seconds(0.1));
+  } catch (tf2::TransformException & e) {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "no transform found for obstacle grid: %s; skipping.", e.what());
+    return std::nullopt;
   }
 
-  {
-    autoware_utils::ScopedTimeTrack scoped_time_track("crop_x", *time_keeper_);
+  const Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.transform).cast<float>();
+  autoware_utils::transform_pointcloud(*base_link_points, *map_points, isometry);
 
-    pcl::PassThrough<pcl::PointXYZ> filter;
-    filter.setInputCloud(output);
-    filter.setFilterFieldName("x");
-    filter.setFilterLimits(p.crop_box_filter.x.min, p.crop_box_filter.x.max);
-    filter.filter(*output);
-    debug.pointcloud_nums.push_back(output->size());
-  }
+  const auto grid_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>();
+  pcl::toROSMsg(*map_points, *grid_pointcloud);
+  grid_pointcloud->header.stamp = msg.header.stamp;
+  grid_pointcloud->header.frame_id = "map";
+  debug.grid_points = grid_pointcloud;
 
-  if (output->empty()) {
-    return output;
-  }
-
-  {
-    autoware_utils::ScopedTimeTrack scoped_time_track("crop_z", *time_keeper_);
-
-    pcl::PassThrough<pcl::PointXYZ> filter;
-    filter.setInputCloud(output);
-    filter.setFilterFieldName("z");
-    filter.setFilterLimits(
-      p.crop_box_filter.z.min, context_->vehicle_info.vehicle_height_m + p.crop_box_filter.z.max);
-    filter.filter(*output);
-    debug.pointcloud_nums.push_back(output->size());
-  }
-
-  if (output->empty()) {
-    return output;
-  }
-
-  {
-    autoware_utils::ScopedTimeTrack scoped_time_track("transform", *time_keeper_);
-
-    geometry_msgs::msg::TransformStamped transform_stamped;
-    try {
-      transform_stamped = context_->tf_buffer.lookupTransform(
-        "map", context_->data->obstacle_pointcloud->header.frame_id,
-        context_->data->obstacle_pointcloud->header.stamp, rclcpp::Duration::from_seconds(0.1));
-    } catch (tf2::TransformException & e) {
-      RCLCPP_WARN(logger_, "no transform found for no_ground_pointcloud: %s", e.what());
-    }
-
-    Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.transform).cast<float>();
-    autoware_utils::transform_pointcloud(*output, *output, isometry);
-    debug.pointcloud_nums.push_back(output->size());
-  }
-
-  {
-    autoware_utils::ScopedTimeTrack scoped_time_track("voxel_grid_filter", *time_keeper_);
-
-    pcl::VoxelGrid<pcl::PointXYZ> filter;
-    filter.setInputCloud(output);
-    filter.setLeafSize(p.voxel_grid_filter.x, p.voxel_grid_filter.y, p.voxel_grid_filter.z);
-    filter.filter(*output);
-    debug.pointcloud_nums.push_back(output->size());
-  }
-
-  {
-    const auto obstacle_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>();
-    pcl::toROSMsg(*output, *obstacle_pointcloud);
-    obstacle_pointcloud->header.stamp = context_->data->obstacle_pointcloud->header.stamp;
-    obstacle_pointcloud->header.frame_id = "map";
-    debug.voxel_points = obstacle_pointcloud;
-  }
-
-  return output;
-}
-
-auto RearCollisionChecker::get_clustered_pointcloud(
-  const PointCloud::Ptr in, DebugData & debug) const -> PointCloud::Ptr
-{
-  autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-
-  const auto parameter = param_listener_->get_params().common.pointcloud;
-  const auto base_link_z = context_->data->current_kinematics->pose.pose.position.z;
-
-  const auto points_belonging_to_cluster_hulls = std::make_shared<PointCloud>();
-  // eliminate noisy points by only considering points belonging to clusters of at least a certain
-  // size
-  if (in->empty()) return std::make_shared<PointCloud>();
-  const std::vector<pcl::PointIndices> cluster_indices = std::invoke([&]() {
-    std::vector<pcl::PointIndices> cluster_idx;
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
-    tree->setInputCloud(in);
-    pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-    ec.setClusterTolerance(parameter.clustering.cluster_tolerance);
-    ec.setMinClusterSize(parameter.clustering.min_cluster_size);
-    ec.setMaxClusterSize(parameter.clustering.max_cluster_size);
-    ec.setSearchMethod(tree);
-    ec.setInputCloud(in);
-    ec.extract(cluster_idx);
-    return cluster_idx;
-  });
-  for (const auto & indices : cluster_indices) {
-    PointCloud::Ptr cluster(new PointCloud);
-    bool cluster_surpasses_threshold_height{false};
-    for (const auto & index : indices.indices) {
-      const auto & point = (*in)[index];
-      cluster_surpasses_threshold_height |=
-        (point.z - base_link_z) > parameter.clustering.min_cluster_height;
-      cluster->push_back(point);
-    }
-    if (!cluster_surpasses_threshold_height) continue;
-    // Make a 2d convex hull for the objects
-    pcl::ConvexHull<pcl::PointXYZ> hull;
-    hull.setDimension(2);
-    hull.setInputCloud(cluster);
-    PointCloud::Ptr surface_hull(new PointCloud);
-    hull.reconstruct(*surface_hull);
-    autoware_utils::Polygon3d hull_polygon;
-    for (const auto & p : *surface_hull) {
-      points_belonging_to_cluster_hulls->push_back(p);
-      const auto point = autoware_utils::Point3d{p.x, p.y, p.z};
-      boost::geometry::append(hull_polygon.outer(), point);
-    }
-    debug.hull_polygons.push_back(hull_polygon);
-  }
-
-  {
-    const auto obstacle_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>();
-    pcl::toROSMsg(*points_belonging_to_cluster_hulls, *obstacle_pointcloud);
-    obstacle_pointcloud->header.stamp = context_->data->obstacle_pointcloud->header.stamp;
-    obstacle_pointcloud->header.frame_id = "map";
-    debug.cluster_points = obstacle_pointcloud;
-  }
-
-  return points_belonging_to_cluster_hulls;
+  return map_points;
 }
 
 auto RearCollisionChecker::get_pointcloud_object(
   const rclcpp::Time & now, const PointCloud::Ptr & pointcloud_ptr,
-  const DetectionAreas & detection_areas, DebugData & debug) -> std::optional<PointCloudObject>
+  const DetectionAreas & detection_areas) -> std::optional<PointCloudObject>
 {
   autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   std::optional<PointCloudObject> opt_object = std::nullopt;
   for (const auto & [polygon, lanes] : detection_areas) {
-    const auto pointcloud =
-      *get_clustered_pointcloud(utils::get_obstacle_points({polygon}, *pointcloud_ptr), debug);
+    const auto pointcloud = *utils::get_obstacle_points({polygon}, *pointcloud_ptr);
 
     const auto path = context_->data->route_handler->getCenterLinePath(
       lanes, 0.0, std::numeric_limits<double>::max());
@@ -432,6 +352,7 @@ auto RearCollisionChecker::get_pointcloud_object(
 }
 
 auto RearCollisionChecker::get_pointcloud_objects(
+  const double grid_rear_extent,
   const std::function<std::pair<double, double>()> & func_range_calculation,
   const std::function<PointCloudObjects(const double, const double)> & func_object_filtering,
   const std::function<void(PointCloudObjects &)> & func_safety_check) -> PointCloudObjects
@@ -439,6 +360,19 @@ auto RearCollisionChecker::get_pointcloud_objects(
   autoware_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const auto [forward_distance, backward_distance] = func_range_calculation();
+
+  // Fail-visible ROI guard: the obstacle grid is produced by a forward-biased extractor, so its
+  // rear coverage may be shorter than the backward reach this check needs. When that happens,
+  // rear-closing objects beyond the grid are invisible; log a throttled ERROR naming both numbers.
+  // The launcher is responsible for rebiasing/widening the producer ROI (see README and PR body).
+  if (backward_distance > grid_rear_extent) {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000,
+      "obstacle grid rear coverage (%.1f m) is shorter than the required backward reach (%.1f m); "
+      "rear objects beyond the grid extent are not detected. Widen the producer ROI.",
+      grid_rear_extent, backward_distance);
+  }
+
   auto objects = func_object_filtering(forward_distance, backward_distance);
   func_safety_check(objects);
 
@@ -499,8 +433,7 @@ auto RearCollisionChecker::get_pointcloud_objects_on_adjacent_lane(
 
       time_keeper_->start_track("get_pointcloud_object");
       auto opt_pointcloud_object = get_pointcloud_object(
-        context_->data->obstacle_pointcloud->header.stamp, obstacle_pointcloud, detection_areas,
-        debug);
+        context_->data->obstacle_grid->header.stamp, obstacle_pointcloud, detection_areas);
       time_keeper_->end_track("get_pointcloud_object");
 
       if (!opt_pointcloud_object.has_value()) {
@@ -542,8 +475,7 @@ auto RearCollisionChecker::get_pointcloud_objects_on_adjacent_lane(
 
       time_keeper_->start_track("get_pointcloud_object");
       auto opt_pointcloud_object = get_pointcloud_object(
-        context_->data->obstacle_pointcloud->header.stamp, obstacle_pointcloud, detection_areas,
-        debug);
+        context_->data->obstacle_grid->header.stamp, obstacle_pointcloud, detection_areas);
       time_keeper_->end_track("get_pointcloud_object");
 
       if (!opt_pointcloud_object.has_value()) {
@@ -609,7 +541,7 @@ auto RearCollisionChecker::get_pointcloud_objects_at_blind_spot(
 
   time_keeper_->start_track("get_pointcloud_object");
   auto opt_pointcloud_object = get_pointcloud_object(
-    context_->data->obstacle_pointcloud->header.stamp, obstacle_pointcloud, detection_areas, debug);
+    context_->data->obstacle_grid->header.stamp, obstacle_pointcloud, detection_areas);
   time_keeper_->end_track("get_pointcloud_object");
 
   if (!opt_pointcloud_object.has_value()) {
@@ -679,13 +611,6 @@ bool RearCollisionChecker::is_safe(DebugData & debug)
   const auto p = param_listener_->get_params();
   const auto now = clock_->now();
 
-  {
-    const auto obstacle_pointcloud = std::make_shared<sensor_msgs::msg::PointCloud2>();
-    obstacle_pointcloud->header.stamp = context_->data->obstacle_pointcloud->header.stamp;
-    obstacle_pointcloud->header.frame_id = "map";
-    debug.cluster_points = obstacle_pointcloud;
-  }
-
   constexpr double forward = 100.0;
   constexpr double backward = 100.0;
   const auto current_lanes = utils::get_current_lanes(context_, forward, backward);
@@ -715,7 +640,40 @@ bool RearCollisionChecker::is_safe(DebugData & debug)
     debug.is_active = true;
   }
 
-  const auto obstacle_pointcloud = filter_pointcloud(debug);
+  // Obstacle-grid availability + staleness watchdog. A missing or stale grid reads as
+  // data-unavailable: the checker cannot run, logs a throttled ERROR, and abstains by returning
+  // valid without publishing a STOP planning factor. This is an availability signal only (not a
+  // veto); it never treats a stale grid as an empty/clear scene. See README "Data-unavailability is
+  // an abstain, not a veto".
+  if (!context_->data->obstacle_grid) {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "obstacle grid is not available; skipping rear collision check.");
+    return true;
+  }
+  const auto grid_age = (now - rclcpp::Time(context_->data->obstacle_grid->header.stamp)).seconds();
+  if (grid_age > p.common.pointcloud.obstacle_grid_timeout_sec) {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000, "obstacle grid is stale (age %.2f s); skipping rear collision check.",
+      grid_age);
+    return true;
+  }
+
+  // Rear coverage of the grid measured behind the base_link origin, used by the ROI guard below.
+  const auto & grid_info = context_->data->obstacle_grid->info;
+  const double grid_rear_extent = grid_info.length_x * 0.5 - grid_info.pose.position.x;
+
+  // Grid-contract / TF watchdog: extract returns std::nullopt (already logged with a throttled
+  // ERROR) on wrong frame, undecodable message, missing layer, or a missing/old map<-base_link
+  // transform. Treat all of these as data-unavailable and abstain, exactly like the null/stale grid
+  // branches above, rather than letting an empty cloud flow through as a spurious "clear". A
+  // successfully decoded grid with no qualifying cell returns an empty cloud and is a genuine
+  // clear.
+  const auto opt_obstacle_pointcloud =
+    extract_obstacle_grid_points(*context_->data->obstacle_grid, debug);
+  if (!opt_obstacle_pointcloud) {
+    return true;
+  }
+  const auto & obstacle_pointcloud = opt_obstacle_pointcloud.value();
   PointCloudObjects pointcloud_objects{};
 
   {
@@ -737,8 +695,8 @@ bool RearCollisionChecker::is_safe(DebugData & debug)
       _1, context_, distance_to_shift, delay_object, max_deceleration_object, max_velocity_object,
       p);
 
-    auto objects =
-      get_pointcloud_objects(func_range_calculation, func_object_filtering, func_safety_check);
+    auto objects = get_pointcloud_objects(
+      grid_rear_extent, func_range_calculation, func_object_filtering, func_safety_check);
     pointcloud_objects.insert(pointcloud_objects.end(), objects.begin(), objects.end());
 
     time_keeper_->end_track("adjacent_lane");
@@ -763,8 +721,8 @@ bool RearCollisionChecker::is_safe(DebugData & debug)
       _1, context_, distance_to_turn, delay_object, max_deceleration_object, max_velocity_object,
       p);
 
-    auto objects =
-      get_pointcloud_objects(func_range_calculation, func_object_filtering, func_safety_check);
+    auto objects = get_pointcloud_objects(
+      grid_rear_extent, func_range_calculation, func_object_filtering, func_safety_check);
     pointcloud_objects.insert(pointcloud_objects.end(), objects.begin(), objects.end());
 
     time_keeper_->end_track("blind_spot");
@@ -839,10 +797,6 @@ void RearCollisionChecker::publish_marker(const DebugData & debug) const
       utils::create_polygon_marker_array(
         debug.get_detection_polygons(), "detection_areas",
         autoware_utils::create_marker_color(1.0, 0.0, 0.42, 0.999)));
-    add(
-      utils::create_polygon_marker_array(
-        debug.hull_polygons, "hull_polygons",
-        autoware_utils::create_marker_color(0.0, 0.0, 1.0, 0.999)));
 
     std::for_each(msg.markers.begin(), msg.markers.end(), [](auto & marker) {
       marker.lifetime = rclcpp::Duration::from_seconds(0.5);
@@ -851,12 +805,8 @@ void RearCollisionChecker::publish_marker(const DebugData & debug) const
     context_->debug_pose_publisher->pushMarkers(msg);
   }
 
-  if (debug.cluster_points) {
-    pub_cluster_pointcloud_->publish(*debug.cluster_points);
-  }
-
-  if (debug.voxel_points) {
-    pub_voxel_pointcloud_->publish(*debug.voxel_points);
+  if (debug.grid_points) {
+    pub_grid_points_->publish(*debug.grid_points);
   }
 
   {
@@ -868,11 +818,6 @@ void RearCollisionChecker::publish_marker(const DebugData & debug) const
     ss << "SHIFT:" << magic_enum::enum_name(debug.shift_behavior) << "\n";
     ss << "INFO:" << debug.text << "\n";
     ss << "TRACKING OBJECTS:" << debug.pointcloud_objects.size() << "\n";
-    ss << "PC NUM:";
-    for (const auto num : debug.pointcloud_nums) {
-      ss << num << "->";
-    }
-    ss << "\n";
     ss << "PROCESSING TIME:" << debug.processing_time_detail_ms << "[ms]\n";
 
     StringStamped string_stamp;

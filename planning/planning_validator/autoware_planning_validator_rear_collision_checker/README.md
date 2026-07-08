@@ -12,10 +12,10 @@ The module operates by:
    - Considers the `turn_direction` of the approaching lanelets to filter out irrelevant lanes.
 
 2. **Filtering perception data**
-   - Subscribes to obstacle pointcloud and first filters by the conflict region, keeping only points that fall within relevant spatial bounds.
-   - Performs **clustering** on the filtered points to form obstacle candidates.
-   - Associates clusters with nearby lanelets and computes the **nearest face of each obstacle along the lane direction**.
-   - Applies configurable range gates (forward/backward, lateral, height) and basic outlier rejection to discard distant or irrelevant clusters.
+   - Reads the shared 2.5D obstacle grid (`grid_map_msgs/GridMap`, base_link, layers `point_count` / `min_height` / `low_max_height`) that the parent `autoware_planning_validator` node provides on `~/input/obstacle_grid`. There is no dedicated subscription in this plugin.
+   - Applies a per-cell density and z-band gate (see the Obstacle grid Parameters below), emits the qualifying cells' corner points and transforms them into the map frame.
+   - Filters those points by the conflict region and computes the **nearest face of each obstacle along the lane direction** (the previous Euclidean clustering and convex-hull step is removed; the grid is already density-aggregated).
+   - Applies configurable range gates (forward/backward, lateral, height) and basic outlier rejection to discard distant or irrelevant points.
 
 3. **Estimating motion**
    - For each selected object, determines its motion relative to the lane direction.
@@ -44,26 +44,31 @@ WIP
 | `off_time_buffer`      | [s]  | double | Time buffer before disabling detection after the condition clears                                                                                                                                                                                                           | 1.5           |
 | `check_on_unstoppable` | [-]  | bool   | If `true`, the module continues collision checking even when the ego vehicle cannot stop before entering a potential collision area, and outputs an **ERROR** if a collision risk is detected. If `false`, checking is skipped in such cases to avoid unnecessary warnings. | false         |
 
-### Pointcloud Preprocess
+### Obstacle grid Parameters
 
-| Name                                              | Unit     | Type   | Description                                                               | Default value |
-| :------------------------------------------------ | -------- | ------ | ------------------------------------------------------------------------- | ------------- |
-| `pointcloud.range.dead_zone`                      | [m]      | double | Distance in front of the ego vehicle ignored for collision detection      | 0.3           |
-| `pointcloud.range.buffer`                         | [m]      | double | Additional margin around detection range                                  | 1.0           |
-| `pointcloud.crop_box_filter.x.max`                | [m]      | double | Maximum X coordinate for cropped detection range                          | 30.0          |
-| `pointcloud.crop_box_filter.x.min`                | [m]      | double | Minimum X coordinate for cropped detection range                          | -100.0        |
-| `pointcloud.crop_box_filter.z.max`                | [m]      | double | Maximum Z coordinate for cropped detection range                          | -1.0          |
-| `pointcloud.crop_box_filter.z.min`                | [m]      | double | Minimum Z coordinate for cropped detection range                          | 0.3           |
-| `pointcloud.voxel_grid_filter.x`                  | [m]      | double | Voxel grid filter size in X direction                                     | 0.1           |
-| `pointcloud.voxel_grid_filter.y`                  | [m]      | double | Voxel grid filter size in Y direction                                     | 0.1           |
-| `pointcloud.voxel_grid_filter.z`                  | [m]      | double | Voxel grid filter size in Z direction                                     | 0.5           |
-| `pointcloud.clustering.cluster_tolerance`         | [m]      | double | Maximum distance between points to be considered part of the same cluster | 0.15          |
-| `pointcloud.clustering.min_cluster_height`        | [m]      | double | Minimum height of a cluster to be considered valid                        | 0.1           |
-| `pointcloud.clustering.min_cluster_size`          | [points] | int    | Minimum number of points in a valid cluster                               | 5             |
-| `pointcloud.clustering.max_cluster_size`          | [points] | int    | Maximum number of points in a valid cluster                               | 10000         |
-| `pointcloud.velocity_estimation.observation_time` | [s]      | double | Time window used for velocity estimation                                  | 0.3           |
-| `pointcloud.velocity_estimation.max_acceleration` | [m/s^2]  | double | Maximum allowed acceleration in velocity estimation                       | 10.0          |
-| `pointcloud.latency`                              | [s]      | double | Assumed system latency for point cloud processing                         | 0.3           |
+The data source is the 2.5D obstacle grid (`grid_map_msgs/GridMap`, base_link, layers `point_count` / `min_height` / `low_max_height`). The parameter group key is kept as `pointcloud` to minimize downstream churn.
+
+!!! warning "Producer ROI must cover the rear reach"
+
+    This checker queries obstacles far behind ego (its backward RSS reach for a fast adjacent-lane participant is on the order of tens of metres). The stock obstacle-grid extractor is forward-biased, so its rear coverage can be shorter than that reach. When the received grid's rear extent is smaller than the required backward distance, cells beyond the grid are invisible and a throttled **ERROR** is logged naming both numbers. The launch integration is responsible for rebiasing/widening the producer ROI (e.g. `x` in `[-100, +50]`) so the grid covers the rear reach; see the campaign's launch step.
+
+!!! note "Data-unavailability is an abstain, not a veto"
+
+    When the obstacle grid is absent, stale (older than `obstacle_grid_timeout_sec`), in the wrong frame, undecodable, missing a required layer, or the `map <- base_link` transform for the grid stamp is unavailable, the module cannot run and **abstains**: `validate()` reports the rear-collision check as valid (no STOP planning factor is published) and a throttled **ERROR** is logged for observability. This is deliberately the same behaviour as the parent's other data-unavailability paths and is an availability signal only — it does not by itself hold or stop the ego. It is distinct from a successfully decoded grid that simply contains no qualifying cell, which is a genuine "clear". Downstream logic that must react to a rear-sensor outage should consume the ERROR/diagnostic rather than the boolean check result.
+
+The height gate mirrors the AEB pattern: the floor `z_floor` is applied to the cell's tallest in-band return (`low_max_height`), and the ceiling `vehicle_height + z_band_top_offset` to the cell's lowest return (`min_height`). Because the floor is on `low_max_height` rather than `max_height`, an overhead structure that merely shares a cell with ground residue is rejected. The legacy per-cluster `min_cluster_height` (0.1 m) is subsumed by `z_floor` (0.3 m) and needs no separate parameter.
+
+| Name                                              | Unit    | Type   | Description                                                                                                          | Default value |
+| :------------------------------------------------ | ------- | ------ | -------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `pointcloud.range.dead_zone`                      | [m]     | double | Distance in front of the ego vehicle ignored for collision detection                                                 | 0.3           |
+| `pointcloud.range.buffer`                         | [m]     | double | Additional margin around detection range                                                                             | 1.0           |
+| `pointcloud.grid.min_point_count_cell`            | [-]     | int    | Per-cell raw (pre-voxel) return floor; a cell must hold at least this many returns. NOT the old cluster `min_size=5` | 1             |
+| `pointcloud.grid.z_floor`                         | [m]     | double | Height floor applied to the cell's tallest in-band return (`low_max_height`); legacy `crop_box_filter.z.min`         | 0.3           |
+| `pointcloud.grid.z_band_top_offset`               | [m]     | double | Offset added to the ego vehicle height to form the `min_height` band ceiling; legacy `crop_box_filter.z.max`         | -1.0          |
+| `pointcloud.obstacle_grid_timeout_sec`            | [s]     | double | Staleness watchdog; a grid older than this reads as data-unavailable and the check abstains (see the note below)     | 0.5           |
+| `pointcloud.velocity_estimation.observation_time` | [s]     | double | Time window used for velocity estimation                                                                             | 0.3           |
+| `pointcloud.velocity_estimation.max_acceleration` | [m/s^2] | double | Maximum allowed acceleration in velocity estimation                                                                  | 10.0          |
+| `pointcloud.latency`                              | [s]     | double | Assumed system latency for obstacle grid processing                                                                  | 0.3           |
 
 ### Object Filtering
 

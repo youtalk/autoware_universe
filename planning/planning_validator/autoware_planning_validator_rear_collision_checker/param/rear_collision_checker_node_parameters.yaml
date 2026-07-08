@@ -21,47 +21,21 @@ rear_collision_checker_node:
           type: double
           validation:
             gt_eq<>: [0.0]
-      crop_box_filter:
-        x:
-          max:
-            type: double
-          min:
-            type: double
-        z:
-          max:
-            type: double
-          min:
-            type: double
-      voxel_grid_filter:
-        x:
-          type: double
-          validation:
-            gt<>: [0.0]
-        y:
-          type: double
-          validation:
-            gt<>: [0.0]
-        z:
-          type: double
-          validation:
-            gt<>: [0.0]
-      clustering:
-        cluster_tolerance:
-          type: double
-          validation:
-            gt<>: [0.0]
-        min_cluster_height:
-          type: double
-          validation:
-            gt<>: [0.0]
-        min_cluster_size:
+      grid:
+        min_point_count_cell:
           type: int
           validation:
             bounds<>: [1, 2147483647]
-        max_cluster_size:
-          type: int
+        z_floor:
+          type: double
           validation:
-            bounds<>: [1, 2147483647]
+            gt_eq<>: [0.0]
+        z_band_top_offset:
+          type: double
+      obstacle_grid_timeout_sec:
+        type: double
+        validation:
+          gt<>: [0.0]
       velocity_estimation:
         observation_time:
           type: double

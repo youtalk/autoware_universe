@@ -202,9 +202,24 @@ void ObstacleCollisionCheckerNode::on_timer()
       obstacle_transform_ = transform_listener_->get_transform(
         "map", header.frame_id, header.stamp, rclcpp::Duration::from_seconds(0.01));
     } catch (tf2::TransformException & ex) {
-      RCLCPP_INFO(
-        this->get_logger(), "Could not transform map to %s: %s", header.frame_id.c_str(),
-        ex.what());
+      // Defensive: get_transform swallows tf2 exceptions and returns null today, but if that
+      // contract ever changes, drop any stale transform so the guard below fires.
+      obstacle_transform_ = {};
+      RCLCPP_ERROR_THROTTLE(
+        this->get_logger(), *this->get_clock(), 5000 /* ms */, "Could not transform map to %s: %s",
+        header.frame_id.c_str(), ex.what());
+    }
+
+    // A missing map->grid transform (get_transform returns null on a TF outage / clock jump) must
+    // read as "unavailable", never as the last (possibly OK) verdict -- matching the stale /
+    // contract-violation paths above. Without this the diagnostic_updater keeps republishing the
+    // previous verdict throughout the outage (fail-open).
+    if (!obstacle_transform_) {
+      obstacle_grid_unavailable_ = true;
+      RCLCPP_ERROR_THROTTLE(
+        this->get_logger(), *this->get_clock(), 5000 /* ms */,
+        "obstacle grid transform is unavailable; treating obstacle grid as unavailable");
+      updater_.force_update();
       return;
     }
   }

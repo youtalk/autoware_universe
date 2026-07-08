@@ -190,6 +190,27 @@ TEST(ObstacleGridExtractor, NonFinitePointsAreDropped)
   EXPECT_FLOAT_EQ(g.at("low_max_height", idx), 0.5f);
 }
 
+TEST(ObstacleGridExtractor, PointsOutsideRoiAreDropped)
+{
+  // ROI is length_x=60 centered at offset_x=20 -> x in [-10, 50]; length_y=40 centered at 0 ->
+  // y in [-20, 20]. A finite, in-z-band point far outside that rectangle must be rejected by the
+  // getIndex() bounds check (the "outside ROI" continue) without touching any cell or crashing,
+  // while a co-submitted in-ROI point is still recorded. Oracle: exactly one occupied cell,
+  // count 1.
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  cloud.emplace_back(1000.0f, 1000.0f, 0.5f);  // finite + in z-band, but outside ROI -> dropped
+  cloud.emplace_back(8.05f, 0.05f, 0.5f);      // inside ROI -> recorded
+  std_msgs::msg::Header h;
+  h.frame_id = "base_link";
+  const auto g = toGrid(ObstacleGridExtractor(testParams()).extract(cloud, h));
+
+  grid_map::Index idx;
+  ASSERT_TRUE(g.getIndex(grid_map::Position(8.05, 0.05), idx));
+  EXPECT_FLOAT_EQ(g.at("point_count", idx), 1.0f);  // only the in-ROI point was counted
+  EXPECT_FLOAT_EQ(g.at("max_height", idx), 0.5f);   // out-of-ROI point contributed nothing
+  EXPECT_FALSE(g.getIndex(grid_map::Position(1000.0, 1000.0), idx));  // that position has no cell
+}
+
 TEST(ObstacleGridExtractor, EmptyCloudIsFreshHeartbeat)
 {
   pcl::PointCloud<pcl::PointXYZ> empty;

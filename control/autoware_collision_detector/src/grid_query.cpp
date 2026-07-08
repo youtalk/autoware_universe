@@ -51,8 +51,12 @@ std::optional<grid_map::GridMap> validate_obstacle_grid(const grid_map_msgs::msg
 std::optional<Obstacle> nearest_obstacle_in_grid(
   const grid_map::GridMap & grid, const autoware_utils_geometry::Polygon2d & ego_polygon)
 {
-  // Gate{1, 0}: single-return sensitivity, no height gate (purely-2D consumer). Fixed policy shared
-  // across the surround/collision consumers, deliberately not exposed as a parameter.
+  // Gate{1, 0}: single-return sensitivity plus a max_height >= 0 floor. That floor IS a height
+  // gate: a cell whose returns all lie below base_link z=0 is dropped (the producer also crops z to
+  // [-1, 3] m), whereas the removed per-point loop had no z filter and counted those sub-ground
+  // far-field returns - so the grid is strictly more conservative there (decision-level parity
+  // verified on real vehicle data). Fixed policy shared across the surround/collision consumers,
+  // deliberately not exposed as a parameter.
   const auto nearest = autoware::obstacle_grid_utils::nearest_cell(grid, ego_polygon, {1, 0.0});
   if (!nearest) {
     return std::nullopt;

@@ -52,11 +52,14 @@ bool is_grid_stale(const rclcpp::Time & now, const rclcpp::Time & stamp, double 
 std::optional<grid_map::GridMap> validate_obstacle_grid(const grid_map_msgs::msg::GridMap & msg);
 
 /// Nearest qualifying-cell obstacle for the ego polygon, using the shared 2D Gate{1, 0} query
-/// (any cell with >= 1 return and max_height >= 0 qualifies; purely 2D, no overhead-structure
-/// discrimination - collision_detector inherits the pre-migration per-point behavior, which had no
-/// z filter either). The returned Obstacle carries the winning cell CENTER as its position
-/// (z = 0.0, honest 2D evidence) for the debug marker; the distance is edge-aware (to the cell
-/// footprint box). Returns std::nullopt when no cell qualifies within the ROI ("clear within ROI").
+/// (any cell with >= 1 return and max_height >= 0 qualifies; no overhead-structure discrimination).
+/// The max_height >= 0 floor IS a height gate: a cell whose returns all lie below base_link z=0 is
+/// dropped (the producer also crops z to [-1, 3] m), whereas the removed per-point loop had no z
+/// filter and counted those sub-ground far-field returns - so the grid is strictly more
+/// conservative there (decision-level parity verified on real vehicle data). The returned Obstacle
+/// carries the winning cell CENTER as its position (z = 0.0, honest 2D evidence) for the debug
+/// marker; the distance is edge-aware (to the cell footprint box). Returns std::nullopt when no
+/// cell qualifies within the ROI ("clear within ROI").
 std::optional<Obstacle> nearest_obstacle_in_grid(
   const grid_map::GridMap & grid, const autoware_utils_geometry::Polygon2d & ego_polygon);
 

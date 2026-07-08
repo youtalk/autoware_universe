@@ -51,7 +51,7 @@ When `use_pointcloud` is enabled, the node validates the incoming obstacle grid 
 ### Get distance to nearest object
 
 Calculate distance between ego vehicle and the nearest object.
-For the obstacle grid, the minimum distance is taken between the ego footprint polygon and the footprint box of every qualifying cell (a cell qualifies with `point_count >= 1`; this is a purely 2D query with no height gate, matching the pre-migration behavior). For dynamic objects, the minimum distance is taken between the ego footprint polygon and the object polygons. The smaller of the two candidates is used.
+For the obstacle grid, the minimum distance is taken between the ego footprint polygon and the footprint box of every qualifying cell (a cell qualifies with `point_count >= 1` and `max_height >= 0`; the `max_height >= 0` floor is a height gate that drops cells whose returns all lie below `base_link` z=0, and the producer additionally crops z to `[-1, 3]` m. Unlike the pre-migration per-point loop, which had no z filter, the grid therefore drops those sub-ground far-field returns and is strictly more conservative in the far field; decision-level parity was verified on real vehicle data). For dynamic objects, the minimum distance is taken between the ego footprint polygon and the object polygons. The smaller of the two candidates is used.
 If the minimum distance is lower than the `collision_distance` parameter, then a collision is detected.
 
 ### Time buffer and distance hysteresis

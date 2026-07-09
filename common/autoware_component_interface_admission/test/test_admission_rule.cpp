@@ -143,6 +143,28 @@ TEST(AdmissionRule, runtime_skips_missing_provider_but_deploy_reports_it)
   EXPECT_TRUE(adm::any_rejected(deploy));
 }
 
+TEST(AdmissionRule, deploy_ignores_remap_resolved_name_but_runtime_catches_it)
+{
+  // Two manifests, same interface_name, version-compatible, but the provider's remap left it on a
+  // DIVERGENT resolved_name. The deploy trigger reads static image metadata, where remaps (which
+  // live in the launch / compose layer) are not visible, so it matches on interface_name + version
+  // ONLY (stage 1) and must ACCEPT — it must never emit TOPIC_MISMATCH.
+  const auto prov = provider(2, 1, "/provider", "/perception/object_recognition/objects_remapped");
+  const auto cons = consumer(2, 2);  // resolved_name = kIf, divergent from the provider's
+
+  const auto deploy = adm::evaluate_deploy({prov, cons});
+  ASSERT_EQ(deploy.size(), 1u);
+  EXPECT_EQ(deploy[0].code, adm::ACCEPTED);
+  EXPECT_EQ(deploy[0].provider_node, "/provider");
+  EXPECT_FALSE(adm::any_rejected(deploy));
+
+  // Companion assertion: the SAME pair under the runtime trigger still catches the disjoint wiring
+  // as a TOPIC_MISMATCH — stage 2 (resolved_name) stays a runtime-only backstop.
+  const auto runtime = adm::evaluate({prov, cons});
+  ASSERT_EQ(runtime.size(), 1u);
+  EXPECT_EQ(runtime[0].code, adm::TOPIC_MISMATCH);
+}
+
 TEST(AdmissionRule, empty_input_yields_no_results)
 {
   EXPECT_TRUE(adm::evaluate({}).empty());

@@ -23,7 +23,7 @@ For each required interface, the rule finds providers of the same `interface_nam
 | version-ok but a remap left `resolved_name` disjoint                      | `TOPIC_MISMATCH` | 3    |
 | required interface has **no provider** in the set                         | `NO_PROVIDER`    | 4    |
 
-The MINOR bound is inclusive (`provider.minor >= min_minor`), and `min_minor == 0` means unconstrained. Among several version-compatible providers, the one whose `resolved_name` coincides is preferred (the wired provider); a version-compatible provider left on a disjoint wire topic by a remap is the false-accept that logical-name-only matching would miss, reported as `TOPIC_MISMATCH`.
+The MINOR bound is inclusive (`provider.minor >= min_minor`), and `min_minor == 0` means unconstrained. Because MINOR resets to 0 on every MAJOR bump (semver), `min_minor` binds **only at the MAJOR it was declared against** (`accept_major_min`); at any higher accepted MAJOR the bound is already satisfied. So a consumer accepting `[2, 3]` with `min_minor = 5` admits provider `2.5` and `3.0`, but rejects `2.4` as a `MINOR_MISMATCH`. Among several version-compatible providers, the one whose `resolved_name` coincides is preferred (the wired provider); a version-compatible provider left on a disjoint wire topic by a remap is the false-accept that logical-name-only matching would miss, reported as `TOPIC_MISMATCH`.
 
 ### Deploy vs runtime: `NO_PROVIDER` is deploy-only
 

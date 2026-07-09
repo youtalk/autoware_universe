@@ -54,6 +54,28 @@ struct AdmissionResult
   std::uint16_t code{ACCEPTED};
 };
 
+// Whether the provider's MAJOR falls inside the consumer's accepted MAJOR window
+// [accept_major_min, accept_major_max]. This window is the primary compatibility gate; a MAJOR
+// outside it is a hard MAJOR_MISMATCH, and it is what separates a MINOR_MISMATCH (MAJOR in range,
+// version bound unmet) from a MAJOR_MISMATCH in the blame path.
+inline bool major_in_range(const RequiredInterface & r, const ProvidedInterface & p)
+{
+  return r.accept_major_min <= p.major && p.major <= r.accept_major_max;
+}
+
+// Whether the provider satisfies the consumer's full version contract: its MAJOR is in the accepted
+// window AND the optional min_minor lower bound is met. Per semver, MINOR resets to 0 on every
+// MAJOR bump, so min_minor binds ONLY at the MAJOR it was declared against (accept_major_min); at
+// any higher accepted MAJOR the bound is already satisfied. min_minor == 0 means unconstrained; the
+// bound is inclusive (provider MINOR >= min_minor).
+inline bool version_compatible(const RequiredInterface & r, const ProvidedInterface & p)
+{
+  if (!major_in_range(r, p)) {
+    return false;
+  }
+  return r.min_minor == 0 || p.major > r.accept_major_min || p.minor >= r.min_minor;
+}
+
 // Runtime admission (the shared rule at its runtime trigger). For each required interface, find a
 // provider of the same interface_name and apply the two-layer match:
 //   - version-ok AND resolved_name coincide      -> ACCEPTED (the actually-wired provider)
@@ -87,10 +109,7 @@ inline std::vector<AdmissionResult> evaluate(const std::vector<InterfaceManifest
       const ProviderEntry * wired = nullptr;             // version-ok AND same resolved wire topic
       const ProviderEntry * version_ok_other = nullptr;  // version-ok but disjoint wire topic
       for (const auto & entry : it->second) {
-        const bool major_ok =
-          r.accept_major_min <= entry.p.major && entry.p.major <= r.accept_major_max;
-        const bool minor_ok = (r.min_minor == 0) || (entry.p.minor >= r.min_minor);
-        if (major_ok && minor_ok) {
+        if (version_compatible(r, entry.p)) {
           if (entry.p.resolved_name == r.resolved_name) {
             wired = &entry;
             break;
@@ -121,9 +140,7 @@ inline std::vector<AdmissionResult> evaluate(const std::vector<InterfaceManifest
         // the lowest node name. Manifest/argv order must not change the verdict.
         const auto rank = [&r](const ProviderEntry & e) {
           const bool on_wire = e.p.resolved_name == r.resolved_name;
-          const bool major_in_range =
-            r.accept_major_min <= e.p.major && e.p.major <= r.accept_major_max;
-          return std::make_tuple(!on_wire, !major_in_range, e.node);
+          return std::make_tuple(!on_wire, !major_in_range(r, e.p), e.node);
         };
         const ProviderEntry * blame = &it->second.front();
         for (const auto & entry : it->second) {
@@ -132,9 +149,7 @@ inline std::vector<AdmissionResult> evaluate(const std::vector<InterfaceManifest
           }
         }
         res.provider_node = blame->node;
-        const bool major_in_range =
-          r.accept_major_min <= blame->p.major && blame->p.major <= r.accept_major_max;
-        res.code = major_in_range ? MINOR_MISMATCH : MAJOR_MISMATCH;
+        res.code = major_in_range(r, blame->p) ? MINOR_MISMATCH : MAJOR_MISMATCH;
       }
       results.push_back(res);
     }
@@ -185,10 +200,7 @@ inline std::vector<AdmissionResult> evaluate_deploy(
       // (stage 2) is not statically visible at deploy time, so it is never inspected here.
       const ProviderEntry * accepted = nullptr;
       for (const auto & entry : it->second) {
-        const bool major_ok =
-          r.accept_major_min <= entry.p.major && entry.p.major <= r.accept_major_max;
-        const bool minor_ok = (r.min_minor == 0) || (entry.p.minor >= r.min_minor);
-        if (major_ok && minor_ok) {
+        if (version_compatible(r, entry.p)) {
           // Lowest node name wins, so the reported provider is independent of manifest order.
           if (accepted == nullptr || entry.node < accepted->node) {
             accepted = &entry;
@@ -204,9 +216,7 @@ inline std::vector<AdmissionResult> evaluate_deploy(
         // order): a provider whose MAJOR is already in range (the actionable MINOR_MISMATCH) first,
         // then the lowest node name.
         const auto rank = [&r](const ProviderEntry & e) {
-          const bool major_in_range =
-            r.accept_major_min <= e.p.major && e.p.major <= r.accept_major_max;
-          return std::make_tuple(!major_in_range, e.node);
+          return std::make_tuple(!major_in_range(r, e.p), e.node);
         };
         const ProviderEntry * blame = &it->second.front();
         for (const auto & entry : it->second) {
@@ -215,9 +225,7 @@ inline std::vector<AdmissionResult> evaluate_deploy(
           }
         }
         res.provider_node = blame->node;
-        const bool major_in_range =
-          r.accept_major_min <= blame->p.major && blame->p.major <= r.accept_major_max;
-        res.code = major_in_range ? MINOR_MISMATCH : MAJOR_MISMATCH;
+        res.code = major_in_range(r, blame->p) ? MINOR_MISMATCH : MAJOR_MISMATCH;
       }
       results.push_back(res);
     }

@@ -103,6 +103,29 @@ TEST(AdmissionRule, accepts_at_min_minor_boundary)
   EXPECT_EQ(results[0].code, adm::ACCEPTED);
 }
 
+TEST(AdmissionRule, min_minor_binds_only_to_its_declared_major)
+{
+  // min_minor is a lower bound on the provider's MINOR declared against the LOWER accepted MAJOR
+  // (accept_major_min). Per semver, MINOR resets to 0 on every MAJOR bump, so the bound must NOT
+  // carry into a higher accepted MAJOR within the same acceptance window.
+  const auto cons = consumer(2, 3, /*min_minor=*/5);  // accept [2, 3], min_minor 5
+
+  // Higher accepted MAJOR (3): min_minor does not apply, so provider 3.0 is ACCEPTED.
+  const auto higher_major = adm::evaluate({provider(3, 0), cons});
+  ASSERT_EQ(higher_major.size(), 1u);
+  EXPECT_EQ(higher_major[0].code, adm::ACCEPTED);
+
+  // Declared MAJOR (2), below the bound: MINOR_MISMATCH.
+  const auto below = adm::evaluate({provider(2, 4), cons});
+  ASSERT_EQ(below.size(), 1u);
+  EXPECT_EQ(below[0].code, adm::MINOR_MISMATCH);
+
+  // Declared MAJOR (2), at the bound: ACCEPTED (inclusive lower bound).
+  const auto at_bound = adm::evaluate({provider(2, 5), cons});
+  ASSERT_EQ(at_bound.size(), 1u);
+  EXPECT_EQ(at_bound[0].code, adm::ACCEPTED);
+}
+
 TEST(AdmissionRule, rejects_remap_topic_mismatch)
 {
   // Same logical IF + compatible MAJOR, but the provider's wire topic was remapped away.

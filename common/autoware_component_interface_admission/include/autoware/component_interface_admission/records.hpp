@@ -54,7 +54,9 @@ struct RequiredInterface
   std::string type_name;
   // The consumer declares an acceptance range, not a single version: it admits a provider whose
   // MAJOR lies in [accept_major_min, accept_major_max]. min_minor (0 = unconstrained) is an
-  // optional lower bound on the provider's MINOR within an accepted MAJOR.
+  // optional, inclusive lower bound on the provider's MINOR. Per semver, MINOR resets to 0 on every
+  // MAJOR bump, so min_minor binds ONLY at the MAJOR it was declared against (accept_major_min); at
+  // any higher accepted MAJOR the bound is already satisfied.
   std::uint16_t accept_major_min{0};
   std::uint16_t accept_major_max{0};
   std::uint16_t min_minor{0};

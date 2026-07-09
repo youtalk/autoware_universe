@@ -9,8 +9,8 @@ repositories:
   # core
   core/autoware_core:
     type: git
-    url: https://github.com/autowarefoundation/autoware_core.git
-    version: main
+    url: https://github.com/youtalk/autoware_core.git
+    version: feat/oss-if-specs-system
   # universe
   universe/external/tier4_autoware_msgs:
     type: git

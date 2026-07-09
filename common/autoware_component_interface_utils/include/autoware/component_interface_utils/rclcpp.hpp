@@ -53,8 +53,14 @@ private:
   template <class SpecT>
   static autoware::component_interface_specs::accept_major default_accept_major()
   {
-    const auto version = autoware::component_interface_specs::spec_version<SpecT>();
-    return {version.major, version.major};
+    if constexpr (detail::HasDomainVersion<SpecT>::value) {
+      const auto version = autoware::component_interface_specs::spec_version<SpecT>();
+      return {version.major, version.major};
+    } else {
+      // Unversioned spec (vendor-partition candidate): it does not participate in versioning
+      // this wave; the range is never recorded because register_* skips it too.
+      return autoware::component_interface_specs::accept_major{0, 0};
+    }
   }
 
 public:

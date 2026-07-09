@@ -18,6 +18,8 @@
 #include <autoware/component_interface_specs/version.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <nav_msgs/msg/odometry.hpp>
+
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -34,6 +36,22 @@ using Initialize = specs::localization::Initialize;          // service
 constexpr std::uint16_t kMajor = 0;
 constexpr std::uint16_t kMinor = 1;
 constexpr std::uint16_t kPatch = 0;
+
+// An unversioned spec: shaped like a topic spec but its namespace declares no
+// resolve_domain_version ADL hook - the universe/vendor-only partition case
+// (deliberately unversioned this wave, design section 7.1). The wrapper must
+// keep compiling for it and must NOT register a manifest record.
+namespace unversioned_specs
+{
+struct UnversionedTopic
+{
+  using Message = nav_msgs::msg::Odometry;
+  static constexpr char name[] = "/vendor/unversioned_topic";
+  static constexpr size_t depth = 1;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;
+};
+}  // namespace unversioned_specs
 
 class NodeAdaptorRegistration : public ::testing::Test
 {
@@ -206,4 +224,18 @@ TEST_F(NodeAdaptorRegistration, resolvedNameReflectsRemapWhileInterfaceNameStays
   // ... while the resolved name reflects the launch-time remap (section 3.4 two-layer name).
   EXPECT_EQ(record.resolved_name, "/remapped/odometry");
   EXPECT_STREQ(pub->get_topic_name(), "/remapped/odometry");
+}
+
+TEST_F(NodeAdaptorRegistration, unversionedSpecCompilesButRegistersNoRecord)
+{
+  const auto node = make_node("unversioned_node");
+  utils::NodeAdaptor adaptor(node.get());
+  const auto pub = adaptor.create_publisher<unversioned_specs::UnversionedTopic>();
+  const auto sub = adaptor.create_subscription<unversioned_specs::UnversionedTopic>(
+    [](nav_msgs::msg::Odometry::ConstSharedPtr) {});
+  ASSERT_NE(pub, nullptr);
+  ASSERT_NE(sub, nullptr);
+  const auto & manifest = adaptor.manifest();
+  EXPECT_TRUE(manifest.provided.empty());
+  EXPECT_TRUE(manifest.required.empty());
 }

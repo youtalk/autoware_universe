@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -44,6 +45,26 @@
 
 namespace autoware::component_interface_utils
 {
+
+namespace detail
+{
+
+/// Detection idiom: a spec participates in versioning iff its own namespace declares the
+/// `resolve_domain_version` ADL hook (every core domain does; universe/vendor-only specs are
+/// deliberately unversioned until the vendor partition, design section 7.1, and must keep
+/// compiling through the wrapper without producing a manifest record).
+template <class SpecT, class = void>
+struct HasDomainVersion : std::false_type
+{
+};
+template <class SpecT>
+struct HasDomainVersion<
+  SpecT, std::void_t<decltype(resolve_domain_version(std::declval<const SpecT &>()))>>
+: std::true_type
+{
+};
+
+}  // namespace detail
 
 /// The record's `ns` is the first path segment of `Spec::name` (a documented convention, so that
 /// e.g. "/localization/kinematic_state" -> "localization"). Leading slashes are ignored and an
@@ -104,17 +125,21 @@ struct NodeInterface
   template <AUTOWARE_COMPONENT_INTERFACE_UTILS_TOPIC_SPEC S>
   void register_provided(const std::string & resolved_name)
   {
-    ensure_manifest_identity();
-    autoware::component_interface_admission::ProvidedInterface record;
-    record.ns = interface_namespace(S::name);
-    record.interface_name = S::name;
-    record.resolved_name = resolved_name;
-    record.type_name = rosidl_generator_traits::name<typename S::Message>();
-    const auto version = autoware::component_interface_specs::spec_version<S>();
-    record.major = version.major;
-    record.minor = version.minor;
-    record.patch = version.patch;
-    manifest_.provided.push_back(std::move(record));
+    if constexpr (detail::HasDomainVersion<S>::value) {
+      ensure_manifest_identity();
+      autoware::component_interface_admission::ProvidedInterface record;
+      record.ns = interface_namespace(S::name);
+      record.interface_name = S::name;
+      record.resolved_name = resolved_name;
+      record.type_name = rosidl_generator_traits::name<typename S::Message>();
+      const auto version = autoware::component_interface_specs::spec_version<S>();
+      record.major = version.major;
+      record.minor = version.minor;
+      record.patch = version.patch;
+      manifest_.provided.push_back(std::move(record));
+    } else {
+      (void)resolved_name;  // unversioned spec: no manifest record this wave
+    }
   }
 
   /// Record a required topic interface (this node is a subscriber of it). The consumer declares an
@@ -123,33 +148,42 @@ struct NodeInterface
   void register_required(
     autoware::component_interface_specs::accept_major accept, const std::string & resolved_name)
   {
-    ensure_manifest_identity();
-    autoware::component_interface_admission::RequiredInterface record;
-    record.ns = interface_namespace(S::name);
-    record.interface_name = S::name;
-    record.resolved_name = resolved_name;
-    record.type_name = rosidl_generator_traits::name<typename S::Message>();
-    record.accept_major_min = accept.lo;
-    record.accept_major_max = accept.hi;
-    record.min_minor = 0;
-    manifest_.required.push_back(std::move(record));
+    if constexpr (detail::HasDomainVersion<S>::value) {
+      ensure_manifest_identity();
+      autoware::component_interface_admission::RequiredInterface record;
+      record.ns = interface_namespace(S::name);
+      record.interface_name = S::name;
+      record.resolved_name = resolved_name;
+      record.type_name = rosidl_generator_traits::name<typename S::Message>();
+      record.accept_major_min = accept.lo;
+      record.accept_major_max = accept.hi;
+      record.min_minor = 0;
+      manifest_.required.push_back(std::move(record));
+    } else {
+      (void)accept;
+      (void)resolved_name;  // unversioned spec: no manifest record this wave
+    }
   }
 
   /// Record a provided service interface (this node is a service server of it).
   template <AUTOWARE_COMPONENT_INTERFACE_UTILS_SERVICE_SPEC S>
   void register_provided_service(const std::string & resolved_name)
   {
-    ensure_manifest_identity();
-    autoware::component_interface_admission::ProvidedInterface record;
-    record.ns = interface_namespace(S::name);
-    record.interface_name = S::name;
-    record.resolved_name = resolved_name;
-    record.type_name = rosidl_generator_traits::name<typename S::Service>();
-    const auto version = autoware::component_interface_specs::spec_version<S>();
-    record.major = version.major;
-    record.minor = version.minor;
-    record.patch = version.patch;
-    manifest_.provided.push_back(std::move(record));
+    if constexpr (detail::HasDomainVersion<S>::value) {
+      ensure_manifest_identity();
+      autoware::component_interface_admission::ProvidedInterface record;
+      record.ns = interface_namespace(S::name);
+      record.interface_name = S::name;
+      record.resolved_name = resolved_name;
+      record.type_name = rosidl_generator_traits::name<typename S::Service>();
+      const auto version = autoware::component_interface_specs::spec_version<S>();
+      record.major = version.major;
+      record.minor = version.minor;
+      record.patch = version.patch;
+      manifest_.provided.push_back(std::move(record));
+    } else {
+      (void)resolved_name;  // unversioned spec: no manifest record this wave
+    }
   }
 
   /// Record a required service interface (this node is a service client of it). The default
@@ -157,17 +191,21 @@ struct NodeInterface
   template <AUTOWARE_COMPONENT_INTERFACE_UTILS_SERVICE_SPEC S>
   void register_required_service(const std::string & resolved_name)
   {
-    ensure_manifest_identity();
-    autoware::component_interface_admission::RequiredInterface record;
-    record.ns = interface_namespace(S::name);
-    record.interface_name = S::name;
-    record.resolved_name = resolved_name;
-    record.type_name = rosidl_generator_traits::name<typename S::Service>();
-    const auto version = autoware::component_interface_specs::spec_version<S>();
-    record.accept_major_min = version.major;
-    record.accept_major_max = version.major;
-    record.min_minor = 0;
-    manifest_.required.push_back(std::move(record));
+    if constexpr (detail::HasDomainVersion<S>::value) {
+      ensure_manifest_identity();
+      autoware::component_interface_admission::RequiredInterface record;
+      record.ns = interface_namespace(S::name);
+      record.interface_name = S::name;
+      record.resolved_name = resolved_name;
+      record.type_name = rosidl_generator_traits::name<typename S::Service>();
+      const auto version = autoware::component_interface_specs::spec_version<S>();
+      record.accept_major_min = version.major;
+      record.accept_major_max = version.major;
+      record.min_minor = 0;
+      manifest_.required.push_back(std::move(record));
+    } else {
+      (void)resolved_name;  // unversioned spec: no manifest record this wave
+    }
   }
 
   /// The interface manifest accumulated at the create_* / init_* choke points (section 4.3):

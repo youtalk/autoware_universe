@@ -21,7 +21,6 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace autoware::component_interface_admission
@@ -142,31 +141,84 @@ inline std::vector<AdmissionResult> evaluate(const std::vector<InterfaceManifest
   return results;
 }
 
-// Deploy-time admission (the same shared rule at its deploy-time trigger). Because the deploy image
-// set is complete (unlike the runtime observe mode, where a provider may not have started yet), it
-// runs the base evaluate() and additionally reports a required interface with NO provider anywhere
-// in the set as NO_PROVIDER. The base evaluate() is left untouched by design; this layer only adds
-// the extra verdict the complete-set semantics allow.
+// Deploy-time admission (the same shared rule at its deploy-time trigger, restricted to stage 1).
+// The deploy gate reads each component's manifest from static image metadata, where remaps — which
+// live in the launch / compose layer — are NOT visible, so the resolved_name match (stage 2 of the
+// rule) is not statically decidable and is deferred to the runtime trigger (R-IF-13). Deploy
+// therefore pairs a consumer with a provider on interface_name + version compatibility ONLY and
+// never emits TOPIC_MISMATCH — that residual remap false-accept is what the runtime trigger
+// backstops. Because the deploy image set is complete (unlike the runtime observe mode, where a
+// provider may simply not have started yet), a required interface with NO provider anywhere in the
+// set is reported as NO_PROVIDER.
 inline std::vector<AdmissionResult> evaluate_deploy(
   const std::vector<InterfaceManifest> & manifests)
 {
-  auto results = evaluate(manifests);
-
-  std::unordered_set<std::string> provided_names;
+  struct ProviderEntry
+  {
+    std::string node;
+    ProvidedInterface p;
+  };
+  std::unordered_map<std::string, std::vector<ProviderEntry>> providers;
   for (const auto & m : manifests) {
     for (const auto & p : m.provided) {
-      provided_names.insert(p.interface_name);
+      providers[p.interface_name].push_back({m.node_name, p});
     }
   }
+
+  std::vector<AdmissionResult> results;
   for (const auto & m : manifests) {
     for (const auto & r : m.required) {
-      if (provided_names.find(r.interface_name) == provided_names.end()) {
-        AdmissionResult res;
-        res.consumer_node = m.node_name;
-        res.interface_name = r.interface_name;
+      AdmissionResult res;
+      res.consumer_node = m.node_name;
+      res.interface_name = r.interface_name;
+
+      const auto it = providers.find(r.interface_name);
+      if (it == providers.end() || it->second.empty()) {
+        // Complete-set semantics: a required interface with no provider anywhere is a hard reject.
         res.code = NO_PROVIDER;
         results.push_back(res);
+        continue;
       }
+
+      // Stage 1 only: accept if ANY provider of this interface is version-compatible. resolved_name
+      // (stage 2) is not statically visible at deploy time, so it is never inspected here.
+      const ProviderEntry * accepted = nullptr;
+      for (const auto & entry : it->second) {
+        const bool major_ok =
+          r.accept_major_min <= entry.p.major && entry.p.major <= r.accept_major_max;
+        const bool minor_ok = (r.min_minor == 0) || (entry.p.minor >= r.min_minor);
+        if (major_ok && minor_ok) {
+          // Lowest node name wins, so the reported provider is independent of manifest order.
+          if (accepted == nullptr || entry.node < accepted->node) {
+            accepted = &entry;
+          }
+        }
+      }
+
+      if (accepted != nullptr) {
+        res.code = ACCEPTED;
+        res.provider_node = accepted->node;
+      } else {
+        // No provider satisfied the version bounds. Blame by a stable total order (not manifest
+        // order): a provider whose MAJOR is already in range (the actionable MINOR_MISMATCH) first,
+        // then the lowest node name.
+        const auto rank = [&r](const ProviderEntry & e) {
+          const bool major_in_range =
+            r.accept_major_min <= e.p.major && e.p.major <= r.accept_major_max;
+          return std::make_tuple(!major_in_range, e.node);
+        };
+        const ProviderEntry * blame = &it->second.front();
+        for (const auto & entry : it->second) {
+          if (rank(entry) < rank(*blame)) {
+            blame = &entry;
+          }
+        }
+        res.provider_node = blame->node;
+        const bool major_in_range =
+          r.accept_major_min <= blame->p.major && blame->p.major <= r.accept_major_max;
+        res.code = major_in_range ? MINOR_MISMATCH : MAJOR_MISMATCH;
+      }
+      results.push_back(res);
     }
   }
   return results;

@@ -13,10 +13,11 @@
 // limitations under the License.
 
 // Deploy-time admission gate. Reads N per-component interface manifest JSON files (one per
-// component image, extracted from image metadata before boot), runs the SAME evaluate() the
-// runtime handshake uses via evaluate_deploy(), prints one verdict line per pairing, and exits:
+// component image, extracted from image metadata before boot), runs the shared rule's deploy-time
+// trigger via evaluate_deploy() (stage 1: version + interface_name only), prints one verdict line
+// per pairing, and exits:
 //   0 = every pairing ACCEPTED
-//   1 = at least one rejection (MAJOR / MINOR / TOPIC mismatch or NO_PROVIDER)
+//   1 = at least one rejection (MAJOR / MINOR mismatch or NO_PROVIDER)
 //   2 = operational / parse error (bad usage, unreadable file, malformed manifest)
 // This is the entry point the meta-repo deploy_check.sh gate invokes before `docker compose up`.
 

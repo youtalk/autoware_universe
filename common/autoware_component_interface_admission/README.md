@@ -9,7 +9,7 @@ Interface compatibility is enforced by a single admission rule — "the consumer
 - **Deploy-time (primary, Stage 1)**: each component bakes its interface manifest into its container image, and a pre-boot gate cross-checks the whole composed image set, rejecting an incompatible combination before anything is built, pulled, or booted. This package provides that gate (`evaluate_deploy()` + the `manifest_admit` CLI).
 - **Runtime (Stage 2, deferred)**: the same rule at component startup over a broadcast manifest. This package provides the rule (`evaluate()`); the runtime broadcast and checker are deferred (see the Stage-2 note below).
 
-Both triggers call into `admission_rule.hpp` — one rule, not a parallel reimplementation.
+Both triggers live in `admission_rule.hpp` and share the same version-compatibility rule: the deploy trigger applies **stage 1** (version + `interface_name`), and the runtime trigger adds **stage 2** (the remap-resolved `resolved_name` match). One rule, evaluated at the depth each trigger can see — not a parallel reimplementation.
 
 ## Admission rule
 
@@ -30,9 +30,9 @@ The MINOR bound is inclusive (`provider.minor >= min_minor`), and `min_minor == 
 The one place the two triggers differ is a required interface with no provider:
 
 - **Runtime** (`evaluate()`): such a required interface is **skipped** — under the runtime trigger a provider may simply not have started yet, so absence is not yet a failure.
-- **Deploy-time** (`evaluate_deploy()`): the image set is complete, so a required interface with no provider anywhere in the set is a hard `NO_PROVIDER` rejection. `evaluate_deploy()` runs the base `evaluate()` and only adds this extra verdict; the base rule is left untouched.
+- **Deploy-time** (`evaluate_deploy()`): the image set is complete, so a required interface with no provider anywhere in the set is a hard `NO_PROVIDER` rejection.
 
-The deploy-time gate matches on **version + `interface_name` only**. The remap-resolved `resolved_name` match (stage 2 of the rule) is runtime-only, because remaps live in the launch / compose layer and are not visible in image metadata — that residual `TOPIC_MISMATCH` is what the runtime trigger backstops (R-IF-13).
+The deploy-time gate matches on **version + `interface_name` only** (stage 1). The remap-resolved `resolved_name` match (stage 2 of the rule) is runtime-only, because remaps live in the launch / compose layer and are not visible in image metadata — so `evaluate_deploy()` never inspects `resolved_name` and never emits `TOPIC_MISMATCH`. That residual remap false-accept is exactly what the runtime trigger backstops (R-IF-13).
 
 ## Records and JSON schema
 
@@ -99,11 +99,13 @@ ros2 run autoware_component_interface_admission manifest_admit \
 /consumer <- /provider [/perception/object_recognition/objects]: MAJOR mismatch (code=1)
 ```
 
-| Exit code | Meaning                                                                        |
-| --------- | ------------------------------------------------------------------------------ |
-| `0`       | every pairing `ACCEPTED`                                                       |
-| `1`       | at least one rejection (`MAJOR` / `MINOR` / `TOPIC` mismatch or `NO_PROVIDER`) |
-| `2`       | operational / parse error (bad usage, unreadable file, malformed manifest)     |
+| Exit code | Meaning                                                                    |
+| --------- | -------------------------------------------------------------------------- |
+| `0`       | every pairing `ACCEPTED`                                                   |
+| `1`       | at least one rejection (`MAJOR` / `MINOR` mismatch or `NO_PROVIDER`)       |
+| `2`       | operational / parse error (bad usage, unreadable file, malformed manifest) |
+
+The deploy trigger is stage 1 only, so `TOPIC_MISMATCH` is never an exit-`1` cause here — it is a runtime-only verdict (see below).
 
 A non-zero exit blocks the deploy / OTA assembly before `docker compose up`. The gate assumes **cooperative (honest) manifests**; tamper resistance (signing / attestation) is out of scope.
 

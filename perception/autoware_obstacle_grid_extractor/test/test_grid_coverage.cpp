@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// S3 size/coverage validation: on a representative dense cloud, the grid has the configured
+// Size/coverage validation: on a representative dense cloud, the grid has the configured
 // geometry, drops no in-ROI/in-z-band point silently, and records an informational latency.
-// (Full real-data coverage on 890 x2 frames is reported in the Milestone-S eval; this is the
-// CI-resident gate so the producer ships only when geometry + coverage hold.)
+// This is the CI-resident gate, so the producer ships only when geometry and coverage hold.
 #include "autoware/obstacle_grid_extractor/obstacle_grid_extractor.hpp"
 
 #include <grid_map_ros/GridMapRosConverter.hpp>

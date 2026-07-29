@@ -373,7 +373,8 @@ auto RearCollisionChecker::get_pointcloud_objects(
   // Fail-visible ROI guard: the obstacle grid is produced by a forward-biased extractor, so its
   // rear coverage may be shorter than the backward reach this check needs. When that happens,
   // rear-closing objects beyond the grid are invisible; log a throttled ERROR naming both numbers.
-  // The launcher is responsible for rebiasing/widening the producer ROI (see README and PR body).
+  // Closing this is a launch-side concern: the producer ROI must be rebiased/widened towards the
+  // rear so the grid covers this reach. See the README section on the obstacle grid parameters.
   if (backward_distance > grid_rear_extent) {
     RCLCPP_ERROR_THROTTLE(
       logger_, *clock_, 5000,

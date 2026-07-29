@@ -50,7 +50,7 @@ The data source is the 2.5D obstacle grid (`grid_map_msgs/GridMap`, base_link, l
 
 !!! warning "Producer ROI must cover the rear reach"
 
-    This checker queries obstacles far behind ego (its backward RSS reach for a fast adjacent-lane participant is on the order of tens of metres). The stock obstacle-grid extractor is forward-biased, so its rear coverage can be shorter than that reach. When the received grid's rear extent is smaller than the required backward distance, cells beyond the grid are invisible and a throttled **ERROR** is logged naming both numbers. The launch integration is responsible for rebiasing/widening the producer ROI (e.g. `x` in `[-100, +50]`) so the grid covers the rear reach; see the campaign's launch step.
+    This checker queries obstacles far behind ego (its backward RSS reach for a fast adjacent-lane participant is on the order of tens of metres). The stock obstacle-grid extractor is forward-biased, so its rear coverage can be shorter than that reach. When the received grid's rear extent is smaller than the required backward distance, cells beyond the grid are invisible and a throttled **ERROR** is logged naming both numbers. Covering the rear reach is therefore a launch-side configuration requirement that this checker cannot enforce on its own: the obstacle-grid producer must be launched with its ROI rebiased/widened towards the rear (e.g. `x` in `[-100, +50]`) so the published grid extends at least as far behind ego as this check reaches. On the default forward-biased ROI that gap stays unmonitored, so the launch configuration must be updated alongside this change.
 
 !!! note "Data-unavailability is an abstain, not a veto"
 

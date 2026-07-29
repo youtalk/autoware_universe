@@ -8,7 +8,7 @@
     obstacle grid (grid_map_msgs/GridMap; layers max_height/min_height/point_count) for the
     perception-independent last-resort safety path.
   </description>
-  <maintainer email="yutaka.kondo@youtalk.jp">Yutaka Kondo</maintainer>
+  <maintainer email="yutaka.kondo@tier4.jp">Yutaka Kondo</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

@@ -10,7 +10,7 @@ This module has following assumptions.
 
 - The predicted path of the ego vehicle can be made from either the path created from sensors or the path created from a control module, or both.
 
-- The current speed and angular velocity can be obtained from the sensors of the ego vehicle, and it uses points as obstacles.
+- The current speed can be obtained from the sensors of the ego vehicle, the angular velocity is obtained from the localization-fused twist, and it uses points as obstacles.
 
 - The AEBs target obstacles are 2D points that can be obtained from the input point cloud or by obtaining the intersection points between the predicted ego footprint path and a predicted object's shape.
 
@@ -282,7 +282,7 @@ The AEB module can also prevent collisions when the ego vehicle is moving backwa
 When vehicle odometry information is faulty, it is possible that the MPC fails to predict a correct path for the ego vehicle. If the MPC predicted path is wrong, collision avoidance will not work as intended on the planning modules. However, the AEB's IMU path does not depend on the MPC and could be able to predict a collision when the MPC path is wrong, as illustrated by the hypothetical case below in which the MPC path is wrong and only the AEB's IMU path detects a collision.
 
 > [!WARNING]
-> The IMU path's yaw rate is now sourced from `/localization/kinematic_state` (the localization-fused twist), so it is **not** independent of the localization/odometry pipeline. It is still independent of the MPC/control predicted trajectory, so it remains an effective cross-check against a wrong MPC path, but a corrupted yaw-rate estimate in the fused twist would propagate into this path. Whether this residual coupling is acceptable, or whether the yaw rate should instead come from a dedicated, versioned raw-IMU interface, is a functional-safety decision that requires sign-off.
+> The IMU path's yaw rate is now sourced from `/localization/kinematic_state` (the localization-fused twist), so it is **not** independent of the localization/odometry pipeline. It is still independent of the MPC/control predicted trajectory, so it remains an effective cross-check against a wrong MPC path, but a corrupted yaw-rate estimate in the fused twist would propagate into this path. A _stale_ fused twist does not degrade the cross-check, it removes it: the `kinematic_state_timeout_sec` watchdog resets the cached angular velocity, and the two `!angular_velocity_ptr_` guards in the collision check then produce an empty IMU path for that cycle, so only the MPC path remains — the very path this feature exists to cross-check. Whether this coupling is acceptable, or whether the yaw rate should instead come from a dedicated, versioned raw-IMU interface or from `VelocityReport.heading_rate` (a vehicle-side yaw rate that already arrives on the `~/input/velocity` topic this node subscribes to, and that no code in this package currently reads), is a functional-safety decision that requires sign-off.
 
 ![wrong mpc](./image/wrong-mpc.drawio.svg)
 

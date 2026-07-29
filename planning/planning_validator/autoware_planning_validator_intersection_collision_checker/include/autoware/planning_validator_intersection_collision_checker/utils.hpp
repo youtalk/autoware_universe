@@ -86,6 +86,11 @@ GridContractStatus decode_obstacle_grid(
 /// outside a target lanelet but whose footprint intrudes is still retained.
 /// This function is pure and transform-free; the caller applies the single base_link->map
 /// transform.
+/// @pre @p grid must already be normalised to the default start index (i.e. the caller has called
+/// convertToDefaultStartIndex(), as decode_obstacle_grid() does). Layer reads here are raw
+/// `grid["layer"](i, j)` and are start-index-naive, while getPosition() is start-index-aware; on a
+/// circularly-buffered grid that has not been normalised the two disagree and every emitted corner
+/// silently lands at the wrong position.
 std::vector<geometry_msgs::msg::Point> qualifying_cell_corners(
   const grid_map::GridMap & grid, std::uint32_t min_point_count_cell, double height_floor,
   double z_band_top);

@@ -9,7 +9,7 @@
     queries over a grid_map_msgs/GridMap, shared by all last-resort safety consumers so they
     cannot each re-derive the query logic incorrectly.
   </description>
-  <maintainer email="yutaka.kondo@youtalk.jp">Yutaka Kondo</maintainer>
+  <maintainer email="yutaka.kondo@tier4.jp">Yutaka Kondo</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

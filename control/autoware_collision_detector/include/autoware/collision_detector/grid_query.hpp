@@ -39,8 +39,9 @@ inline constexpr char kMaxHeightLayer[] = "max_height";
 
 /// True when the grid stamp is older than timeout_sec relative to now. The polling subscriber
 /// returns the last received grid forever and the producer stays silent on its failure paths, so a
-/// stale grid must read as "unavailable" (diagnostic held), never as "clear". Boundary: an age of
-/// exactly timeout_sec is NOT stale (strict greater-than). Both times must share a clock type
+/// stale grid must read as "unavailable" (the caller returns without summarizing, so the updater
+/// publishes its ERROR default), never as "clear". Boundary: an age of exactly timeout_sec is NOT
+/// stale (strict greater-than). Both times must share a clock type
 /// (RCL_ROS_TIME here); rclcpp::Time subtraction throws otherwise, matching the caller's contract.
 bool is_grid_stale(const rclcpp::Time & now, const rclcpp::Time & stamp, double timeout_sec);
 
@@ -56,9 +57,9 @@ std::optional<grid_map::GridMap> validate_obstacle_grid(const grid_map_msgs::msg
 /// The max_height >= 0 floor IS a height gate: a cell whose returns all lie below base_link z=0 is
 /// dropped (the producer also crops z to [-1, 3] m), whereas the removed per-point loop had no z
 /// filter and counted those sub-ground far-field returns - so the grid is strictly more
-/// conservative there (decision-level parity verified on real vehicle data). The returned Obstacle
-/// carries the winning cell CENTER as its position (z = 0.0, honest 2D evidence) for the debug
-/// marker; the distance is edge-aware (to the cell footprint box). Returns std::nullopt when no
+/// conservative there. The returned Obstacle carries the winning cell CENTER as its position
+/// (z = 0.0, honest 2D evidence) for the debug marker; the distance is edge-aware (to the cell
+/// footprint box). Returns std::nullopt when no
 /// cell qualifies within the ROI ("clear within ROI").
 std::optional<Obstacle> nearest_obstacle_in_grid(
   const grid_map::GridMap & grid, const autoware_utils_geometry::Polygon2d & ego_polygon);

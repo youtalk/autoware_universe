@@ -20,8 +20,9 @@ This module publishes an `ERROR` diagnostic if a collision is detected with the 
 Check that `collision_detector` receives the obstacle grid and/or dynamic objects.
 When `use_pointcloud` is enabled, the node validates the incoming obstacle grid contract (frame
 `base_link`, the required `point_count` / `max_height` layers) and watchdogs its stamp age against
-`obstacle_grid_timeout_sec`. A missing, stale, or contract-violating grid is treated as unavailable
-(the diagnostic state is held), never as "clear".
+`obstacle_grid_timeout_sec`. A missing, stale, or contract-violating grid is treated as unavailable,
+never as "clear": the collision check returns without summarizing, so `diagnostic_updater` publishes
+its default `ERROR` status with the message `No message was set` for that cycle.
 
 ### Object Filtering
 
@@ -51,7 +52,7 @@ When `use_pointcloud` is enabled, the node validates the incoming obstacle grid 
 ### Get distance to nearest object
 
 Calculate distance between ego vehicle and the nearest object.
-For the obstacle grid, the minimum distance is taken between the ego footprint polygon and the footprint box of every qualifying cell (a cell qualifies with `point_count >= 1` and `max_height >= 0`; the `max_height >= 0` floor is a height gate that drops cells whose returns all lie below `base_link` z=0, and the producer additionally crops z to `[-1, 3]` m. Unlike the pre-migration per-point loop, which had no z filter, the grid therefore drops those sub-ground far-field returns and is strictly more conservative in the far field; decision-level parity was verified on real vehicle data). For dynamic objects, the minimum distance is taken between the ego footprint polygon and the object polygons. The smaller of the two candidates is used.
+For the obstacle grid, the minimum distance is taken between the ego footprint polygon and the footprint box of every qualifying cell (a cell qualifies with `point_count >= 1` and `max_height >= 0`; the `max_height >= 0` floor is a height gate that drops cells whose returns all lie below `base_link` z=0, and the producer additionally crops z to `[-1, 3]` m. Unlike the pre-migration per-point loop, which had no z filter, the grid therefore drops those sub-ground far-field returns and is strictly more conservative in the far field). For dynamic objects, the minimum distance is taken between the ego footprint polygon and the object polygons. The smaller of the two candidates is used.
 If the minimum distance is lower than the `collision_distance` parameter, then a collision is detected.
 
 ### Time buffer and distance hysteresis

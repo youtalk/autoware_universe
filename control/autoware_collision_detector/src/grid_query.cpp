@@ -54,9 +54,8 @@ std::optional<Obstacle> nearest_obstacle_in_grid(
   // Gate{1, 0}: single-return sensitivity plus a max_height >= 0 floor. That floor IS a height
   // gate: a cell whose returns all lie below base_link z=0 is dropped (the producer also crops z to
   // [-1, 3] m), whereas the removed per-point loop had no z filter and counted those sub-ground
-  // far-field returns - so the grid is strictly more conservative there (decision-level parity
-  // verified on real vehicle data). Fixed policy shared across the surround/collision consumers,
-  // deliberately not exposed as a parameter.
+  // far-field returns - so the grid is strictly more conservative there. Fixed policy shared across
+  // the surround/collision consumers, deliberately not exposed as a parameter.
   const auto nearest = autoware::obstacle_grid_utils::nearest_cell(grid, ego_polygon, {1, 0.0});
   if (!nearest) {
     return std::nullopt;

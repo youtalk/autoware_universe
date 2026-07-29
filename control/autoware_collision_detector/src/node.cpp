@@ -378,7 +378,8 @@ void CollisionDetectorNode::checkCollision(diagnostic_updater::DiagnosticStatusW
     // Staleness watchdog: the polling subscriber returns the last received grid forever, and the
     // producer publishes nothing on its failure paths, so silence must read as "unavailable", never
     // as "clear" — a frozen grid would hide every obstacle that appeared after the failure. A stale
-    // grid is treated exactly like "no grid received yet" (early return, diagnostic state held).
+    // grid is treated exactly like "no grid received yet": return without summarizing, which leaves
+    // the updater's ERROR / "No message was set" default in place for this cycle.
     const rclcpp::Time now = this->now();
     const rclcpp::Time grid_stamp(obstacle_grid_ptr_->header.stamp);
     if (is_grid_stale(now, grid_stamp, node_param_.obstacle_grid_timeout_sec)) {

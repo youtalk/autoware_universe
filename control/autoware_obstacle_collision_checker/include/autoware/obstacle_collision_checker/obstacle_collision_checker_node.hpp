@@ -97,8 +97,15 @@ private:
   Input input_;
   Output output_;
 
-  // Set every tick when the obstacle grid is stale or violates the contract; threaded into the
-  // diagnostic so an unavailable grid reads as ERROR, never as the last (possibly OK) result.
+  // Set every tick when a grid HAS arrived but is unusable: it is stale, violates the intake
+  // contract, or has no map<-grid transform. Threaded into the diagnostic so those three cases
+  // read as ERROR rather than as the last (possibly OK) result.
+  //
+  // It deliberately does NOT cover the case where no grid has ever arrived. Before the first
+  // message is_data_ready() gates on_timer and returns early, so this flag stays false and no
+  // verdict is produced: at that point the other inputs are typically absent too and the node is
+  // legitimately still starting up, which is a throttled "waiting for obstacle_grid msg..." INFO,
+  // not an ERROR.
   bool obstacle_grid_unavailable_{false};
 
   // Diagnostic Updater

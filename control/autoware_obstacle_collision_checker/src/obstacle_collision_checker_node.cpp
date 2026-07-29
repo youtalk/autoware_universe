@@ -179,7 +179,9 @@ void ObstacleCollisionCheckerNode::on_timer()
 {
   current_pose_ = self_pose_listener_->get_current_pose();
 
-  // Reset every tick: set true only on the stale / contract-violation paths below.
+  // Reset every tick: set true only on the stale / contract-violation / missing-transform paths
+  // below, all of which require a grid to have arrived. The never-arrived case is instead handled
+  // by the is_data_ready() startup gate, which returns early without producing a verdict.
   obstacle_grid_unavailable_ = false;
 
   if (obstacle_grid_) {

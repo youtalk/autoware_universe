@@ -325,8 +325,7 @@ public:
 
   // subscriber
   // Obstacle-grid intake (agnocast polling subscriber, RELIABLE KEEP_LAST(1)); replaces the raw
-  // no-ground point cloud. The versioned spec binding is adopted additively once the
-  // interface-spec foundation lands.
+  // no-ground point cloud.
   autoware::agnocast_wrapper::polling::PollingSubscriber<grid_map_msgs::msg::GridMap>::SharedPtr
     sub_obstacle_grid_ =
       autoware::agnocast_wrapper::polling::create_polling_subscriber<grid_map_msgs::msg::GridMap>(

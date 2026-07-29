@@ -71,8 +71,11 @@ private:
   // Converts the qualifying cells of the latest obstacle grid into a base_link point cloud.
   // std::nullopt means the grid is unavailable (not yet received / wrong frame / unconvertible /
   // missing a required layer / stale), whereas an empty cloud means the grid is valid and nothing
-  // qualifies inside the ROI. That distinction is load-bearing: unavailability is "unknown" and
-  // must never be read as "clear".
+  // qualifies inside the ROI. The distinction drives exactly one decision, in onTimer: in
+  // State::STOP an unavailable grid blocks the STOP -> PASS release, so a latched stop is held
+  // across ticks until a fresh valid grid restores normal hysteresis-based clearing. In State::PASS
+  // an unavailable grid simply yields no pointcloud-based protection for that cycle -- the same
+  // exposure a dead ~/input/pointcloud produced before this migration, carried over unchanged.
   std::optional<pcl::PointCloud<pcl::PointXYZ>::ConstPtr> toObstacleGridPointCloud() const;
 
   obstacle_proximity_checker::Inputs toProximityCheckerInputs(

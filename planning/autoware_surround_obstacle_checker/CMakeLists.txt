@@ -31,7 +31,9 @@ rclcpp_components_register_node(${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
-  # Unit tests: node construction + direct calls into the intake seam, no live middleware.
+  # Unit tests: node construction + direct calls into the intake seam. The node is real, so DDS
+  # entities do get created; what these tests avoid is message exchange -- the grid is injected
+  # into the member directly rather than published.
   ament_auto_add_gtest(test_${PROJECT_NAME}
     test/test_surround_obstacle_checker.cpp
   )

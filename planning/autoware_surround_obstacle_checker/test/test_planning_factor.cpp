@@ -41,6 +41,9 @@ using autoware_internal_planning_msgs::msg::SafetyFactor;
 class SurroundObstacleCheckerPlanningFactorTest : public ::testing::Test
 {
 public:
+  // Cell size of the obstacle grid published by publishObstacleGrid().
+  static constexpr double kGridResolution = 0.2;
+
   void SetUp() override
   {
     rclcpp::init(0, nullptr);
@@ -135,14 +138,15 @@ public:
   }
 
   // Publish a base_link obstacle grid with a single occupied cell at the base_link origin. The grid
-  // is stamped fresh so the staleness watchdog accepts it. Because the cell center is the base_link
-  // origin, the node's reported nearest point in map frame equals the ego position exactly.
+  // is stamped fresh so the staleness watchdog accepts it. The cell center is the base_link origin,
+  // but qualifying cells are emitted as their four corners, so the node's reported nearest point in
+  // map frame is a corner: exactly half a cell diagonal from the ego position.
   void publishObstacleGrid()
   {
     grid_map::GridMap grid(std::vector<std::string>{"point_count", "max_height"});
     grid.setFrameId("base_link");
     // Odd cell count (3.8 / 0.2 = 19) so a cell center lands exactly on the base_link origin.
-    grid.setGeometry(grid_map::Length(3.8, 3.8), 0.2, grid_map::Position(0.0, 0.0));
+    grid.setGeometry(grid_map::Length(3.8, 3.8), kGridResolution, grid_map::Position(0.0, 0.0));
     grid["point_count"].setConstant(std::numeric_limits<float>::quiet_NaN());
     grid["max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
     grid_map::Index idx;
@@ -155,10 +159,13 @@ public:
     pub_obstacle_grid_->publish(*msg);
   }
 
+  // expected_offset is the exact distance the reported safety-factor point is expected to sit from
+  // (expected_x, expected_y); it is 0 for object obstacles, which are reported at the oracle point
+  // itself, and half a cell diagonal for the grid, whose cells are reported by their corners.
   void validatePlanningFactor(
     const unique_identifier_msgs::msg::UUID & validate_object_id,
     const uint16_t expected_object_type, const double expected_x, const double expected_y,
-    const double position_tolerance = 1e-6)
+    const double expected_offset = 0.0)
   {
     // make sure planning_factor_msg_ is received
     EXPECT_NE(planning_factor_msg_, nullptr);
@@ -186,7 +193,7 @@ public:
 
       Point2d validate_point_2d(expected_x, expected_y);
       Point2d safety_factor_point_2d(safety_factor.points.at(0).x, safety_factor.points.at(0).y);
-      EXPECT_NEAR(bg::distance(validate_point_2d, safety_factor_point_2d), 0.0, position_tolerance);
+      EXPECT_NEAR(bg::distance(validate_point_2d, safety_factor_point_2d), expected_offset, 1e-6);
 
       EXPECT_EQ(safety_factor.object_id, validate_object_id);
     }
@@ -235,11 +242,12 @@ TEST_F(SurroundObstacleCheckerPlanningFactorTest, TestByPointCloud)
     rclcpp::sleep_for(std::chrono::milliseconds(100));
   }
   // The occupied cell is centered on the base_link origin and is reported by its corners, so the
-  // map-frame nearest point sits within half a cell diagonal (0.2 m cells) of the ego position
-  // (independent oracle: the sample initial pose), with the default UUID and POINTCLOUD.
+  // map-frame nearest point sits exactly half a cell diagonal from the ego position (independent
+  // oracle: the sample initial pose), with the default UUID and POINTCLOUD. The offset is exact,
+  // not merely bounded: every corner of that cell is equidistant from its center.
   validatePlanningFactor(
     default_id, SafetyFactor::POINTCLOUD, 3722.16015625, 73723.515625,
-    0.5 * std::sqrt(2.0) * 0.2 + 1e-6);
+    0.5 * std::sqrt(2.0) * kGridResolution);
 }
 
 }  // namespace autoware::surround_obstacle_checker

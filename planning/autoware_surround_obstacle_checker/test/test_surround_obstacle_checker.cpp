@@ -295,16 +295,17 @@ TEST_F(SurroundObstacleCheckerNodeTest, IntakeCellOverlappingEgoIsZeroDistance)
   ASSERT_TRUE(result.nearest_obstacle.has_value());
   EXPECT_NEAR(result.nearest_obstacle.value().nearest_distance, 0.0, 1e-9);
   // The qualifying cell is centered on the base_link origin and is reported by its corners, so the
-  // map-frame nearest point is one of those corners: within half a cell diagonal of the ego
-  // position. Rotation preserves that offset, so the bound holds in map frame too. z stays on the
-  // ego plane because the grid is 2D evidence and a cell has no single height.
+  // map-frame nearest point is one of those corners: exactly half a cell diagonal from the ego
+  // position, since every corner is equidistant from the cell center. Rotation preserves that
+  // offset, so the equality holds in map frame too. z stays on the ego plane because the grid is
+  // 2D evidence and a cell has no single height.
   const auto pose = autoware::test_utils::makeInitialPose().pose.pose;
   const auto & nearest_point = result.nearest_obstacle.value().nearest_point;
   const double half_cell_diagonal = 0.5 * std::sqrt(2.0) * kResolution;
   const double dx = nearest_point.x - pose.position.x;
   const double dy = nearest_point.y - pose.position.y;
   // 1e-6 slack: the cell corners travel through the float32 point cloud before coming back.
-  EXPECT_LE(std::hypot(dx, dy), half_cell_diagonal + 1e-6);
+  EXPECT_NEAR(std::hypot(dx, dy), half_cell_diagonal, 1e-6);
   EXPECT_NEAR(nearest_point.z, pose.position.z, 1e-6);
 }
 

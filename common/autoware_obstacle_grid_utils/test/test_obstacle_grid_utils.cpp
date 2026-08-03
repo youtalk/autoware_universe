@@ -13,13 +13,14 @@
 // limitations under the License.
 #include <autoware/obstacle_grid_utils/obstacle_grid_utils.hpp>
 
+#include <boost/geometry.hpp>
+
 #include <gtest/gtest.h>
 
 #include <array>
 #include <cmath>
 #include <limits>
 #include <optional>
-#include <utility>
 #include <vector>
 
 namespace autoware::obstacle_grid_utils
@@ -123,20 +124,6 @@ TEST(ObstacleGridUtils, GateRejectsNanHeightEvenWhenCountPasses)
   EXPECT_FALSE(cell_qualifies(g, idx, Gate{10u, 0.0}));
 }
 
-TEST(ObstacleGridUtils, CellsInPolygonCollectsQualifyingCells)
-{
-  const auto g = make_grid(2.1, 0.1, 40, 0.5, 1.5);
-  Polygon2d lane;  // a box [1,3] x [-1,1] around the occupied cell
-  for (auto xy :
-       {std::pair{1.0, -1.0}, std::pair{1.0, 1.0}, std::pair{3.0, 1.0}, std::pair{3.0, -1.0}}) {
-    bg::append(lane.outer(), Point2d(xy.first, xy.second));
-  }
-  bg::correct(lane);
-  EXPECT_EQ(cells_in_polygon(g, lane, Gate{1u, 0.0}).size(), 1u);
-  // an empty (no-detection) lane crop yields no cells
-  const auto empty = make_grid(2.1, 0.1, std::numeric_limits<float>::quiet_NaN(), 0.0f, 0.0f);
-  EXPECT_EQ(cells_in_polygon(empty, lane, Gate{1u, 0.0}).size(), 0u);
-}
 TEST(ObstacleGridUtils, CellCornersAreLiteralFootprintCorners)
 {
   // center (2.1, 1.1), resolution 0.2 -> half 0.1 -> box [2.0,2.2] x [1.0,1.2].

@@ -4,10 +4,10 @@
   <name>autoware_obstacle_grid_utils</name>
   <version>0.51.0</version>
   <description>
-    Header-only consumer helper for the obstacle grid: a per-cell qualification gate plus
-    nearest-distance/nearest-cell, cells-in-polygon, cell-corner, and 8-connected component
-    queries over a grid_map_msgs/GridMap, shared by all last-resort safety consumers so they
-    cannot each re-derive the query logic incorrectly.
+    Consumer helper for the obstacle grid: a per-cell qualification gate plus
+    nearest-distance/nearest-cell, cell-corner, and 8-connected component queries over a
+    grid_map_msgs/GridMap, shared by all last-resort safety consumers so they cannot each
+    re-derive the query logic incorrectly.
   </description>
   <maintainer email="yutaka.kondo@tier4.jp">Yutaka Kondo</maintainer>
   <license>Apache License 2.0</license>

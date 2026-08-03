@@ -19,333 +19,480 @@
 
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <limits>
-#include <optional>
+#include <string>
 #include <vector>
 
 namespace autoware::obstacle_grid_utils
 {
-namespace bg = boost::geometry;
-
-// A 0.2 m grid centered at (0,0). Mark one occupied cell containing position (cx, cy).
-// NOTE: with center (0,0) and resolution 0.2, cell centers fall on odd multiples of 0.1
-// (..., 1.9, 2.1, ...), so callers pass true cell-center coordinates (e.g. 2.1, 1.1) to
-// keep the independent oracle exact.
-grid_map::GridMap make_grid(double cx, double cy, float count, float zmin, float zmax)
+namespace
 {
-  grid_map::GridMap g({"max_height", "min_height", "point_count"});
-  g.setFrameId("base_link");
-  g.setGeometry(grid_map::Length(10.0, 10.0), 0.2, grid_map::Position(0.0, 0.0));
-  g["point_count"].setConstant(std::numeric_limits<float>::quiet_NaN());
-  g["max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
-  g["min_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
-  grid_map::Index idx;
-  g.getIndex(grid_map::Position(cx, cy), idx);
-  g.at("point_count", idx) = count;
-  g.at("max_height", idx) = zmax;
-  g.at("min_height", idx) = zmin;
-  return g;
-}
+constexpr double grid_resolution = 0.2;  // metres per cell
+constexpr double grid_length = 10.0;     // metres per side, centred on the origin
+constexpr int expected_grid_columns = 50;
 
-Polygon2d ego_point()  // degenerate ego polygon at the origin
+/// What the extractor is assumed to have written into one cell. Only point_count and max_height
+/// are ever read by the helpers under test; min_height is populated for realism, never queried.
+struct CellContent
 {
-  Polygon2d p;
-  bg::append(p.outer(), Point2d(0.0, 0.0));
-  bg::correct(p);
-  return p;
-}
+  float point_count;
+  float max_height;
+};
 
-bool qualifies_at(const grid_map::GridMap & g, double x, double y, const Gate & gate)
-{
-  grid_map::Index idx;
-  g.getIndex(grid_map::Position(x, y), idx);
-  return cell_qualifies(g, idx, gate);
-}
+constexpr CellContent occupied{40.0f, 1.5f};
+constexpr float realistic_min_height = 0.5f;
 
-// An all-NaN (heartbeat) 0.2 m grid centered at (0,0); mark individual cells by grid index below.
+/// An all-NaN (heartbeat) grid: no cell qualifies until a test marks one.
 grid_map::GridMap make_empty_grid()
 {
-  grid_map::GridMap g({"max_height", "min_height", "point_count"});
-  g.setFrameId("base_link");
-  g.setGeometry(grid_map::Length(10.0, 10.0), 0.2, grid_map::Position(0.0, 0.0));
-  g["point_count"].setConstant(std::numeric_limits<float>::quiet_NaN());
-  g["max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
-  g["min_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
-  return g;
+  grid_map::GridMap grid({"max_height", "min_height", "point_count"});
+  grid.setFrameId("base_link");
+  grid.setGeometry(
+    grid_map::Length(grid_length, grid_length), grid_resolution, grid_map::Position(0.0, 0.0));
+  grid["point_count"].setConstant(std::numeric_limits<float>::quiet_NaN());
+  grid["max_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
+  grid["min_height"].setConstant(std::numeric_limits<float>::quiet_NaN());
+  return grid;
 }
 
-void set_cell(grid_map::GridMap & g, const grid_map::Index & idx, float count)
+void mark_cell(grid_map::GridMap & grid, const grid_map::Index & index, const CellContent & content)
 {
-  g.at("point_count", idx) = count;
-  g.at("max_height", idx) = 1.5f;
-  g.at("min_height", idx) = 0.5f;
+  grid.at("point_count", index) = content.point_count;
+  grid.at("max_height", index) = content.max_height;
+  grid.at("min_height", index) = realistic_min_height;
 }
 
-TEST(ObstacleGridUtils, EdgeAwareDistanceUsesCellFootprint)
+grid_map::Index index_at(const grid_map::GridMap & grid, const grid_map::Position & position)
 {
-  // Occupied cell centered at the true cell center (2.1, 1.1); its 0.2 m footprint box is
-  // [2.0,2.2] x [1.0,1.2], whose near corner (2.0, 1.0) is closer to ego than the center.
-  const auto g = make_grid(2.1, 1.1, 40, 0.5, 1.5);
-  const double d = nearest_distance(g, ego_point(), Gate{1u, 0.0});
-  // Independent oracle: distance to the near corner of the footprint, hand-computed.
-  EXPECT_LT(d, std::hypot(2.1, 1.1));          // edge-aware: strictly less than center distance
-  EXPECT_NEAR(d, std::hypot(2.0, 1.0), 1e-6);  // distance to the near footprint corner
+  grid_map::Index index;
+  grid.getIndex(position, index);
+  return index;
 }
 
-TEST(ObstacleGridUtils, NearestDistanceIsInfWhenNothingQualifies)
+/// A grid whose only marked cell is the one containing `center`.
+///
+/// NOTE: with the grid centred at (0,0) and a 0.2 m resolution, cell centres fall on odd
+/// multiples of 0.1 (..., 1.9, 2.1, ...), so the tests pass true cell-centre coordinates
+/// (e.g. 2.1, 1.1) to keep the hand-computed oracles exact.
+grid_map::GridMap make_grid_with_one_cell(
+  const grid_map::Position & center, const CellContent & content)
 {
-  const auto g = make_grid(2.1, 1.1, 5, 0.5, 1.5);  // count 5 < gate 10 -> nothing qualifies
-  const double d = nearest_distance(g, ego_point(), Gate{10u, 0.0});
-  EXPECT_TRUE(std::isinf(d));
+  auto grid = make_empty_grid();
+  mark_cell(grid, index_at(grid, center), content);
+  return grid;
 }
 
-TEST(ObstacleGridUtils, GateRejectsBelowCount)
+/// Degenerate single-point ego polygon at the origin, so the measured distance is purely the
+/// distance to the obstacle cell.
+Polygon2d ego_polygon_at_origin()
 {
-  EXPECT_FALSE(qualifies_at(make_grid(2.1, 1.1, 9, 0.5, 1.5), 2.1, 1.1, Gate{10u, 0.0}));
-  EXPECT_TRUE(qualifies_at(make_grid(2.1, 1.1, 10, 0.5, 1.5), 2.1, 1.1, Gate{10u, 0.0}));
+  Polygon2d polygon;
+  boost::geometry::append(polygon.outer(), Point2d(0.0, 0.0));
+  boost::geometry::correct(polygon);
+  return polygon;
 }
 
-TEST(ObstacleGridUtils, GateRejectsBelowHeight)
+bool cell_qualifies_at(
+  const grid_map::GridMap & grid, const grid_map::Position & position, const Gate & gate)
 {
-  // tall enough passes the height gate; a flat ground-height sliver fails it.
-  EXPECT_TRUE(qualifies_at(make_grid(2.1, 1.1, 50, 0.0, 1.2), 2.1, 1.1, Gate{10u, 0.3}));
-  EXPECT_FALSE(qualifies_at(make_grid(2.1, 1.1, 50, 0.0, 0.1), 2.1, 1.1, Gate{10u, 0.3}));
+  return cell_qualifies(grid, index_at(grid, position), gate);
+}
+}  // namespace
+
+// --- nearest_distance ---------------------------------------------------------------------------
+
+TEST(ObstacleGridUtils, NearestDistanceMeasuresToTheCellEdgeNotItsCenter)
+{
+  // Arrange: one occupied cell centred at (2.1, 1.1); its 0.2 m footprint box is
+  // [2.0, 2.2] x [1.0, 1.2], so its near corner (2.0, 1.0) is closer to ego than its centre.
+  const auto grid = make_grid_with_one_cell(grid_map::Position(2.1, 1.1), occupied);
+  const Gate accept_anything{1u, 0.0};
+
+  // Act
+  const double distance_to_nearest =
+    nearest_distance(grid, ego_polygon_at_origin(), accept_anything);
+
+  // Assert: the hand-computed distance to the near footprint corner, strictly closer than the
+  // distance to the cell centre would be.
+  EXPECT_NEAR(distance_to_nearest, std::hypot(2.0, 1.0), 1e-6);
+  EXPECT_LT(distance_to_nearest, std::hypot(2.1, 1.1));
 }
 
-TEST(ObstacleGridUtils, GateRejectsNanHeightEvenWhenCountPasses)
+TEST(ObstacleGridUtils, NearestDistanceIsInfiniteWhenNothingQualifies)
 {
-  // A cell whose point_count clears the count gate but whose max_height is NaN (a heartbeat cell
-  // that was never populated with a height) must fail the height guard rather than qualify.
-  auto g = make_empty_grid();
-  grid_map::Index idx;
-  g.getIndex(grid_map::Position(2.1, 1.1), idx);
-  g.at("point_count", idx) = 50.0f;  // count 50 >= gate 10 -> passes the count gate
-  // max_height(idx) is left NaN by make_empty_grid; the !isnan(max_height) guard must reject.
-  EXPECT_FALSE(cell_qualifies(g, idx, Gate{10u, 0.0}));
+  // Arrange: the only marked cell holds 5 points, below the gate's threshold of 10.
+  const auto grid = make_grid_with_one_cell(grid_map::Position(2.1, 1.1), CellContent{5.0f, 1.5f});
+  const Gate needs_ten_points{10u, 0.0};
+
+  // Act
+  const double distance_to_nearest =
+    nearest_distance(grid, ego_polygon_at_origin(), needs_ten_points);
+
+  // Assert
+  EXPECT_TRUE(std::isinf(distance_to_nearest));
 }
 
-TEST(ObstacleGridUtils, CellCornersAreLiteralFootprintCorners)
+// --- cell_qualifies -----------------------------------------------------------------------------
+
+TEST(ObstacleGridUtils, CellQualifiesWhenPointCountReachesTheThreshold)
 {
-  // center (2.1, 1.1), resolution 0.2 -> half 0.1 -> box [2.0,2.2] x [1.0,1.2].
-  const auto corners = cell_corners(grid_map::Position(2.1, 1.1), 0.2);
-  ASSERT_EQ(corners.size(), 4u);
-  EXPECT_NEAR(corners[0].x(), 2.0, 1e-9);  // min-min
-  EXPECT_NEAR(corners[0].y(), 1.0, 1e-9);
-  EXPECT_NEAR(corners[1].x(), 2.0, 1e-9);  // min-max
-  EXPECT_NEAR(corners[1].y(), 1.2, 1e-9);
-  EXPECT_NEAR(corners[2].x(), 2.2, 1e-9);  // max-max
-  EXPECT_NEAR(corners[2].y(), 1.2, 1e-9);
-  EXPECT_NEAR(corners[3].x(), 2.2, 1e-9);  // max-min
-  EXPECT_NEAR(corners[3].y(), 1.0, 1e-9);
+  // Arrange
+  const grid_map::Position center(2.1, 1.1);
+  const auto grid = make_grid_with_one_cell(center, CellContent{10.0f, 1.5f});
+
+  // Act & Assert
+  EXPECT_TRUE(cell_qualifies_at(grid, center, Gate{10u, 0.0}));
 }
 
-TEST(ObstacleGridUtils, NearestCellMatchesNearestDistanceAndReportsWhere)
+TEST(ObstacleGridUtils, CellDoesNotQualifyWhenPointCountIsBelowTheThreshold)
 {
-  // Same fixture as EdgeAwareDistanceUsesCellFootprint: one cell centered at (2.1, 1.1).
-  const auto g = make_grid(2.1, 1.1, 40, 0.5, 1.5);
-  const auto nc = nearest_cell(g, ego_point(), Gate{1u, 0.0});
-  ASSERT_TRUE(nc.has_value());
-  // Equivalence with the scalar helper (edge-aware distance to the near footprint corner).
-  EXPECT_NEAR(nc->distance, nearest_distance(g, ego_point(), Gate{1u, 0.0}), 1e-12);
-  EXPECT_NEAR(nc->distance, std::hypot(2.0, 1.0), 1e-6);  // independent oracle
-  // WHERE: cell center and grid index of the occupied cell.
-  EXPECT_NEAR(nc->position.x(), 2.1, 1e-6);
-  EXPECT_NEAR(nc->position.y(), 1.1, 1e-6);
-  grid_map::Index expected;
-  g.getIndex(grid_map::Position(2.1, 1.1), expected);
-  EXPECT_EQ(nc->index(0), expected(0));
-  EXPECT_EQ(nc->index(1), expected(1));
+  // Arrange
+  const grid_map::Position center(2.1, 1.1);
+  const auto grid = make_grid_with_one_cell(center, CellContent{9.0f, 1.5f});
+
+  // Act & Assert
+  EXPECT_FALSE(cell_qualifies_at(grid, center, Gate{10u, 0.0}));
+}
+
+TEST(ObstacleGridUtils, CellQualifiesWhenMaxHeightReachesTheThreshold)
+{
+  // Arrange: a cell tall enough to clear a 0.3 m height gate.
+  const grid_map::Position center(2.1, 1.1);
+  const auto grid = make_grid_with_one_cell(center, CellContent{50.0f, 1.2f});
+
+  // Act & Assert
+  EXPECT_TRUE(cell_qualifies_at(grid, center, Gate{10u, 0.3}));
+}
+
+TEST(ObstacleGridUtils, CellDoesNotQualifyWhenMaxHeightIsBelowTheThreshold)
+{
+  // Arrange: a flat ground-height sliver that must not trip a 0.3 m height gate.
+  const grid_map::Position center(2.1, 1.1);
+  const auto grid = make_grid_with_one_cell(center, CellContent{50.0f, 0.1f});
+
+  // Act & Assert
+  EXPECT_FALSE(cell_qualifies_at(grid, center, Gate{10u, 0.3}));
+}
+
+TEST(ObstacleGridUtils, CellDoesNotQualifyWhenMaxHeightIsNanEvenIfPointCountPasses)
+{
+  // Arrange: a heartbeat cell that got a point count but was never populated with a height. The
+  // count clears the gate, so only the NaN guard on max_height can reject it.
+  const grid_map::Position center(2.1, 1.1);
+  const auto nan_height = std::numeric_limits<float>::quiet_NaN();
+  const auto grid = make_grid_with_one_cell(center, CellContent{50.0f, nan_height});
+
+  // Act & Assert
+  EXPECT_FALSE(cell_qualifies_at(grid, center, Gate{10u, 0.0}));
+}
+
+// --- cell_corners -------------------------------------------------------------------------------
+
+TEST(ObstacleGridUtils, CellCornersAreTheLiteralFootprintCorners)
+{
+  // Arrange: centre (2.1, 1.1) at 0.2 m resolution -> box [2.0, 2.2] x [1.0, 1.2], wound
+  // min-min, min-max, max-max, max-min.
+  const grid_map::Position center(2.1, 1.1);
+  const std::array<Point2d, 4> expected_corners{
+    Point2d(2.0, 1.0), Point2d(2.0, 1.2), Point2d(2.2, 1.2), Point2d(2.2, 1.0)};
+
+  // Act
+  const std::array<Point2d, 4> corners = cell_corners(center, grid_resolution);
+
+  // Assert
+  for (std::size_t i = 0; i < expected_corners.size(); ++i) {
+    SCOPED_TRACE("corner " + std::to_string(i));
+    EXPECT_NEAR(corners[i].x(), expected_corners[i].x(), 1e-9);
+    EXPECT_NEAR(corners[i].y(), expected_corners[i].y(), 1e-9);
+  }
+}
+
+// --- nearest_cell -------------------------------------------------------------------------------
+
+TEST(ObstacleGridUtils, NearestCellReportsTheSameDistanceAsNearestDistance)
+{
+  // Arrange
+  const auto grid = make_grid_with_one_cell(grid_map::Position(2.1, 1.1), occupied);
+  const auto ego = ego_polygon_at_origin();
+  const Gate accept_anything{1u, 0.0};
+  const double expected_distance = nearest_distance(grid, ego, accept_anything);
+
+  // Act
+  const auto nearest = nearest_cell(grid, ego, accept_anything);
+
+  // Assert
+  ASSERT_TRUE(nearest.has_value());
+  EXPECT_NEAR(nearest->distance, expected_distance, 1e-12);
+}
+
+TEST(ObstacleGridUtils, NearestCellReportsWhereTheCellIs)
+{
+  // Arrange
+  const grid_map::Position center(2.1, 1.1);
+  const auto grid = make_grid_with_one_cell(center, occupied);
+  const grid_map::Index expected_index = index_at(grid, center);
+
+  // Act
+  const auto nearest = nearest_cell(grid, ego_polygon_at_origin(), Gate{1u, 0.0});
+
+  // Assert: the cell centre and the grid index, for debug markers / SafetyFactor.points.
+  ASSERT_TRUE(nearest.has_value());
+  EXPECT_NEAR(nearest->position.x(), center.x(), 1e-6);
+  EXPECT_NEAR(nearest->position.y(), center.y(), 1e-6);
+  EXPECT_TRUE((nearest->index == expected_index).all());
 }
 
 TEST(ObstacleGridUtils, NearestCellIsNulloptWhenNothingQualifies)
 {
-  // count 5 < gate 10: nothing qualifies -> nullopt (the nullopt <-> +inf analog).
-  const auto g = make_grid(2.1, 1.1, 5, 0.5, 1.5);
-  EXPECT_FALSE(nearest_cell(g, ego_point(), Gate{10u, 0.0}).has_value());
-  EXPECT_TRUE(std::isinf(nearest_distance(g, ego_point(), Gate{10u, 0.0})));
+  // Arrange: 5 points is below the gate's threshold of 10, so nothing qualifies.
+  const auto grid = make_grid_with_one_cell(grid_map::Position(2.1, 1.1), CellContent{5.0f, 1.5f});
+
+  // Act
+  const auto nearest = nearest_cell(grid, ego_polygon_at_origin(), Gate{10u, 0.0});
+
+  // Assert: the std::nullopt <-> +inf analog of nearest_distance.
+  EXPECT_FALSE(nearest.has_value());
 }
 
 TEST(ObstacleGridUtils, NearestCellPicksTheCloserOfTwoOccupiedCells)
 {
-  auto g = make_empty_grid();
-  grid_map::Index near_idx;
-  grid_map::Index far_idx;
-  g.getIndex(grid_map::Position(2.1, 1.1), near_idx);
-  g.getIndex(grid_map::Position(4.1, 3.1), far_idx);
-  set_cell(g, near_idx, 40);
-  set_cell(g, far_idx, 40);
-  const auto nc = nearest_cell(g, ego_point(), Gate{1u, 0.0});
-  ASSERT_TRUE(nc.has_value());
-  EXPECT_NEAR(nc->position.x(), 2.1, 1e-6);
-  EXPECT_NEAR(nc->position.y(), 1.1, 1e-6);
-  EXPECT_EQ(nc->index(0), near_idx(0));
-  EXPECT_EQ(nc->index(1), near_idx(1));
+  // Arrange
+  auto grid = make_empty_grid();
+  const grid_map::Position near_center(2.1, 1.1);
+  const grid_map::Index near_index = index_at(grid, near_center);
+  mark_cell(grid, near_index, occupied);
+  mark_cell(grid, index_at(grid, grid_map::Position(4.1, 3.1)), occupied);
+
+  // Act
+  const auto nearest = nearest_cell(grid, ego_polygon_at_origin(), Gate{1u, 0.0});
+
+  // Assert
+  ASSERT_TRUE(nearest.has_value());
+  EXPECT_TRUE((nearest->index == near_index).all());
 }
 
-// --- connected_components -------------------------------------------------------------------
-// Indices below are grid indices (row, col); connected_components does not gate, so the caller
-// supplies the qualifying list directly and we assert component structure and point_count sums.
+// --- connected_components -----------------------------------------------------------------------
+// connected_components does not gate, so these tests supply the qualifying index list directly
+// and assert the resulting component structure.
 
-TEST(ObstacleGridUtils, ConnectedComponentsEmptyInputEmptyOutput)
+TEST(ObstacleGridUtils, ConnectedComponentsOfNothingIsNoComponents)
 {
-  const auto g = make_empty_grid();
-  EXPECT_TRUE(connected_components(g, {}).empty());
+  // Arrange
+  const auto grid = make_empty_grid();
+
+  // Act
+  const auto components = connected_components(grid, {});
+
+  // Assert
+  EXPECT_TRUE(components.empty());
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsSingleCellSumsPointCount)
+TEST(ObstacleGridUtils, ConnectedComponentsOfOneCellIsOneComponent)
 {
-  auto g = make_empty_grid();
-  const grid_map::Index a(10, 10);
-  set_cell(g, a, 30);
-  const auto comps = connected_components(g, {a});
-  ASSERT_EQ(comps.size(), 1u);
-  EXPECT_EQ(comps[0].cells.size(), 1u);
-  EXPECT_NEAR(comps[0].point_sum, 30.0, 1e-6);
+  // Arrange
+  auto grid = make_empty_grid();
+  const grid_map::Index only_cell(10, 10);
+  mark_cell(grid, only_cell, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {only_cell});
+
+  // Assert
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_EQ(components[0].cells.size(), 1u);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsStraightLineIsOneComponent)
+TEST(ObstacleGridUtils, ConnectedComponentsSumsPointCountAcrossTheComponent)
 {
-  auto g = make_empty_grid();
-  const grid_map::Index a(10, 10);
-  const grid_map::Index b(10, 11);
-  const grid_map::Index c(10, 12);
-  set_cell(g, a, 10);
-  set_cell(g, b, 20);
-  set_cell(g, c, 30);
-  const auto comps = connected_components(g, {a, b, c});
-  ASSERT_EQ(comps.size(), 1u);
-  EXPECT_EQ(comps[0].cells.size(), 3u);
-  EXPECT_NEAR(comps[0].point_sum, 60.0, 1e-6);  // 10 + 20 + 30
+  // Arrange: three adjacent cells holding 10, 20 and 30 points.
+  auto grid = make_empty_grid();
+  const grid_map::Index left(10, 10);
+  const grid_map::Index middle(10, 11);
+  const grid_map::Index right(10, 12);
+  mark_cell(grid, left, CellContent{10.0f, 1.5f});
+  mark_cell(grid, middle, CellContent{20.0f, 1.5f});
+  mark_cell(grid, right, CellContent{30.0f, 1.5f});
+
+  // Act
+  const auto components = connected_components(grid, {left, middle, right});
+
+  // Assert
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_NEAR(components[0].point_sum, 60.0, 1e-6);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsLShapeIsOneComponent)
+TEST(ObstacleGridUtils, ConnectedComponentsJoinAStraightLineOfCells)
 {
-  auto g = make_empty_grid();
-  const grid_map::Index a(10, 10);
-  const grid_map::Index b(11, 10);
-  const grid_map::Index c(11, 11);
-  set_cell(g, a, 5);
-  set_cell(g, b, 5);
-  set_cell(g, c, 5);
-  const auto comps = connected_components(g, {a, b, c});
-  ASSERT_EQ(comps.size(), 1u);
-  EXPECT_EQ(comps[0].cells.size(), 3u);
-  EXPECT_NEAR(comps[0].point_sum, 15.0, 1e-6);
+  // Arrange
+  auto grid = make_empty_grid();
+  const grid_map::Index left(10, 10);
+  const grid_map::Index middle(10, 11);
+  const grid_map::Index right(10, 12);
+  mark_cell(grid, left, occupied);
+  mark_cell(grid, middle, occupied);
+  mark_cell(grid, right, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {left, middle, right});
+
+  // Assert
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_EQ(components[0].cells.size(), 3u);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsDiagonalPairIsOneComponentUnder8Connectivity)
+TEST(ObstacleGridUtils, ConnectedComponentsJoinAnLShapeOfCells)
 {
-  auto g = make_empty_grid();
-  const grid_map::Index a(10, 10);
-  const grid_map::Index b(11, 11);  // diagonal neighbor
-  set_cell(g, a, 12);
-  set_cell(g, b, 8);
-  const auto comps = connected_components(g, {a, b});
-  ASSERT_EQ(comps.size(), 1u);  // 8-connected: diagonal touches
-  EXPECT_EQ(comps[0].cells.size(), 2u);
-  EXPECT_NEAR(comps[0].point_sum, 20.0, 1e-6);
+  // Arrange
+  auto grid = make_empty_grid();
+  const grid_map::Index corner(10, 10);
+  const grid_map::Index below(11, 10);
+  const grid_map::Index below_right(11, 11);
+  mark_cell(grid, corner, occupied);
+  mark_cell(grid, below, occupied);
+  mark_cell(grid, below_right, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {corner, below, below_right});
+
+  // Assert
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_EQ(components[0].cells.size(), 3u);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsGapSeparatesIntoTwoComponents)
+TEST(ObstacleGridUtils, ConnectedComponentsJoinADiagonalPairUnder8Connectivity)
 {
-  auto g = make_empty_grid();
-  const grid_map::Index a(10, 10);
-  const grid_map::Index c(10, 12);  // (10,11) deliberately not qualifying -> not adjacent to a
-  set_cell(g, a, 7);
-  set_cell(g, c, 9);
-  const auto comps = connected_components(g, {a, c});
-  ASSERT_EQ(comps.size(), 2u);
-  EXPECT_EQ(comps[0].cells.size(), 1u);
-  EXPECT_EQ(comps[1].cells.size(), 1u);
-  EXPECT_NEAR(comps[0].point_sum, 7.0, 1e-6);  // first-seen order
-  EXPECT_NEAR(comps[1].point_sum, 9.0, 1e-6);
+  // Arrange: the two cells touch only at a corner, which 4-connectivity would separate.
+  auto grid = make_empty_grid();
+  const grid_map::Index cell(10, 10);
+  const grid_map::Index diagonal_neighbor(11, 11);
+  mark_cell(grid, cell, occupied);
+  mark_cell(grid, diagonal_neighbor, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {cell, diagonal_neighbor});
+
+  // Assert
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_EQ(components[0].cells.size(), 2u);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsBorderCellsNoOutOfRangeProbe)
+TEST(ObstacleGridUtils, ConnectedComponentsSplitCellsSeparatedByAGap)
 {
-  // Cells on the (0,0) corner: neighbors like (-1,-1) are off-grid and must not be probed nor
-  // alias an in-grid cell via the linear key. a and b are adjacent -> one component.
-  auto g = make_empty_grid();
-  const grid_map::Index a(0, 0);
-  const grid_map::Index b(0, 1);
-  set_cell(g, a, 3);
-  set_cell(g, b, 4);
-  const auto comps = connected_components(g, {a, b});
-  ASSERT_EQ(comps.size(), 1u);
-  EXPECT_EQ(comps[0].cells.size(), 2u);
-  EXPECT_NEAR(comps[0].point_sum, 7.0, 1e-6);
+  // Arrange: (10, 11) is deliberately left out, so the two cells are not adjacent.
+  auto grid = make_empty_grid();
+  const grid_map::Index left(10, 10);
+  const grid_map::Index right(10, 12);
+  mark_cell(grid, left, occupied);
+  mark_cell(grid, right, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {left, right});
+
+  // Assert
+  EXPECT_EQ(components.size(), 2u);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsRowWrapDoesNotFalselyConnect)
+TEST(ObstacleGridUtils, ConnectedComponentsHandleBorderCellsWithoutProbingOffGrid)
 {
-  // 10 m / 0.2 m = 50 columns. The last cell of row r, (r, 49), and the first cell of row r+1,
-  // (r+1, 0), are NOT 8-adjacent but a naive row*cols+col key would alias (r,50) onto (r+1,0).
-  // The off-grid bounds guard must keep them as two separate components.
-  auto g = make_empty_grid();
-  ASSERT_EQ(g.getSize()(1), 50);
-  const grid_map::Index a(10, 49);
-  const grid_map::Index b(11, 0);
-  set_cell(g, a, 6);
-  set_cell(g, b, 6);
-  EXPECT_EQ(connected_components(g, {a, b}).size(), 2u);
+  // Arrange: cells on the (0, 0) corner, whose neighbours like (-1, -1) are off-grid and must
+  // neither be probed nor alias an in-grid cell through the linear key.
+  auto grid = make_empty_grid();
+  const grid_map::Index corner(0, 0);
+  const grid_map::Index beside_corner(0, 1);
+  mark_cell(grid, corner, occupied);
+  mark_cell(grid, beside_corner, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {corner, beside_corner});
+
+  // Assert
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_EQ(components[0].cells.size(), 2u);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsDuplicateIndexCountedOnce)
+TEST(ObstacleGridUtils, ConnectedComponentsDoNotJoinCellsAcrossARowWrap)
 {
-  // The code guards duplicates via the visited set: supplying the same index twice must yield a
-  // single one-cell component whose point_sum is NOT double-counted.
-  auto g = make_empty_grid();
-  const grid_map::Index a(10, 10);
-  set_cell(g, a, 25);
-  const auto comps = connected_components(g, {a, a});
-  ASSERT_EQ(comps.size(), 1u);
-  EXPECT_EQ(comps[0].cells.size(), 1u);
-  EXPECT_NEAR(comps[0].point_sum, 25.0, 1e-6);
+  // Arrange: 10 m / 0.2 m = 50 columns. The last cell of one row and the first cell of the next
+  // are NOT 8-adjacent, but a naive row * columns + column key would alias (row, 50) onto
+  // (row + 1, 0). The off-grid bounds guard has to keep them apart.
+  auto grid = make_empty_grid();
+  ASSERT_EQ(grid.getSize()(1), expected_grid_columns);
+  const grid_map::Index row_end(10, expected_grid_columns - 1);
+  const grid_map::Index next_row_start(11, 0);
+  mark_cell(grid, row_end, occupied);
+  mark_cell(grid, next_row_start, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {row_end, next_row_start});
+
+  // Assert
+  EXPECT_EQ(components.size(), 2u);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsSkipsNanPointCountInSum)
+TEST(ObstacleGridUtils, ConnectedComponentsCountADuplicateIndexOnce)
 {
-  // A supplied cell whose point_count is NaN must be skipped from point_sum rather than poisoning
-  // it: the component is still formed (both cells reported) but the sum stays finite. Without the
-  // isnan guard the sum would be NaN and the real cluster's point total would be lost.
-  auto g = make_empty_grid();
-  const grid_map::Index a(10, 10);
-  const grid_map::Index b(10, 11);  // 4-adjacent to a -> one component
-  set_cell(g, a, 20);
-  g.at("max_height", b) = 1.5f;  // populate heights but leave point_count(b) NaN
-  g.at("min_height", b) = 0.5f;
-  const auto comps = connected_components(g, {a, b});
-  ASSERT_EQ(comps.size(), 1u);
-  EXPECT_EQ(comps[0].cells.size(), 2u);          // both cells belong to the component
-  EXPECT_FALSE(std::isnan(comps[0].point_sum));  // NaN contribution did not poison the sum
-  EXPECT_NEAR(comps[0].point_sum, 20.0, 1e-6);   // only a's 20 counts; b's NaN skipped
+  // Arrange: the same index supplied twice must be absorbed by the visited set rather than
+  // forming a second component or double-counting its points.
+  auto grid = make_empty_grid();
+  const grid_map::Index only_cell(10, 10);
+  mark_cell(grid, only_cell, CellContent{25.0f, 1.5f});
+
+  // Act
+  const auto components = connected_components(grid, {only_cell, only_cell});
+
+  // Assert
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_NEAR(components[0].point_sum, 25.0, 1e-6);
 }
 
-TEST(ObstacleGridUtils, ConnectedComponentsMergeAcrossBufferWrapSeam)
+TEST(ObstacleGridUtils, ConnectedComponentsSkipANanPointCountInTheSum)
 {
-  // A move()d grid has a non-zero circular-buffer start index, so raw buffer-index adjacency no
-  // longer equals geometric adjacency at the wrap seam. Two geometrically adjacent cells whose
-  // buffer indices land on opposite ends of the buffer (rows size-1 and 0) must still merge into
-  // ONE component -- the regression guard for stepping in unwrapped index space.
-  auto g = make_empty_grid();
-  g.move(grid_map::Position(1.0, 0.0));  // shift the buffer origin along x (5 cells at 0.2 m)
-  ASSERT_FALSE(g.isDefaultStartIndex());
-  const grid_map::Size size = g.getSize();
-  const grid_map::Index start = g.getStartIndex();
-  ASSERT_NE(start(0), 0);  // x-move must have offset the row start index
-  // Unwrapped row u maps to buffer row (u + start(0)) % size(0); the seam is at u0 = size-1-start.
-  const int u0 = size(0) - 1 - start(0);
-  const int col = 5;
-  const auto buf_a = grid_map::getBufferIndexFromIndex(grid_map::Index(u0, col), size, start);
-  const auto buf_b = grid_map::getBufferIndexFromIndex(grid_map::Index(u0 + 1, col), size, start);
-  // Confirm the two geometric neighbours really straddle the buffer seam (buffer rows 49 and 0).
-  ASSERT_EQ(buf_a(0) - buf_b(0), size(0) - 1);
-  set_cell(g, buf_a, 6);
-  set_cell(g, buf_b, 6);
-  const auto comps = connected_components(g, {buf_a, buf_b});
-  ASSERT_EQ(comps.size(), 1u);  // geometrically adjacent across the seam -> one component
-  EXPECT_EQ(comps[0].cells.size(), 2u);
-  EXPECT_NEAR(comps[0].point_sum, 12.0, 1e-6);
+  // Arrange: two adjacent cells, one of which has a height but no point count. Without the NaN
+  // guard the whole component's sum would go NaN and the real cluster's point total be lost.
+  auto grid = make_empty_grid();
+  const grid_map::Index counted(10, 10);
+  const grid_map::Index uncounted(10, 11);
+  mark_cell(grid, counted, CellContent{20.0f, 1.5f});
+  mark_cell(grid, uncounted, CellContent{std::numeric_limits<float>::quiet_NaN(), 1.5f});
+
+  // Act
+  const auto components = connected_components(grid, {counted, uncounted});
+
+  // Assert: both cells belong to the component, but only the counted one contributes.
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_EQ(components[0].cells.size(), 2u);
+  EXPECT_NEAR(components[0].point_sum, 20.0, 1e-6);
+}
+
+TEST(ObstacleGridUtils, ConnectedComponentsMergeAcrossTheBufferWrapSeam)
+{
+  // Arrange: a move()d grid has a non-zero circular-buffer start index, so raw buffer-index
+  // adjacency no longer equals geometric adjacency at the seam. Pick two geometrically adjacent
+  // cells whose buffer indices land on opposite ends of the buffer.
+  auto grid = make_empty_grid();
+  grid.move(grid_map::Position(1.0, 0.0));  // shift the buffer origin by 5 cells along x
+  ASSERT_FALSE(grid.isDefaultStartIndex());
+  const grid_map::Size size = grid.getSize();
+  const grid_map::Index start = grid.getStartIndex();
+  ASSERT_NE(start(0), 0);
+  // Unwrapped row u maps to buffer row (u + start(0)) % size(0), so the seam sits at this row.
+  const int seam_row = size(0) - 1 - start(0);
+  const int column = 5;
+  const auto below_seam =
+    grid_map::getBufferIndexFromIndex(grid_map::Index(seam_row, column), size, start);
+  const auto above_seam =
+    grid_map::getBufferIndexFromIndex(grid_map::Index(seam_row + 1, column), size, start);
+  ASSERT_EQ(below_seam(0) - above_seam(0), size(0) - 1);  // they really do straddle the seam
+  mark_cell(grid, below_seam, occupied);
+  mark_cell(grid, above_seam, occupied);
+
+  // Act
+  const auto components = connected_components(grid, {below_seam, above_seam});
+
+  // Assert: geometric adjacency wins over buffer-index distance.
+  ASSERT_EQ(components.size(), 1u);
+  EXPECT_EQ(components[0].cells.size(), 2u);
 }
 
 }  // namespace autoware::obstacle_grid_utils

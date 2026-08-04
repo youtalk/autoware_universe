@@ -15,7 +15,6 @@
 
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 
-#include <pcl_conversions/pcl_conversions.h>
 #include <tf2/exceptions.h>
 
 #include <functional>
@@ -58,11 +57,10 @@ void ObstacleGridExtractorNode::onCloud(const sensor_msgs::msg::PointCloud2::Con
     // this path, so consumers MUST treat a stale grid stamp as "unavailable", never as "clear".
     return;
   }
-  pcl::PointCloud<pcl::PointXYZ> cloud;
-  pcl::fromROSMsg(in_base_link, cloud);
-  std_msgs::msg::Header header = msg->header;
-  header.frame_id = "base_link";
-  pub_->publish(extractor_->extract(cloud, header));  // empty cloud -> heartbeat
+  // doTransform() replaces the whole header with the transform's, so restore the cloud's own stamp
+  // rather than depend on the lookup echoing it back. The grid must carry the exact sensing time.
+  in_base_link.header.stamp = msg->header.stamp;
+  pub_->publish(extractor_->extract(in_base_link));  // empty cloud -> heartbeat
 }
 }  // namespace autoware::obstacle_grid_extractor
 

@@ -16,8 +16,11 @@
 #include <grid_map_ros/GridMapRosConverter.hpp>
 #include <rclcpp/time.hpp>
 
+#include <sensor_msgs/point_cloud2_iterator.hpp>
+
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 namespace autoware::obstacle_grid_extractor
@@ -33,15 +36,13 @@ constexpr char kLowMaxHeight[] = "low_max_height";
 ObstacleGridExtractor::ObstacleGridExtractor(const ExtractorParams & params)
 : params_(params), grid_({kMaxHeight, kMinHeight, kPointCount, kLowMaxHeight})
 {
-  grid_.setFrameId("base_link");
   grid_.setGeometry(
     grid_map::Length(params_.roi_length_x, params_.roi_length_y), params_.resolution,
     grid_map::Position(params_.roi_offset_x, 0.0));  // forward-biased rectangular ROI
 }
 
 grid_map_msgs::msg::GridMap ObstacleGridExtractor::extract(
-  const pcl::PointCloud<pcl::PointXYZ> & cloud_base_link,
-  const std_msgs::msg::Header & header) const
+  const sensor_msgs::msg::PointCloud2 & cloud) const
 {
   const float nan = std::numeric_limits<float>::quiet_NaN();
   grid_[kMaxHeight].setConstant(nan);
@@ -54,36 +55,49 @@ grid_map_msgs::msg::GridMap ObstacleGridExtractor::extract(
   auto & cnt = grid_[kPointCount];
   auto & low_hi = grid_[kLowMaxHeight];
 
-  for (const auto & p : cloud_base_link) {  // O(N) single pass
-    if (!std::isfinite(p.x) || !std::isfinite(p.y) || !std::isfinite(p.z)) {
-      continue;  // a NaN z would otherwise pass the crop and poison the cell's height layers
-    }
-    if (p.z < params_.crop_z_min || p.z > params_.crop_z_max) {
-      continue;
-    }
-    grid_map::Index idx;
-    if (!grid_.getIndex(grid_map::Position(p.x, p.y), idx)) {
-      continue;  // outside ROI
-    }
-    float & c = cnt(idx(0), idx(1));
-    if (std::isnan(c)) {
-      c = 1.0f;
-      hi(idx(0), idx(1)) = p.z;
-      lo(idx(0), idx(1)) = p.z;
-    } else {
-      c += 1.0f;
-      hi(idx(0), idx(1)) = std::max(hi(idx(0), idx(1)), p.z);
-      lo(idx(0), idx(1)) = std::min(lo(idx(0), idx(1)), p.z);
-    }
-    if (p.z <= params_.overhead_split) {
-      float & lm = low_hi(idx(0), idx(1));
-      lm = std::isnan(lm) ? p.z : std::max(lm, p.z);
+  // Guarded: an empty cloud may carry no field descriptors at all, and PointCloud2ConstIterator
+  // throws when the requested field is missing. Skipping straight to the all-NaN heartbeat keeps
+  // that case on the same path as a cloud whose every point is cropped away.
+  if (static_cast<uint64_t>(cloud.width) * cloud.height > 0) {
+    sensor_msgs::PointCloud2ConstIterator<float> it_x(cloud, "x");
+    sensor_msgs::PointCloud2ConstIterator<float> it_y(cloud, "y");
+    sensor_msgs::PointCloud2ConstIterator<float> it_z(cloud, "z");
+    for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z) {  // O(N) single pass
+      const float x = *it_x;
+      const float y = *it_y;
+      const float z = *it_z;
+      if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z)) {
+        continue;  // a NaN z would otherwise pass the crop and poison the cell's height layers
+      }
+      if (z < params_.crop_z_min || z > params_.crop_z_max) {
+        continue;
+      }
+      grid_map::Index idx;
+      if (!grid_.getIndex(grid_map::Position(x, y), idx)) {
+        continue;  // outside ROI
+      }
+      float & c = cnt(idx(0), idx(1));
+      if (std::isnan(c)) {
+        c = 1.0f;
+        hi(idx(0), idx(1)) = z;
+        lo(idx(0), idx(1)) = z;
+      } else {
+        c += 1.0f;
+        hi(idx(0), idx(1)) = std::max(hi(idx(0), idx(1)), z);
+        lo(idx(0), idx(1)) = std::min(lo(idx(0), idx(1)), z);
+      }
+      if (z <= params_.overhead_split) {
+        float & lm = low_hi(idx(0), idx(1));
+        lm = std::isnan(lm) ? z : std::max(lm, z);
+      }
     }
   }
 
-  grid_.setTimestamp(rclcpp::Time(header.stamp).nanoseconds());
+  // The ROI is rasterized in the cloud's own frame, so the grid inherits that frame verbatim.
+  grid_.setFrameId(cloud.header.frame_id);
+  grid_.setTimestamp(rclcpp::Time(cloud.header.stamp).nanoseconds());
   grid_map_msgs::msg::GridMap msg = *grid_map::GridMapRosConverter::toMessage(grid_);
-  msg.header = header;  // base_link, exact cloud stamp -> all-NaN = heartbeat
+  msg.header = cloud.header;  // exact cloud frame + stamp -> all-NaN = heartbeat
   return msg;
 }
 }  // namespace autoware::obstacle_grid_extractor

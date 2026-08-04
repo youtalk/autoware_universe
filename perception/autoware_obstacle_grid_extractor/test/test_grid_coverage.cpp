@@ -16,70 +16,116 @@
 // geometry, drops no in-ROI/in-z-band point silently, and records an informational latency.
 // This is the CI-resident gate, so the producer ships only when geometry and coverage hold.
 #include "autoware/obstacle_grid_extractor/obstacle_grid_extractor.hpp"
+#include "make_point_cloud.hpp"
 
 #include <grid_map_ros/GridMapRosConverter.hpp>
+
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 
 #include <gtest/gtest.h>
 
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstddef>
 #include <random>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace
 {
 using autoware::obstacle_grid_extractor::ExtractorParams;
 using autoware::obstacle_grid_extractor::ObstacleGridExtractor;
+using autoware::obstacle_grid_extractor::test::makePointCloud;
+using autoware::obstacle_grid_extractor::test::TestPoint;
 
-ExtractorParams prodParams()
+constexpr int kFrameCount = 20;
+constexpr int kPointsPerFrame = 12000;
+constexpr double kResolution = 0.2;
+constexpr float kCropZMin = -1.0f;
+constexpr float kCropZMax = 3.0f;
+constexpr char kBaseLink[] = "base_link";
+
+ExtractorParams productionParams()
 {
-  return ExtractorParams{60.0, 40.0, 20.0, 0.2, -1.0f, 3.0f, 2.5f};
+  ExtractorParams params;
+  params.roi_length_x = 60.0;
+  params.roi_length_y = 40.0;
+  params.roi_offset_x = 20.0;
+  params.resolution = kResolution;
+  params.crop_z_min = kCropZMin;
+  params.crop_z_max = kCropZMax;
+  params.overhead_split = 2.5f;
+  return params;
 }
 }  // namespace
 
 TEST(ObstacleGridCoverage, GeometryAndNoSilentDrop)
 {
-  // representative dense forward cloud inside the ROI + z-band
+  // Arrange: representative dense forward clouds, all inside the ROI and the z-band.
   std::mt19937 rng(7);
-  std::uniform_real_distribution<float> ux(-9.0f, 49.0f), uy(-19.0f, 19.0f), uz(-0.5f, 2.5f);
-  ObstacleGridExtractor ex(prodParams());
-  std_msgs::msg::Header h;
-  h.frame_id = "base_link";
+  std::uniform_real_distribution<float> dist_x(-9.0f, 49.0f);
+  std::uniform_real_distribution<float> dist_y(-19.0f, 19.0f);
+  std::uniform_real_distribution<float> dist_z(-0.5f, 2.5f);
 
-  std::vector<double> ms;
-  for (int frame = 0; frame < 20; ++frame) {
-    pcl::PointCloud<pcl::PointXYZ> cloud;
-    for (int i = 0; i < 12000; ++i) cloud.emplace_back(ux(rng), uy(rng), uz(rng));
+  std::vector<sensor_msgs::msg::PointCloud2> clouds;
+  clouds.reserve(kFrameCount);
+  for (int frame = 0; frame < kFrameCount; ++frame) {
+    std::vector<TestPoint> points;
+    points.reserve(kPointsPerFrame);
+    for (int i = 0; i < kPointsPerFrame; ++i) {
+      points.push_back({dist_x(rng), dist_y(rng), dist_z(rng)});
+    }
+    clouds.push_back(makePointCloud(kBaseLink, points));
+  }
 
-    const auto t0 = std::chrono::steady_clock::now();
-    const auto msg = ex.extract(cloud, h);
-    ms.push_back(
-      std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count());
+  // Act: rasterize every frame with one extractor instance, timing each call.
+  const ObstacleGridExtractor extractor(productionParams());
+  std::vector<grid_map_msgs::msg::GridMap> grid_msgs;
+  std::vector<double> elapsed_ms;
+  grid_msgs.reserve(kFrameCount);
+  elapsed_ms.reserve(kFrameCount);
+  for (const auto & cloud : clouds) {
+    const auto started_at = std::chrono::steady_clock::now();
+    auto grid_msg = extractor.extract(cloud);
+    elapsed_ms.push_back(
+      std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started_at)
+        .count());
+    grid_msgs.push_back(std::move(grid_msg));
+  }
 
-    grid_map::GridMap g;
-    grid_map::GridMapRosConverter::fromMessage(msg, g);
+  // Assert (a): every frame carries the configured geometry.
+  for (const auto & grid_msg : grid_msgs) {
+    grid_map::GridMap grid;
+    grid_map::GridMapRosConverter::fromMessage(grid_msg, grid);
+    ASSERT_EQ(grid.getLayers().size(), 4u);
+    EXPECT_NEAR(grid.getResolution(), kResolution, 1e-9);
+    EXPECT_EQ(grid.getFrameId(), kBaseLink);
+  }
 
-    // (a) geometry
-    ASSERT_EQ(g.getLayers().size(), 4u);
-    EXPECT_NEAR(g.getResolution(), 0.2, 1e-9);
-    EXPECT_EQ(g.getFrameId(), "base_link");
-
-    // (b) coverage: every point inside the ROI + z-band lands in an occupied cell
-    for (const auto & p : cloud) {
-      if (p.z < -1.0f || p.z > 3.0f) continue;
-      grid_map::Index idx;
-      if (!g.getIndex(grid_map::Position(p.x, p.y), idx)) continue;  // outside ROI is fine
-      EXPECT_FALSE(std::isnan(g.at("point_count", idx)));
+  // Assert (b): coverage — every point inside the ROI and the z-band lands in an occupied cell.
+  for (int frame = 0; frame < kFrameCount; ++frame) {
+    grid_map::GridMap grid;
+    grid_map::GridMapRosConverter::fromMessage(grid_msgs[frame], grid);
+    sensor_msgs::PointCloud2ConstIterator<float> it_x(clouds[frame], "x");
+    sensor_msgs::PointCloud2ConstIterator<float> it_y(clouds[frame], "y");
+    sensor_msgs::PointCloud2ConstIterator<float> it_z(clouds[frame], "z");
+    for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z) {
+      if (*it_z < kCropZMin || *it_z > kCropZMax) continue;
+      grid_map::Index cell_index;
+      if (!grid.getIndex(grid_map::Position(*it_x, *it_y), cell_index)) continue;  // outside ROI
+      ASSERT_FALSE(std::isnan(grid.at("point_count", cell_index)));
     }
   }
-  std::sort(ms.begin(), ms.end());
-  // (c) informational latency (not a hard gate; full sweep in the eval report)
-  // Latency is informational (recorded for trend visibility), not a hard wall-clock gate — a hard
-  // bound would flake on loaded CI / sanitizer builds. The 15 ms budget is checked in the eval.
-  RecordProperty("p99_ms", std::to_string(ms[static_cast<size_t>(0.99 * (ms.size() - 1))]));
-  RecordProperty("max_ms", std::to_string(ms.back()));
+
+  // Assert (c): informational latency only. A hard wall-clock bound would flake on loaded CI and
+  // sanitizer builds; the 15 ms budget is checked in the eval report instead.
+  std::sort(elapsed_ms.begin(), elapsed_ms.end());
+  RecordProperty(
+    "p99_ms", std::to_string(elapsed_ms[static_cast<size_t>(0.99 * (elapsed_ms.size() - 1))]));
+  RecordProperty("max_ms", std::to_string(elapsed_ms.back()));
 }
 
 int main(int argc, char ** argv)

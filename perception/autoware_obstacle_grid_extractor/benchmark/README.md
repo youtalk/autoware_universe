@@ -3,8 +3,8 @@
 The producer cost is `O(N)` over the input points, so it is never the bottleneck on the last-resort
 path; there is no "producer must not exceed summed consumer cost" gate. What is validated instead:
 
-- **Geometry** — the published grid has the configured ROI extent, 0.2 m resolution, and the three
-  layers (`max_height`, `min_height`, `point_count`) in `base_link`.
+- **Geometry** — the published grid has the configured ROI extent, 0.2 m resolution, and the four
+  layers (`max_height`, `min_height`, `point_count`, `low_max_height`) in `base_link`.
 - **Coverage** — every input point inside the ROI and z-band maps to an occupied (non-`NaN`
   `point_count`) cell: no points are silently dropped.
 - **Latency** — informational P99 / max, recorded as gtest properties (not a hard gate).
@@ -20,6 +20,13 @@ frames:
 | existing sensing producer baseline (scan_ground_filter + concatenate) | ~32 ms/frame                                           |
 | coverage (in-ROI point → occupied cell)                               | ~1.000                                                 |
 | grid-vs-raw nearest distance                                          | conservative on 100 % of frames; error ≤ 0.26 m @0.2 m |
+
+The two `extract()` rows were measured against the earlier `pcl::PointCloud` interface. Re-running
+the CI-resident `test_grid_coverage` gate on both implementations in the same container shows the
+per-frame cost unchanged within run-to-run noise (12 k points, 3 runs each: p99 0.67–0.77 ms before
+vs 0.68–0.87 ms after, max 1.13–1.20 ms before vs 1.12–1.28 ms after), and reading the
+`PointCloud2` directly additionally removes the per-callback `pcl::fromROSMsg` copy the node used to
+pay.
 
 Methodology for the real-data rows: each recorded frame is transformed `map -> base_link` with the
 time-matched kinematic-state pose and fed to the extractor at the production ROI; `d_legacy` (distance

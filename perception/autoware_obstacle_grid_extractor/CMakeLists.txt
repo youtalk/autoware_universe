@@ -4,16 +4,11 @@ project(autoware_obstacle_grid_extractor)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-find_package(PCL REQUIRED COMPONENTS common)
-
 ament_auto_add_library(${PROJECT_NAME} SHARED
   lib/obstacle_grid_extractor.cpp
   src/obstacle_grid_extractor_node.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE src)
-target_link_libraries(${PROJECT_NAME}
-  ${PCL_LIBRARIES}
-)
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "autoware::obstacle_grid_extractor::ObstacleGridExtractorNode"

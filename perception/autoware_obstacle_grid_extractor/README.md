@@ -8,11 +8,15 @@ The last-resort emergency-stop consumers (AEB pointcloud branch, collision/surro
 
 ## Algorithm
 
+`ObstacleGridExtractor::extract()` is a plain `sensor_msgs/PointCloud2` → `grid_map_msgs/GridMap` converter: it rasterizes the cloud in the cloud's **own** frame (the ROI is interpreted there) and the returned grid inherits the input header — frame and stamp — verbatim. Transforming the cloud into the frame the ROI was configured for is the caller's job; the node does it with TF and drops the cloud outright when that lookup fails.
+
 For each input cloud (already in / transformed to `base_link`):
 
 1. Drop non-finite points, then points outside `[crop.z_min, crop.z_max]`.
 2. Compute the single grid cell index of each remaining point (`grid_map::getIndex`).
 3. Update that cell's `max_height` (max z), `min_height` (min z), `point_count` (+1), and — for points at or below `overhead_split` — `low_max_height` (max in-band z).
+
+Points are read straight out of the `PointCloud2` with `sensor_msgs::PointCloud2ConstIterator`, so any layout carrying `float32` `x`/`y`/`z` works and no intermediate point-cloud copy is made. A cloud with no points — including a bare one carrying no field descriptors — yields the heartbeat grid described below.
 
 No KdTree, no Euclidean clustering, no convex hull. Empty cells stay `NaN`. An empty cloud yields an all-`NaN` grid with a fresh stamp — the "alive, nothing detected" heartbeat. On a TF failure nothing is published at all, so consumers must treat a stale grid stamp as "unavailable" (fail-safe), never as "clear". Each consumer re-applies its own per-cell size/height gate downstream, so no central tuning is imposed.
 

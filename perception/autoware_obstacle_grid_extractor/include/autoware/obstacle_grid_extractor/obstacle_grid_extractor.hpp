@@ -17,10 +17,7 @@
 #include <grid_map_core/GridMap.hpp>
 
 #include <grid_map_msgs/msg/grid_map.hpp>
-#include <std_msgs/msg/header.hpp>
-
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace autoware::obstacle_grid_extractor
 {
@@ -28,7 +25,7 @@ struct ExtractorParams
 {
   double roi_length_x;  // forward extent [m]
   double roi_length_y;  // lateral extent [m]
-  double roi_offset_x;  // grid-center +x offset from base_link [m] (forward bias)
+  double roi_offset_x;  // grid-center +x offset from the cloud frame origin [m] (forward bias)
   double resolution;    // cell size [m]
   float crop_z_min;
   float crop_z_max;
@@ -47,9 +44,11 @@ class ObstacleGridExtractor
 public:
   explicit ObstacleGridExtractor(const ExtractorParams & params);
 
-  grid_map_msgs::msg::GridMap extract(
-    const pcl::PointCloud<pcl::PointXYZ> & cloud_base_link,
-    const std_msgs::msg::Header & header) const;
+  /// Rasterizes @p cloud in the cloud's own frame: the ROI is interpreted in that frame and the
+  /// returned grid carries the cloud's header verbatim. Supplying a cloud in the frame the ROI was
+  /// configured for (`base_link` for this node) is the caller's responsibility.
+  /// @p cloud must expose float32 `x`/`y`/`z` fields unless it is empty.
+  grid_map_msgs::msg::GridMap extract(const sensor_msgs::msg::PointCloud2 & cloud) const;
 
 private:
   ExtractorParams params_;

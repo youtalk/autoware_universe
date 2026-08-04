@@ -291,7 +291,7 @@ TEST(ObstacleGridExtractor, CloudWithoutPointFieldsIsHeartbeat)
 TEST(ObstacleGridExtractor, WiderPointStrideIsHonoured)
 {
   // Arrange: the same two points in Autoware's production PointXYZIRC layout, whose 16-byte stride
-  // differs from the packed 12-byte one. Reading x/y/z at a fixed pitch would misparse this.
+  // differs from the packed 12-byte one. Reading x/y/z at a fixed pitch would land on wrong bytes.
   const auto cloud = makePointXyzircCloud(kBaseLink, {{5.05f, 0.05f, 0.5f}, {5.15f, 0.15f, 1.2f}});
 
   // Act

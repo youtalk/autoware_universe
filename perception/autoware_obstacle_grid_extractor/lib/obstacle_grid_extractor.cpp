@@ -50,15 +50,15 @@ grid_map_msgs::msg::GridMap ObstacleGridExtractor::extract(
   grid_[kPointCount].setConstant(nan);  // empty cell = NaN
   grid_[kLowMaxHeight].setConstant(nan);
 
-  auto & hi = grid_[kMaxHeight];
-  auto & lo = grid_[kMinHeight];
-  auto & cnt = grid_[kPointCount];
-  auto & low_hi = grid_[kLowMaxHeight];
-
   // Guarded: an empty cloud may carry no field descriptors at all, and PointCloud2ConstIterator
   // throws when the requested field is missing. Skipping straight to the all-NaN heartbeat keeps
   // that case on the same path as a cloud whose every point is cropped away.
   if (static_cast<uint64_t>(cloud.width) * cloud.height > 0) {
+    auto & hi = grid_[kMaxHeight];
+    auto & lo = grid_[kMinHeight];
+    auto & cnt = grid_[kPointCount];
+    auto & low_hi = grid_[kLowMaxHeight];
+
     sensor_msgs::PointCloud2ConstIterator<float> it_x(cloud, "x");
     sensor_msgs::PointCloud2ConstIterator<float> it_y(cloud, "y");
     sensor_msgs::PointCloud2ConstIterator<float> it_z(cloud, "z");

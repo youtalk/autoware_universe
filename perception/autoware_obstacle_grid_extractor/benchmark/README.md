@@ -14,8 +14,8 @@ per-frame clear of those layers is paid whether or not any point arrives. The no
 cloud is the opposite — sparse, and sparser with distance — so widening the ROI buys progressively
 less information per added cell.
 
-Measured over 1200 frames of real full no-ground clouds (`ariakeB_native`, `prdjt_dense`;
-125–132 k points/frame), at 0.2 m resolution. "in-ROI returns" is the share of the frame's points
+Measured over 1200 frames of real full no-ground clouds from two recorded urban drives
+(125–132 k points/frame), at 0.2 m resolution. "in-ROI returns" is the share of the frame's points
 that land in a cell:
 
 | ROI (`x` × `y`)     | cells   | msg size | occupied cells | occupancy | in-ROI returns |
@@ -45,16 +45,16 @@ against the 0.283 m cell diagonal, and 0.3 m would take that to 0.424 m.
 
 `extract()` at the default `[-100, 80] × ±50` @0.2 m ROI, same real frames:
 
-| bag              | points/frame | mean    | p99     | max     |
-| ---------------- | ------------ | ------- | ------- | ------- |
-| `ariakeB_native` | 131 751      | 2.31 ms | 3.30 ms | 3.58 ms |
-| `prdjt_dense`    | 125 208      | 2.28 ms | 2.73 ms | 6.98 ms |
-| `iwaki_stoptest` | 306          | 0.95 ms | 0.99 ms | 4.33 ms |
+| recorded drive | points/frame | mean    | p99     | max     |
+| -------------- | ------------ | ------- | ------- | ------- |
+| urban A        | 131 751      | 2.31 ms | 3.30 ms | 3.58 ms |
+| urban B        | 125 208      | 2.28 ms | 2.73 ms | 6.98 ms |
+| sparse scene   | 306          | 0.95 ms | 0.99 ms | 4.33 ms |
 
 All inside the 15 ms emergency-path budget, and well below the existing sensing producer baseline it
 sits alongside (`scan_ground_filter` + `concatenate`, ~32 ms/frame).
 
-The `iwaki_stoptest` row is the important one: **306 points per frame still costs ~1 ms**, because
+The sparse-scene row is the important one: **306 points per frame still costs ~1 ms**, because
 that is the per-cell term, not the per-point term. The same bag costs 0.06 ms at a 60 k-cell ROI and
 2.67 ms at 875 k cells — cost tracks grid area almost independently of the cloud. This is why the
 ROI is bounded by consumer requirements rather than set to the sensor's reach.
@@ -72,14 +72,14 @@ pay. The node additionally skips `tf2::doTransform` outright when the cloud alre
 The band matches `ground_segmentation`'s own (`margin_min_z` -2.5, `detection_range_z_max` 3.5).
 Share of real returns that the previous `[-1.0, 3.0]` band discarded:
 
-| bag              | below -1.0 m | above 3.0 m | still outside `[-2.5, 3.5]` |
-| ---------------- | ------------ | ----------- | --------------------------- |
-| `ariakeB_native` | 0.03 %       | 1.35 %      | 0.00 %                      |
-| `prdjt_dense`    | 0.01 %       | 4.19 %      | 1.36 %                      |
-| `iwaki_stoptest` | 8.31 %       | 0.03 %      | 0.29 %                      |
+| recorded drive | below -1.0 m | above 3.0 m | still outside `[-2.5, 3.5]` |
+| -------------- | ------------ | ----------- | --------------------------- |
+| urban A        | 0.03 %       | 1.35 %      | 0.00 %                      |
+| urban B        | 0.01 %       | 4.19 %      | 1.36 %                      |
+| sparse scene   | 8.31 %       | 0.03 %      | 0.29 %                      |
 
 Widening costs nothing in message size — the grid is 2D — and recovers 1.0–2.4 pp of in-ROI returns.
-`iwaki_stoptest`'s 8.31 % below -1.0 m are the far-field sub-ground returns on a vertical curve that
+The sparse scene's 8.31 % below -1.0 m are the far-field sub-ground returns on a vertical curve that
 the consumer-parity run flagged; the old band discarded them at the producer.
 
 ## Coverage vs. the legacy per-consumer pipelines

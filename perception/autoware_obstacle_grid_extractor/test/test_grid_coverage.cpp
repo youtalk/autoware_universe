@@ -44,16 +44,16 @@ using autoware::obstacle_grid_extractor::test::TestPoint;
 constexpr int kFrameCount = 20;
 constexpr int kPointsPerFrame = 12000;
 constexpr double kResolution = 0.2;
-constexpr float kCropZMin = -1.0f;
-constexpr float kCropZMax = 3.0f;
+constexpr float kCropZMin = -2.5f;
+constexpr float kCropZMax = 3.5f;
 constexpr char kBaseLink[] = "base_link";
 
 ExtractorParams productionParams()
 {
   ExtractorParams params;
-  params.roi_length_x = 60.0;
-  params.roi_length_y = 40.0;
-  params.roi_offset_x = 20.0;
+  params.roi_length_x = 180.0;  // x in [-100, +80]
+  params.roi_length_y = 100.0;  // y in [-50, +50]
+  params.roi_offset_x = -10.0;
   params.resolution = kResolution;
   params.crop_z_min = kCropZMin;
   params.crop_z_max = kCropZMax;
@@ -64,11 +64,12 @@ ExtractorParams productionParams()
 
 TEST(ObstacleGridCoverage, GeometryAndNoSilentDrop)
 {
-  // Arrange: representative dense forward clouds, all inside the ROI and the z-band.
+  // Arrange: representative clouds spread over the WHOLE ROI and z-band, so the no-silent-drop
+  // assertion below covers every corner of the grid rather than a forward patch of it.
   std::mt19937 rng(7);
-  std::uniform_real_distribution<float> dist_x(-9.0f, 49.0f);
-  std::uniform_real_distribution<float> dist_y(-19.0f, 19.0f);
-  std::uniform_real_distribution<float> dist_z(-0.5f, 2.5f);
+  std::uniform_real_distribution<float> dist_x(-99.0f, 79.0f);
+  std::uniform_real_distribution<float> dist_y(-49.0f, 49.0f);
+  std::uniform_real_distribution<float> dist_z(-2.0f, 3.0f);
 
   std::vector<sensor_msgs::msg::PointCloud2> clouds;
   clouds.reserve(kFrameCount);

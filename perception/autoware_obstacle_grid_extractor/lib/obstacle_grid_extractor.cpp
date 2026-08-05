@@ -38,7 +38,7 @@ ObstacleGridExtractor::ObstacleGridExtractor(const ExtractorParams & params)
 {
   grid_.setGeometry(
     grid_map::Length(params_.roi_length_x, params_.roi_length_y), params_.resolution,
-    grid_map::Position(params_.roi_offset_x, 0.0));  // forward-biased rectangular ROI
+    grid_map::Position(params_.roi_offset_x, 0.0));  // rectangular ROI, biased by roi_offset_x
 }
 
 grid_map_msgs::msg::GridMap ObstacleGridExtractor::extract(

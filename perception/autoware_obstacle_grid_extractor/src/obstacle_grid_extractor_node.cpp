@@ -22,6 +22,13 @@
 
 namespace autoware::obstacle_grid_extractor
 {
+namespace
+{
+// The frame the ROI is configured in. The extractor rasterizes a cloud in whatever frame it arrives
+// in, so the node owns the guarantee that it arrives in this one.
+constexpr char kTargetFrame[] = "base_link";
+}  // namespace
+
 ObstacleGridExtractorNode::ObstacleGridExtractorNode(const rclcpp::NodeOptions & options)
 : Node("obstacle_grid_extractor", options), tf_buffer_(get_clock()), tf_listener_(tf_buffer_)
 {
@@ -39,17 +46,27 @@ ObstacleGridExtractorNode::ObstacleGridExtractorNode(const rclcpp::NodeOptions &
   sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     "~/input/pointcloud", rclcpp::SensorDataQoS().keep_last(1),
     std::bind(&ObstacleGridExtractorNode::onCloud, this, _1));
-  // RELIABLE KEEP_LAST(1): small fixed-size grid on the last-resort path.
+  // RELIABLE KEEP_LAST(1) on the last-resort path. The grid is fixed-size but NOT small: at the
+  // default ROI it is 450 k cells x 4 float32 layers = 7.2 MB per message. KEEP_LAST(1) bounds the
+  // queue so a slow consumer drops frames (detectable as a stale stamp) instead of queueing them.
   pub_ = create_publisher<grid_map_msgs::msg::GridMap>(
     "~/output/obstacle_grid", rclcpp::QoS(1).reliable());
 }
 
 void ObstacleGridExtractorNode::onCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
+  // The production pipeline already publishes the no-ground cloud in base_link (the concatenation
+  // node's `output_frame`), so this is the common path, not a special case: doTransform() would
+  // otherwise copy every point of a >100 k-point cloud only to reproduce it unchanged.
+  if (msg->header.frame_id == kTargetFrame) {
+    pub_->publish(extractor_->extract(*msg));  // empty cloud -> heartbeat
+    return;
+  }
+
   sensor_msgs::msg::PointCloud2 in_base_link;
   try {
     const auto tf = tf_buffer_.lookupTransform(
-      "base_link", msg->header.frame_id, msg->header.stamp, rclcpp::Duration::from_seconds(0.1));
+      kTargetFrame, msg->header.frame_id, msg->header.stamp, rclcpp::Duration::from_seconds(0.1));
     tf2::doTransform(*msg, in_base_link, tf);  // static extrinsic only
   } catch (const tf2::TransformException & e) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "TF to base_link failed: %s", e.what());

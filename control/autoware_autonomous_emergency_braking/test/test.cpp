@@ -592,7 +592,9 @@ TEST_F(TestAEB, useImuPathFalseIgnoresKinematicState)
 // succeed and the assertion isolates the yaw source alone.
 TEST_F(TestAEB, kinematicStateStalenessWatchdog)
 {
-  ASSERT_DOUBLE_EQ(aeb_node_->kinematic_state_timeout_sec_, 0.5);  // pin the calibrated default
+  // Pin the shipped default so it cannot change silently. This is an initial conservative value,
+  // NOT one calibrated against measured on-vehicle jitter -- see the PR description.
+  ASSERT_DOUBLE_EQ(aeb_node_->kinematic_state_timeout_sec_, 0.5);
   aeb_node_->check_autoware_state_ = false;
   aeb_node_->use_pointcloud_data_ = false;
   aeb_node_->use_predicted_object_data_ = true;  // satisfies the object-detection-method gate
@@ -633,6 +635,53 @@ TEST_F(TestAEB, kinematicStateStalenessWatchdog)
   deliver(pub_sub_node_, aeb_node_, publish_stale);
   EXPECT_TRUE(aeb_node_->fetchLatestData());
   EXPECT_EQ(aeb_node_->angular_velocity_ptr_, nullptr);  // stale yaw must NOT feed prediction
+}
+
+// A stamp AHEAD of the node clock must read as unusable too. The watchdog computes a SIGNED age, so
+// a one-sided (age > timeout) test would see a negative age here and accept a frozen future-stamped
+// twist forever (ECU clock skew, or a faulty producer) -- the same fail-open class the watchdog
+// exists to close. This test discriminates the symmetric +/- tolerance from both a one-sided check
+// and from an over-strict "reject any negative age", which would trip on ordinary clock jitter:
+//   - stamp 5.0 s in the FUTURE, far outside the 0.5 s tolerance -> must be rejected;
+//   - stamp 0.2 s in the future, inside the tolerance            -> must still be accepted.
+// Independent oracle: both offsets are hand-set on the Odometry header and compared against the
+// pinned package default, and a predicted-trajectory path is supplied so fetchLatestData still
+// succeeds and each assertion isolates the yaw source alone.
+TEST_F(TestAEB, futureStampedKinematicStateTripsWatchdog)
+{
+  ASSERT_DOUBLE_EQ(aeb_node_->kinematic_state_timeout_sec_, 0.5);
+  aeb_node_->check_autoware_state_ = false;
+  aeb_node_->use_pointcloud_data_ = false;
+  aeb_node_->use_predicted_object_data_ = true;
+  aeb_node_->use_predicted_trajectory_ = true;  // yaw-independent second path -> fetch can succeed
+  aeb_node_->use_imu_path_ = true;
+
+  constexpr double yaw_rate = 0.05;
+
+  const auto publish_with_stamp_offset = [&](const double offset_sec) {
+    return [&, offset_sec]() {
+      const auto header = get_header("base_link", pub_sub_node_->now());
+      pub_sub_node_->pub_velocity_->publish(make_velocity_report_msg(header, 0.0, 3.0, 0.0));
+      pub_sub_node_->pub_predicted_objects_->publish(PredictedObjects{});
+      pub_sub_node_->pub_predicted_traj_->publish(Trajectory{});
+      const auto shifted_stamp =
+        rclcpp::Time(pub_sub_node_->now()) + rclcpp::Duration::from_seconds(offset_sec);
+      const auto shifted_header = get_header("base_link", shifted_stamp);
+      pub_sub_node_->pub_kinematic_state_->publish(make_odometry_message(shifted_header, yaw_rate));
+    };
+  };
+
+  // Far-future stamp: |age| = 5 s > 0.5 s -> yaw source unavailable, IMU path skipped.
+  deliver(pub_sub_node_, aeb_node_, publish_with_stamp_offset(5.0));
+  EXPECT_TRUE(aeb_node_->fetchLatestData());
+  EXPECT_EQ(aeb_node_->angular_velocity_ptr_, nullptr);  // future yaw must NOT feed prediction
+
+  // Slightly-future stamp within tolerance: still accepted, so healthy clock jitter does not
+  // spuriously disable the IMU path.
+  deliver(pub_sub_node_, aeb_node_, publish_with_stamp_offset(0.2));
+  ASSERT_TRUE(aeb_node_->fetchLatestData());
+  ASSERT_NE(aeb_node_->angular_velocity_ptr_, nullptr);
+  EXPECT_DOUBLE_EQ(aeb_node_->angular_velocity_ptr_->z, yaw_rate);
 }
 
 }  // namespace autoware::motion::control::autonomous_emergency_braking::test

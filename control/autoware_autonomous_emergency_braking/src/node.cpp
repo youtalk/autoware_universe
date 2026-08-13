@@ -381,23 +381,39 @@ bool AEB::fetchLatestData()
     // which is already expressed in base_link, so no TF transform is applied here.
     const auto kinematic_state_ptr = sub_kinematic_state_->take_data();
     if (!kinematic_state_ptr) {
+      // Clear the cached yaw rate here rather than relying on this subscriber's Latest re-delivery
+      // policy to keep this branch unreachable after the first sample. Both consumers of the yaw
+      // rate key off (!angular_velocity_ptr_) and never off this function's return value, so if the
+      // subscriber were ever switched to polling_policy::Newest, every sample-less cycle would land
+      // here and a retained pointer would keep feeding the last good yaw rate to generateEgoPath
+      // indefinitely, with the age check below never running.
+      angular_velocity_ptr_.reset();
       return missing("kinematic state");
     }
     // Staleness watchdog: the polling subscriber returns the last received Odometry forever, so a
     // frozen or diverged localization would otherwise feed a stale yaw rate into the integrated
     // ego-path prediction indefinitely -- the "wrong odometry" failure mode this cross-check is
-    // meant to guard against. A stale twist must read as "yaw source unavailable": reset
+    // meant to guard against. An unusable twist must read as "yaw source unavailable": reset
     // angular_velocity_ptr_ so the downstream (!angular_velocity_ptr_) guards skip the IMU path
     // this cycle. Never fall back to a usable or zero-yaw (straight-line) estimate, which would be
     // anti-conservative.
+    //
+    // The age is signed, so the stamp must lie within +/- kinematic_state_timeout_sec_ of the node
+    // clock rather than merely being not-too-old. A one-sided (age > timeout) test would let a
+    // stamp AHEAD of the node clock -- ECU clock skew, or a faulty producer -- yield a negative age
+    // that passes trivially, so a frozen future-stamped twist would be accepted forever: the same
+    // fail-open hole this watchdog exists to close. The symmetric tolerance also absorbs ordinary
+    // publisher/subscriber clock jitter, and an unstamped (zero) header reads as implausibly old
+    // and is therefore rejected.
     const double kinematic_state_age_sec =
       (this->now() - rclcpp::Time(kinematic_state_ptr->header.stamp)).seconds();
-    if (kinematic_state_age_sec > kinematic_state_timeout_sec_) {
+    if (std::abs(kinematic_state_age_sec) > kinematic_state_timeout_sec_) {
       RCLCPP_ERROR_THROTTLE(
         get_logger(), *get_clock(), 5000,
-        "[AEB]: kinematic state is stale (%.2f s old > %.2f s); skipping the IMU-path collision "
-        "check this cycle",
-        kinematic_state_age_sec, kinematic_state_timeout_sec_);
+        "[AEB]: kinematic state stamp is unusable (%.2f s %s the clock, tolerance %.2f s); "
+        "skipping the IMU-path collision check this cycle",
+        std::abs(kinematic_state_age_sec), (kinematic_state_age_sec < 0.0) ? "ahead of" : "behind",
+        kinematic_state_timeout_sec_);
       angular_velocity_ptr_.reset();
       return false;
     }

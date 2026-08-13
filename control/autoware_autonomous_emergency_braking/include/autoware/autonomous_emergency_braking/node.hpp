@@ -580,6 +580,8 @@ public:
   double voxel_grid_z_;
   double min_generated_imu_path_length_;
   double max_generated_imu_path_length_;
+  // IMU-path yaw-source staleness watchdog [s]; a stale twist reads as unavailable, not as motion
+  double kinematic_state_timeout_sec_;
   double expand_width_;
   double longitudinal_offset_margin_;
   double t_response_;

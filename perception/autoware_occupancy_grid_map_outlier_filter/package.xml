@@ -18,6 +18,8 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_component_interface_specs</depend>
+  <depend>autoware_component_interface_utils</depend>
   <depend>autoware_pointcloud_preprocessor</depend>
   <depend>autoware_utils</depend>
   <depend>libpcl-all-dev</depend>
@@ -32,6 +34,7 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_ros</depend>
 
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 

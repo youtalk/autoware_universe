@@ -18,6 +18,8 @@
 #include "autoware_utils/ros/debug_publisher.hpp"
 #include "autoware_utils/system/stop_watch.hpp"
 
+#include <autoware/component_interface_specs/perception.hpp>
+#include <autoware/component_interface_utils/rclcpp.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
@@ -263,6 +265,17 @@ OccupancyGridMapOutlierFilterComponent::OccupancyGridMapOutlierFilterComponent(
    * setting.
    */
   pointcloud_pub_ = create_publisher<PointCloud2>("~/output/pointcloud", rclcpp::QoS{5}.reliable());
+
+  // When launch points ~/output/pointcloud at the no-ground obstacle-cloud
+  // boundary (the OSS default: this node is the pipeline terminal when the
+  // time-series outlier filter is enabled), register as the boundary's
+  // provider and verify the endpoint QoS against the interface specification.
+  {
+    autoware::component_interface_utils::NodeAdaptor adaptor(this);
+    adaptor
+      .register_publisher<autoware::component_interface_specs::perception::ObstacleSegmentation>(
+        pointcloud_pub_);
+  }
 
   /* Radius search 2d filter */
   if (use_radius_search_2d_filter) {

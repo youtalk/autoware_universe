@@ -12,7 +12,7 @@
     <remap from="~/output/no_start_reason" to="/planning/scenario_planning/status/no_start_reason"/>
     <remap from="~/output/max_velocity" to="$(var output_velocity_limit)"/>
     <remap from="~/output/velocity_limit_clear_command" to="$(var output_velocity_limit_clear_command)"/>
-    <remap from="~/input/pointcloud" to="$(var input_pointcloud)"/>
+    <remap from="/perception/obstacle_segmentation/pointcloud" to="$(var input_pointcloud)"/>
     <remap from="~/input/objects" to="$(var input_objects)"/>
     <remap from="~/input/odometry" to="$(var input_odometry)"/>
   </node>

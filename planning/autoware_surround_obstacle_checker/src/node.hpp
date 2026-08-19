@@ -21,6 +21,8 @@
 #include "type_alias.hpp"
 #include "types.hpp"
 
+#include <autoware/component_interface_specs/perception.hpp>
+#include <autoware/component_interface_utils/rclcpp.hpp>
 #include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <autoware/obstacle_proximity_checker/obstacle_proximity_checker.hpp>
 #include <autoware_surround_obstacle_checker/surround_obstacle_checker_node_parameters.hpp>
@@ -86,8 +88,9 @@ private:
   // publisher and subscriber
   autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{
     this, "~/input/odometry"};
-  autoware_utils::InterProcessPollingSubscriber<sensor_msgs::msg::PointCloud2> sub_pointcloud_{
-    this, "~/input/pointcloud", autoware_utils::single_depth_sensor_qos()};
+  autoware::component_interface_utils::Subscription<
+    autoware::component_interface_specs::perception::ObstacleSegmentation>::SharedPtr
+    sub_pointcloud_;
   autoware_utils::InterProcessPollingSubscriber<PredictedObjects> sub_dynamic_objects_{
     this, "~/input/objects"};
   rclcpp::Publisher<VelocityLimitClearCommand>::SharedPtr pub_clear_velocity_limit_;

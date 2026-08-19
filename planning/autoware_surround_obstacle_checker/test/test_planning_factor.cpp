@@ -60,8 +60,11 @@ public:
       test_node_->create_publisher<nav_msgs::msg::Odometry>("/localization/kinematic_state", 1);
     pub_dynamic_objects_ = test_node_->create_publisher<PredictedObjects>(
       "/surround_obstacle_checker_node/input/objects", 1);
+    // The node now subscribes to the obstacle cloud through its interface
+    // spec, i.e. the canonical absolute topic name rather than the
+    // remap-resolved "~/input/pointcloud".
     pub_pointcloud_ = test_node_->create_publisher<sensor_msgs::msg::PointCloud2>(
-      "/surround_obstacle_checker_node/input/pointcloud", 1);
+      "/perception/obstacle_segmentation/pointcloud", 1);
   }
 
   void setEnableCheck(const std::string & type, const bool enable)

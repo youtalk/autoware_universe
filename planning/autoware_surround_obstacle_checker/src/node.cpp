@@ -63,6 +63,15 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
   proximity_checker_ = std::make_unique<obstacle_proximity_checker::ProximityChecker>(
     toProximityCheckerParameters(), vehicle_info_);
 
+  // Subscribers
+  {
+    autoware::component_interface_utils::NodeAdaptor adaptor(this);
+    sub_pointcloud_ =
+      adaptor
+        .create_subscription<autoware::component_interface_specs::perception::ObstacleSegmentation>(
+          nullptr);
+  }
+
   // Publishers
   pub_clear_velocity_limit_ = this->create_publisher<VelocityLimitClearCommand>(
     "~/output/velocity_limit_clear_command", rclcpp::QoS{1}.transient_local());
@@ -166,7 +175,7 @@ void SurroundObstacleCheckerNode::onTimer()
   stop_watch.tic();
 
   odometry_ptr_ = sub_odometry_.take_data();
-  pointcloud_ptr_ = sub_pointcloud_.take_data();
+  sub_pointcloud_->take_and_update(pointcloud_ptr_);
   object_ptr_ = sub_dynamic_objects_.take_data();
 
   if (!odometry_ptr_) {

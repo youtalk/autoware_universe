@@ -12,6 +12,8 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_component_interface_specs</depend>
+  <depend>autoware_component_interface_utils</depend>
   <depend>autoware_internal_planning_msgs</depend>
   <depend>autoware_motion_utils</depend>
   <depend>autoware_obstacle_proximity_checker</depend>
@@ -35,6 +37,7 @@
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_index_cpp</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
   <test_depend>autoware_test_utils</test_depend>

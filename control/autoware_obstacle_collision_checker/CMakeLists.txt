@@ -25,7 +25,18 @@ if(BUILD_TESTING)
     test/test_obstacle_collision_checker.cpp
   )
   target_link_libraries(test_obstacle_collision_checker obstacle_collision_checker)
+
+  ament_add_gtest(test_interface_fragment
+    test/test_interface_fragment.cpp
+  )
+  ament_target_dependencies(test_interface_fragment
+    ament_index_cpp
+    autoware_component_interface_specs
+    autoware_component_interface_utils
+  )
 endif()
+
+install(FILES config/interface_manifest_fragment.json DESTINATION share/${PROJECT_NAME}/config)
 
 ament_auto_package(
   INSTALL_TO_SHARE

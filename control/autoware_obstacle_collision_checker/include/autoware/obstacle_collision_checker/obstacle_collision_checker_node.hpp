@@ -17,6 +17,8 @@
 
 #include "autoware/obstacle_collision_checker/obstacle_collision_checker.hpp"
 
+#include <autoware/component_interface_specs/perception.hpp>
+#include <autoware/component_interface_utils/rclcpp.hpp>
 #include <autoware_utils/geometry/geometry.hpp>
 #include <autoware_utils/ros/debug_publisher.hpp>
 #include <autoware_utils/ros/processing_time_publisher.hpp>
@@ -50,7 +52,9 @@ private:
   // Subscriber
   std::shared_ptr<autoware_utils::SelfPoseListener> self_pose_listener_;
   std::shared_ptr<autoware_utils::TransformListener> transform_listener_;
-  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_obstacle_pointcloud_;
+  autoware::component_interface_utils::Subscription<
+    autoware::component_interface_specs::perception::ObstacleSegmentation>::SharedPtr
+    sub_obstacle_pointcloud_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
     sub_reference_trajectory_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
@@ -67,7 +71,7 @@ private:
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   // Callback
-  void on_obstacle_pointcloud(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+  void on_obstacle_pointcloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
   void on_reference_trajectory(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg);
   void on_predicted_trajectory(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg);
   void on_odom(const nav_msgs::msg::Odometry::SharedPtr msg);

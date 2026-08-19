@@ -54,9 +54,13 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   self_pose_listener_ = std::make_shared<autoware_utils::SelfPoseListener>(this);
   transform_listener_ = std::make_shared<autoware_utils::TransformListener>(this);
 
-  sub_obstacle_pointcloud_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    "input/obstacle_pointcloud", rclcpp::SensorDataQoS(),
-    std::bind(&ObstacleCollisionCheckerNode::on_obstacle_pointcloud, this, _1));
+  {
+    autoware::component_interface_utils::NodeAdaptor adaptor(this);
+    sub_obstacle_pointcloud_ =
+      adaptor
+        .create_subscription<autoware::component_interface_specs::perception::ObstacleSegmentation>(
+          this, &ObstacleCollisionCheckerNode::on_obstacle_pointcloud);
+  }
   sub_reference_trajectory_ = create_subscription<autoware_planning_msgs::msg::Trajectory>(
     "input/reference_trajectory", 1,
     std::bind(&ObstacleCollisionCheckerNode::on_reference_trajectory, this, _1));
@@ -84,7 +88,7 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
 }
 
 void ObstacleCollisionCheckerNode::on_obstacle_pointcloud(
-  const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+  const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
   obstacle_pointcloud_ = msg;
 }

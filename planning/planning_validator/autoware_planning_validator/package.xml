@@ -20,6 +20,8 @@
 
   <depend>angles</depend>
   <depend>autoware_adapi_v1_msgs</depend>
+  <depend>autoware_component_interface_specs</depend>
+  <depend>autoware_component_interface_utils</depend>
   <depend>autoware_motion_utils</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_factor_interface</depend>
@@ -39,6 +41,7 @@
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_index_cpp</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
   <test_depend>autoware_planning_validator_test_utils</test_depend>

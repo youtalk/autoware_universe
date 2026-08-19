@@ -35,6 +35,15 @@ PlanningValidatorNode::PlanningValidatorNode(const rclcpp::NodeOptions & options
     "~/input/trajectory", rclcpp::QoS{1},
     std::bind(&PlanningValidatorNode::onTrajectory, this, std::placeholders::_1));
 
+  // obstacle pointcloud subscriber (via interface spec)
+  {
+    autoware::component_interface_utils::NodeAdaptor adaptor(this);
+    sub_pointcloud_ =
+      adaptor
+        .create_subscription<autoware::component_interface_specs::perception::ObstacleSegmentation>(
+          nullptr);
+  }
+
   // publishers
   pub_traj_ = create_publisher<Trajectory>("~/output/trajectory", 1);
   pub_status_ = create_publisher<PlanningValidatorStatus>("~/output/validation_status", 1);
@@ -100,7 +109,7 @@ void PlanningValidatorNode::setData(const Trajectory::ConstSharedPtr & traj_msg)
   auto & data = context_->data;
   data->current_kinematics = sub_kinematics_.take_data();
   data->current_acceleration = sub_acceleration_.take_data();
-  data->obstacle_pointcloud = sub_pointcloud_.take_data();
+  sub_pointcloud_->take_and_update(data->obstacle_pointcloud);
   data->traffic_signals = sub_traffic_signals_.take_data();
   data->set_current_trajectory(traj_msg);
   data->set_route(sub_route_.take_data());

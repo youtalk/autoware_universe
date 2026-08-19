@@ -71,7 +71,11 @@ public:
     kinematics_pub_ = create_publisher<Odometry>("/planning_validator_node/input/kinematics", 1);
     acceleration_pub_ = create_publisher<AccelWithCovarianceStamped>(
       "/planning_validator_node/input/acceleration", 1);
-    pointcloud_pub_ = create_publisher<PointCloud2>("/planning_validator_node/input/pointcloud", 1);
+    // The node now subscribes to the obstacle cloud through its interface
+    // spec, i.e. the canonical absolute topic name rather than the
+    // remap-resolved "/planning_validator_node/input/pointcloud".
+    pointcloud_pub_ =
+      create_publisher<PointCloud2>("/perception/obstacle_segmentation/pointcloud", 1);
     operational_mode_pub_ = create_publisher<OperationModeState>(
       "/planning_validator_node/input/operational_mode_state", rclcpp::QoS(1).transient_local());
     diag_sub_ = create_subscription<DiagnosticArray>(

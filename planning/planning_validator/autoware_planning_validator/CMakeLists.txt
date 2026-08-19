@@ -20,6 +20,8 @@ ament_auto_add_library(autoware_planning_validator_component SHARED
 
 ament_target_dependencies(autoware_planning_validator_component
   autoware_adapi_v1_msgs
+  autoware_component_interface_specs
+  autoware_component_interface_utils
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_component
@@ -68,6 +70,15 @@ if(BUILD_TESTING)
     ${autoware_planning_validator_test_utils_LIBRARIES}
   )
   set_tests_properties(test_autoware_planning_validator PROPERTIES TIMEOUT 120)
+
+  ament_add_gtest(test_interface_fragment
+    test/test_interface_fragment.cpp
+  )
+  ament_target_dependencies(test_interface_fragment
+    ament_index_cpp
+    autoware_component_interface_specs
+    autoware_component_interface_utils
+  )
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE

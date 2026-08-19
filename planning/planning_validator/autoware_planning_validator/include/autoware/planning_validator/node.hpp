@@ -20,6 +20,8 @@
 #include "autoware/planning_validator/types.hpp"
 #include "autoware_planning_validator/msg/planning_validator_status.hpp"
 
+#include <autoware/component_interface_specs/perception.hpp>
+#include <autoware/component_interface_utils/rclcpp.hpp>
 #include <autoware_utils/ros/logger_level_configure.hpp>
 #include <autoware_utils/ros/parameter.hpp>
 #include <autoware_utils/ros/polling_subscriber.hpp>
@@ -84,8 +86,9 @@ private:
   autoware_utils::InterProcessPollingSubscriber<
     LaneletMapBin, autoware_utils::polling_policy::Newest>
     sub_lanelet_map_bin_{this, "~/input/lanelet_map_bin", rclcpp::QoS{1}.transient_local()};
-  autoware_utils::InterProcessPollingSubscriber<PointCloud2> sub_pointcloud_{
-    this, "~/input/pointcloud", autoware_utils::single_depth_sensor_qos()};
+  autoware::component_interface_utils::Subscription<
+    autoware::component_interface_specs::perception::ObstacleSegmentation>::SharedPtr
+    sub_pointcloud_;
   autoware_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
     this, "~/input/kinematics"};
   autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> sub_acceleration_{

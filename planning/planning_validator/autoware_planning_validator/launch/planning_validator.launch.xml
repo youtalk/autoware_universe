@@ -50,7 +50,7 @@
     <node_container pkg="$(var container_package)" exec="$(var container_executable)" name="planning_validator_container" namespace="" args="" output="both">
       <composable_node pkg="autoware_planning_validator" plugin="autoware::planning_validator::PlanningValidatorNode" name="planning_validator" namespace="">
         <remap from="~/input/objects" to="$(var input_objects_topic_name)"/>
-        <remap from="~/input/pointcloud" to="$(var input_pointcloud_topic_name)"/>
+        <remap from="/perception/obstacle_segmentation/pointcloud" to="$(var input_pointcloud_topic_name)"/>
         <remap from="~/input/trajectory" to="$(var input_trajectory_topic_name)"/>
         <remap from="~/input/traffic_signals" to="$(var input_traffic_light_topic_name)"/>
         <remap from="~/input/lanelet_map_bin" to="$(var input_vector_map_topic_name)"/>

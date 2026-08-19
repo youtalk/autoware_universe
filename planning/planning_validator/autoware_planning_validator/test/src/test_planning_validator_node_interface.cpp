@@ -65,8 +65,11 @@ void publishMandatoryTopics(
   test_manager->publishInput(
     test_target_node, "planning_validator_node/input/acceleration",
     geometry_msgs::msg::AccelWithCovarianceStamped{});
+  // The node now subscribes to the obstacle cloud through its interface
+  // spec, i.e. the canonical absolute topic name rather than the
+  // remap-resolved "planning_validator_node/input/pointcloud".
   test_manager->publishInput(
-    test_target_node, "planning_validator_node/input/pointcloud",
+    test_target_node, "/perception/obstacle_segmentation/pointcloud",
     sensor_msgs::msg::PointCloud2{}.set__header(
       std_msgs::msg::Header{}.set__frame_id("base_link")));
   test_manager->publishInput(

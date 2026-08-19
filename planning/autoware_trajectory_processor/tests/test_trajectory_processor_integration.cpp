@@ -171,9 +171,7 @@ protected:
        "-r",
        "~/input/acceleration:=/localization/acceleration",
        "-r",
-       "~/input/objects:=/perception/object_recognition/objects",
-       "-r",
-       "~/input/pointcloud:=/perception/obstacle_segmentation/pointcloud"});
+       "~/input/objects:=/perception/object_recognition/objects"});
 
     processor_node_ =
       std::make_shared<autoware::trajectory_processor::TrajectoryProcessor>(processor_options);

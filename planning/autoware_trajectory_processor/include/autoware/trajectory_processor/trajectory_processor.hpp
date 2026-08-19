@@ -19,6 +19,8 @@
 #include "autoware/trajectory_processor/trajectory_processor_data.hpp"
 #include "autoware/trajectory_processor/trajectory_processor_plugin_base.hpp"
 
+#include <autoware/component_interface_specs/perception.hpp>
+#include <autoware/component_interface_utils/rclcpp.hpp>
 #include <autoware_trajectory_processor/trajectory_processor_param.hpp>
 #include <autoware_utils_debug/debug_publisher.hpp>
 #include <autoware_utils_debug/time_keeper.hpp>
@@ -95,8 +97,10 @@ private:
     this, "~/input/acceleration"};
   autoware_utils_rclcpp::InterProcessPollingSubscriber<PredictedObjects> sub_objects_{
     this, "~/input/objects"};
-  autoware_utils_rclcpp::InterProcessPollingSubscriber<PointCloud2> sub_pointcloud_{
-    this, "~/input/pointcloud", autoware_utils_rclcpp::single_depth_sensor_qos()};
+  autoware::component_interface_utils::Subscription<
+    autoware::component_interface_specs::perception::ObstacleSegmentation>::SharedPtr
+    sub_pointcloud_;
+  PointCloud2::ConstSharedPtr latest_pointcloud_;
   autoware_utils_rclcpp::InterProcessPollingSubscriber<
     autoware_perception_msgs::msg::TrafficLightGroupArray>
     sub_traffic_lights_{this, "~/input/traffic_signals"};

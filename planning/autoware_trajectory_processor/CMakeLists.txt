@@ -101,6 +101,11 @@ if(BUILD_TESTING)
     autoware_trajectory_modifier_plugins
     autoware_trajectory_modifier_utils
   )
+  ament_target_dependencies(test_autoware_trajectory_processor
+    ament_index_cpp
+    autoware_component_interface_specs
+    autoware_component_interface_utils
+  )
 endif()
 
 install(TARGETS acados_interface_temporal LIBRARY DESTINATION lib)

@@ -42,6 +42,14 @@ TrajectoryProcessor::TrajectoryProcessor(const rclcpp::NodeOptions & options)
     "autoware::trajectory_processor::plugin::TrajectoryProcessorPluginBase"},
   context_{std::make_shared<TrajectoryProcessorContext>(this)}
 {
+  {
+    autoware::component_interface_utils::NodeAdaptor adaptor(this);
+    sub_pointcloud_ =
+      adaptor
+        .create_subscription<autoware::component_interface_specs::perception::ObstacleSegmentation>(
+          nullptr);
+  }
+
   sub_map_ = create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&TrajectoryProcessor::on_map, this, std::placeholders::_1));
@@ -121,7 +129,8 @@ tl::expected<TrajectoryProcessorData, std::string> TrajectoryProcessor::make_inp
   data.current_odometry = sub_current_odometry_.take_data();
   data.current_acceleration = sub_current_acceleration_.take_data();
   data.predicted_objects = sub_objects_.take_data();
-  data.obstacle_pointcloud = sub_pointcloud_.take_data();
+  sub_pointcloud_->take_and_update(latest_pointcloud_);
+  data.obstacle_pointcloud = latest_pointcloud_;
   data.route = sub_route_.take_data();
   data.traffic_light_signals = sub_traffic_lights_.take_data();
   data.lanelet_map = lanelet_map_ptr_;

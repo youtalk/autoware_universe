@@ -168,6 +168,15 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&CostmapGenerator::onLaneletMapBin, this, std::placeholders::_1));
 
+  // Point cloud subscriber
+  {
+    autoware::component_interface_utils::NodeAdaptor adaptor(this);
+    sub_points_ =
+      adaptor
+        .create_subscription<autoware::component_interface_specs::perception::ObstacleSegmentation>(
+          nullptr);
+  }
+
   // Publishers
   pub_costmap_ = this->create_publisher<grid_map_msgs::msg::GridMap>("~/output/grid_map", 1);
   pub_occupancy_grid_ =
@@ -264,7 +273,7 @@ void CostmapGenerator::onLaneletMapBin(
 void CostmapGenerator::update_data()
 {
   objects_ = sub_objects_.take_data();
-  points_ = sub_points_.take_data();
+  sub_points_->take_and_update(points_);
   scenario_ = sub_scenario_.take_data();
 }
 

@@ -1,0 +1,21 @@
+{
+  "node_name": "costmap_generator",
+  "owner": "",
+  "provided": [],
+  "required": [
+    {
+      "accept_major_max": 0,
+      "accept_major_min": 0,
+      "interface_name": "/perception/obstacle_segmentation/pointcloud",
+      "min_minor": 0,
+      "ns": "",
+      "qos": {
+        "depth": 5,
+        "durability": "volatile",
+        "reliability": "reliable"
+      },
+      "resolved_name": "/perception/obstacle_segmentation/pointcloud",
+      "type_name": "sensor_msgs/msg/PointCloud2"
+    }
+  ]
+}

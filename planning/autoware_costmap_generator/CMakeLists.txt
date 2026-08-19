@@ -75,6 +75,15 @@ if(BUILD_TESTING)
   target_compile_options(test_${PROJECT_NAME} PUBLIC
     -Wno-error=deprecated-declarations
   )
+
+  ament_add_gtest(test_interface_fragment
+    test/test_interface_fragment.cpp
+  )
+  ament_target_dependencies(test_interface_fragment
+    ament_index_cpp
+    autoware_component_interface_specs
+    autoware_component_interface_utils
+  )
 endif()
 
 ament_auto_package(

@@ -10,7 +10,7 @@
 
   <node pkg="autoware_costmap_generator" exec="costmap_generator" name="costmap_generator" output="screen">
     <remap from="~/input/objects" to="$(var input_objects)"/>
-    <remap from="~/input/points_no_ground" to="$(var input_points_no_ground)"/>
+    <remap from="/perception/obstacle_segmentation/pointcloud" to="$(var input_points_no_ground)"/>
     <remap from="~/input/vector_map" to="$(var input_lanelet_map)"/>
     <remap from="~/input/scenario" to="$(var input_scenario)"/>
     <remap from="~/output/grid_map" to="$(var output_grid_map)"/>

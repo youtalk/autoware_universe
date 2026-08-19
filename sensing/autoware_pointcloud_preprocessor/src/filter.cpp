@@ -53,6 +53,8 @@
 
 #include "autoware/pointcloud_preprocessor/utility/memory.hpp"
 
+#include <autoware/component_interface_specs/perception.hpp>
+#include <autoware/component_interface_utils/rclcpp.hpp>
 #include <pcl_ros/transforms.hpp>
 
 #include <pcl/io/io.h>
@@ -95,6 +97,18 @@ autoware::pointcloud_preprocessor::Filter::Filter(
     pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
     pub_output_ = this->create_publisher<PointCloud2>(
       "output", rclcpp::SensorDataQoS().keep_last(max_queue_size_), pub_options);
+  }
+
+  // If launch pointed this filter's "output" at the no-ground obstacle-cloud
+  // boundary, this filter is the terminal of the obstacle segmentation
+  // pipeline: register it as the boundary's provider and verify the endpoint
+  // QoS against the interface specification (a mismatch aborts startup). For
+  // every other output name this is a no-op.
+  {
+    autoware::component_interface_utils::NodeAdaptor adaptor(this);
+    adaptor
+      .register_publisher<autoware::component_interface_specs::perception::ObstacleSegmentation>(
+        pub_output_);
   }
 
   subscribe(filter_name);
